@@ -232,6 +232,12 @@
             transform: translateY(-2px);
         }
 
+        .btn-primary:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .btn-small {
             padding: 8px 12px;
             font-size: 12px;
@@ -453,6 +459,44 @@
             color: var(--gle);
         }
 
+        /* Toast/Alert */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .alert.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .alert.loading {
+            background: rgba(14, 165, 233, 0.1);
+            color: var(--secondary);
+            border: 1px solid var(--secondary);
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
         /* Modal */
         .modal {
             display: none;
@@ -506,6 +550,18 @@
         /* Utils */
         .text-center { text-align: center; }
         .text-small { font-size: 12px; color: var(--text-light); }
+        .debug-info {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: monospace;
+            margin-top: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -516,6 +572,9 @@
         </div>
 
         <div class="content">
+            <!-- ALERT CONTAINER -->
+            <div id="alertContainer"></div>
+
             <!-- TELA 1: INÍCIO -->
             <div class="screen active" id="screenInicio">
                 <div class="month-selector">
@@ -634,7 +693,7 @@
                         </select>
                     </div>
 
-                    <button class="btn btn-primary" onclick="salvarVariavel()">
+                    <button class="btn btn-primary" id="btnSalvarVariavel" onclick="salvarVariavel()">
                         💾 Salvar
                     </button>
                 </div>
@@ -700,6 +759,25 @@
             parcelas: {}
         };
 
+        // ==================== TOAST/ALERT ====================
+        function mostrarAlerta(mensagem, tipo = 'success', duracao = 3000) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert ${tipo} show`;
+            alert.textContent = mensagem;
+            
+            container.appendChild(alert);
+            
+            if (duracao > 0) {
+                setTimeout(() => {
+                    alert.classList.remove('show');
+                    setTimeout(() => alert.remove(), 300);
+                }, duracao);
+            }
+            
+            console.log(`[${tipo.toUpperCase()}] ${mensagem}`);
+        }
+
         // ==================== NAVEGAÇÃO ====================
         function mudarTela(telaId) {
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
@@ -751,13 +829,13 @@
         }
 
         // ==================== SALVAR ====================
-        function salvarVariavel() {
+        async function salvarVariavel() {
             const valor = parseFloat(document.getElementById('varValor').value);
             const descricao = document.getElementById('varDescricao').value;
             const mes = document.getElementById('varMes').value;
 
             if (!valor || !descricao) {
-                alert('Preencha valor e descrição');
+                mostrarAlerta('⚠️ Preencha valor e descrição', 'error');
                 return;
             }
 
@@ -770,43 +848,64 @@
                 data: new Date().toISOString()
             };
 
-            enviarGoogleAppsScript('salvarVariavel', variavel);
-            
-            document.getElementById('varValor').value = '';
-            document.getElementById('varDescricao').value = '';
-            document.getElementById('varMes').value = 'atual';
+            // Desabilitar botão e mostrar loading
+            const btn = document.getElementById('btnSalvarVariavel');
+            btn.disabled = true;
+            mostrarAlerta('⏳ Salvando variável...', 'loading', 0);
 
-            alert('✅ Variável salva!');
-        }
+            try {
+                await enviarGoogleAppsScript('salvarVariavel', variavel);
+                
+                // Limpar form
+                document.getElementById('varValor').value = '';
+                document.getElementById('varDescricao').value = '';
+                document.getElementById('varMes').value = 'atual';
 
-        // ==================== FIXOS ====================
-        function salvarFixo(tipo, nome, valor) {
-            const fixo = { tipo, nome, valor };
-            enviarGoogleAppsScript('salvarFixo', fixo);
-        }
-
-        function atualizarFixo(tipo, nome, novoValor, pago) {
-            const fixo = { tipo, nome, valor: novoValor, pago };
-            enviarGoogleAppsScript('atualizarFixo', fixo);
+                mostrarAlerta('✅ Variável salva com sucesso!', 'success');
+                atualizarDashboard();
+            } catch (erro) {
+                mostrarAlerta(`❌ Erro ao salvar: ${erro}`, 'error', 5000);
+            } finally {
+                btn.disabled = false;
+            }
         }
 
         // ==================== GOOGLE APPS SCRIPT ====================
         function enviarGoogleAppsScript(acao, dados) {
-            if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
-                console.log('⚠️ Configure a URL do Google Apps Script');
-                return;
-            }
+            return new Promise((resolve, reject) => {
+                if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
+                    const erro = '⚠️ Configure a URL do Google Apps Script no código';
+                    console.error(erro);
+                    reject(erro);
+                    return;
+                }
 
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ acao, dados })
-            })
-            .then(r => r.json())
-            .then(data => {
-                console.log('✅', data);
-                carregarDados();
-            })
-            .catch(err => console.error('❌', err));
+                console.log(`📤 Enviando ${acao}:`, dados);
+
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ acao, dados })
+                })
+                .then(response => {
+                    console.log('📥 Resposta recebida:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('✅ Dados retornados:', data);
+                    if (data.erro) {
+                        throw new Error(data.erro);
+                    }
+                    carregarDados();
+                    resolve(data);
+                })
+                .catch(err => {
+                    console.error('❌ Erro na requisição:', err);
+                    reject(err.message);
+                });
+            });
         }
 
         function carregarDados() {
@@ -815,32 +914,39 @@
                 return;
             }
 
+            console.log('🔄 Carregando dados...');
             fetch(SCRIPT_URL + '?acao=buscarDados')
-                .then(r => r.json())
+                .then(r => {
+                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                    return r.json();
+                })
                 .then(data => {
+                    console.log('✅ Dados carregados:', data);
                     dados = data;
                     atualizarDashboard();
                 })
-                .catch(err => console.error('❌', err));
+                .catch(err => {
+                    console.error('❌ Erro ao carregar:', err);
+                    mostrarAlerta(`❌ Erro ao carregar dados: ${err}`, 'error');
+                });
         }
 
         // ==================== DASHBOARD ====================
         function atualizarDashboard() {
-            // Buscar fixos do mês
+            console.log('📊 Atualizando dashboard...');
+            
+            // Valores padrão
             let fixosCasalTotal = 0;
             let fixosDelaTotal = 0;
             let fixosGleTotal = 0;
-
-            // Buscar variáveis do mês
             let varCasalTotal = 0;
             let varDelaTotal = 0;
             let varGleTotal = 0;
-
-            // Buscar parcelas
             let parcelasTotal = 0;
             let parcelasGleTotal = 0;
 
-            // Cálculo
+            // TODO: Implementar cálculo com dados reais
+
             const repasse = (fixosCasalTotal / 2) + fixosDelaTotal + (varCasalTotal / 2) + varDelaTotal + parcelasTotal - 620;
 
             document.getElementById('repasseValue').textContent = `R$ ${repasse.toFixed(2).replace('.', ',')}`;
@@ -857,11 +963,15 @@
         }
 
         function renderizarListas() {
+            console.log('📝 Renderizando listas...');
             // TODO: Renderizar fixos, variáveis, parcelas
         }
 
         // ==================== INICIALIZAÇÃO ====================
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 FinApp iniciando...');
+            console.log('📡 URL do Apps Script:', SCRIPT_URL);
+            
             inicializarTipoSelect();
             atualizarCategorias();
 
