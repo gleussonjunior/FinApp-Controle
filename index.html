@@ -277,6 +277,23 @@
             font-size: 16px;
         }
 
+        .check-btn {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            background: none;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .check-btn.checked {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
         .nav-bottom {
             position: fixed;
             bottom: 0;
@@ -307,26 +324,6 @@
 
         .text-small { font-size: 12px; color: var(--text-light); }
         .empty-state { text-align: center; padding: 32px 16px; color: var(--text-light); }
-
-        .parcela-mes {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border);
-        }
-
-        .mes-check {
-            text-align: center;
-            font-size: 12px;
-        }
-
-        .mes-check input {
-            width: 20px;
-            height: 20px;
-            margin-bottom: 4px;
-        }
 
         .modal {
             display: none;
@@ -370,6 +367,25 @@
             cursor: pointer;
             color: var(--text-light);
         }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            margin-top: 16px;
+            margin-bottom: 8px;
+        }
+
+        .receita-item {
+            background: rgba(16, 185, 129, 0.05);
+            border-left: 4px solid var(--success);
+        }
+
+        .despesa-item {
+            background: rgba(239, 68, 68, 0.05);
+            border-left: 4px solid var(--danger);
+        }
     </style>
 </head>
 <body>
@@ -394,7 +410,7 @@
                 </div>
 
                 <div class="card">
-                    <div style="font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px;">TOTAL DE GASTOS</div>
+                    <div style="font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px;">Gastos totais do mês</div>
                     <div class="total-gastos" id="totalGastos">R$ 0,00</div>
                 </div>
 
@@ -503,6 +519,19 @@
                 </div>
             </div>
 
+            <div class="screen" id="screenEntradas">
+                <div class="card">
+                    <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Receitas</div>
+                    <div id="receitasList"></div>
+                    <button class="btn" onclick="abrirModalReceita()" style="margin-top: 12px;">+ Adicionar Receita</button>
+                </div>
+
+                <div class="card">
+                    <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Despesas (Fixos + Parcelas)</div>
+                    <div id="despesasList"></div>
+                </div>
+            </div>
+
             <div class="screen" id="screenParcelas">
                 <div class="card">
                     <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Parcelas</div>
@@ -516,6 +545,7 @@
             <button class="nav-item active" data-tela="screenInicio">📊 Início</button>
             <button class="nav-item" data-tela="screenFixos">⚙️ Fixos</button>
             <button class="nav-item" data-tela="screenVariaveis">➕ Variáveis</button>
+            <button class="nav-item" data-tela="screenEntradas">💰 Entradas</button>
             <button class="nav-item" data-tela="screenParcelas">💳 Parcelas</button>
         </div>
     </div>
@@ -584,6 +614,42 @@
             </div>
 
             <button class="btn" id="btnSalvarParcela">💾 Salvar</button>
+        </div>
+    </div>
+
+    <!-- MODAL RECEITA -->
+    <div class="modal" id="modalReceita">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Adicionar Receita</span>
+                <button class="modal-close" onclick="fecharModalReceita()">✕</button>
+            </div>
+
+            <div class="form-group">
+                <label>Tipo</label>
+                <select id="receitaTipo">
+                    <option value="Salário">Salário</option>
+                    <option value="Lia">Lia</option>
+                    <option value="Débora">Débora</option>
+                    <option value="Diego Netflix">Diego Netflix</option>
+                    <option value="Andre Netflix">Andre Netflix</option>
+                    <option value="Porão Redes Sociais">Porão Redes Sociais</option>
+                    <option value="Restituição IR">Restituição IR</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="receitaOutroGroup" style="display: none;">
+                <label>Especifique</label>
+                <input type="text" id="receitaOutroDescricao" placeholder="Digite o tipo de receita">
+            </div>
+
+            <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="receitaValor" placeholder="0,00" step="0.01" min="0">
+            </div>
+
+            <button class="btn" id="btnSalvarReceita">💾 Salvar</button>
         </div>
     </div>
 
@@ -667,7 +733,6 @@
             
             if (id) {
                 title.textContent = 'Editar Fixo';
-                // Carregar dados do fixo
                 supabaseClient.from('fixos').select('*').eq('id', id).single().then(({ data }) => {
                     document.getElementById('fixoNome').value = data.nome;
                     document.getElementById('fixoValor').value = data.valor;
@@ -709,7 +774,17 @@
             document.getElementById('modalParcela').classList.remove('active');
         }
 
-        // TIPO FIXO SELECT
+        function abrirModalReceita() {
+            document.getElementById('modalReceita').classList.add('active');
+            document.getElementById('receitaTipo').value = 'Salário';
+            document.getElementById('receitaValor').value = '';
+            document.getElementById('receitaOutroGroup').style.display = 'none';
+        }
+
+        function fecharModalReceita() {
+            document.getElementById('modalReceita').classList.remove('active');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('tipoFixoSelect').addEventListener('click', (e) => {
                 if (e.target.classList.contains('category-pill')) {
@@ -725,6 +800,10 @@
                     e.target.classList.add('selected');
                     tipoParcelaAtual = e.target.dataset.tipo;
                 }
+            });
+
+            document.getElementById('receitaTipo').addEventListener('change', (e) => {
+                document.getElementById('receitaOutroGroup').style.display = e.target.value === 'Outro' ? 'block' : 'none';
             });
         });
 
@@ -822,10 +901,7 @@
                     const { error } = await supabaseClient.from('parcelas').insert([{
                         tipo: tipoParcelaAtual,
                         nome: `${nome} (${i}/${numParcelas})`,
-                        valor,
-                        numero_parcela: i,
-                        total_parcelas: numParcelas,
-                        pago_mes: null
+                        valor
                     }]);
                     if (error) throw error;
                 }
@@ -841,10 +917,61 @@
             }
         }
 
-        async function marcarParcelaPaga(id, mes) {
+        async function salvarReceita() {
+            let tipo = document.getElementById('receitaTipo').value;
+            const valor = parseFloat(document.getElementById('receitaValor').value);
+
+            if (tipo === 'Outro') {
+                tipo = document.getElementById('receitaOutroDescricao').value;
+                if (!tipo) {
+                    mostrarAlerta('⚠️ Especifique o tipo de receita', 'error');
+                    return;
+                }
+            }
+
+            if (!valor) {
+                mostrarAlerta('⚠️ Preencha o valor', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('btnSalvarReceita');
+            btn.disabled = true;
+
+            try {
+                const { error } = await supabaseClient.from('receitas').insert([{
+                    tipo,
+                    valor,
+                    mes: mesAtual
+                }]);
+
+                if (error) throw error;
+                mostrarAlerta('✅ Receita salva!');
+                fecharModalReceita();
+                await carregarDados();
+            } catch(err) {
+                console.error(err);
+                mostrarAlerta('❌ ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function marcarFixoPago(id, pago) {
+            try {
+                const { error } = await supabaseClient.from('fixos').update({
+                    pago: !pago
+                }).eq('id', id);
+                if (error) throw error;
+                await carregarDados();
+            } catch(err) {
+                mostrarAlerta('❌ ' + err.message, 'error');
+            }
+        }
+
+        async function marcarParcelaPaga(id, pago) {
             try {
                 const { error } = await supabaseClient.from('parcelas').update({
-                    pago_mes: mes
+                    pago: !pago
                 }).eq('id', id);
                 if (error) throw error;
                 await carregarDados();
@@ -877,6 +1004,18 @@
             }
         }
 
+        async function deletarReceita(id) {
+            if (!confirm('Deletar receita?')) return;
+            try {
+                const { error } = await supabaseClient.from('receitas').delete().eq('id', id);
+                if (error) throw error;
+                mostrarAlerta('✅ Deletado!');
+                await carregarDados();
+            } catch(err) {
+                mostrarAlerta('❌ ' + err.message, 'error');
+            }
+        }
+
         async function carregarDados() {
             if (!supabaseClient) {
                 console.log('Aguardando Supabase...');
@@ -887,9 +1026,10 @@
                 const { data: fixos } = await supabaseClient.from('fixos').select('*');
                 const { data: variaveis } = await supabaseClient.from('variaveis').select('*').eq('mes', mesAtual);
                 const { data: parcelas } = await supabaseClient.from('parcelas').select('*');
+                const { data: receitas } = await supabaseClient.from('receitas').select('*').eq('mes', mesAtual);
 
                 calcularRepasse(fixos, variaveis, parcelas);
-                renderizar(fixos, variaveis, parcelas);
+                renderizar(fixos, variaveis, parcelas, receitas);
             } catch(err) {
                 console.error(err);
                 mostrarAlerta('❌ Erro ao carregar dados', 'error');
@@ -902,9 +1042,11 @@
             let parcelasCasal = 0, parcelasDela = 0, parcelasGle = 0;
 
             (fixos || []).forEach(f => {
-                if (f.tipo === 'casal') fixosCasal += f.valor;
-                else if (f.tipo === 'dela') fixosDela += f.valor;
-                else if (f.tipo === 'gle') fixosGle += f.valor;
+                if (!f.pago) {
+                    if (f.tipo === 'casal') fixosCasal += f.valor;
+                    else if (f.tipo === 'dela') fixosDela += f.valor;
+                    else if (f.tipo === 'gle') fixosGle += f.valor;
+                }
             });
 
             (variaveis || []).forEach(v => {
@@ -914,7 +1056,7 @@
             });
 
             (parcelas || []).forEach(p => {
-                if (!p.pago_mes) {
+                if (!p.pago) {
                     if (p.tipo === 'casal') parcelasCasal += p.valor;
                     else if (p.tipo === 'dela') parcelasDela += p.valor;
                     else if (p.tipo === 'gle') parcelasGle += p.valor;
@@ -923,6 +1065,7 @@
 
             const repasse = (fixosCasal / 2) + fixosDela + (varCasal / 2) + varDela + parcelasCasal + parcelasDela - 620;
             const totalGastos = fixosCasal + fixosDela + varCasal + varDela + parcelasCasal + parcelasDela;
+            const totalGle = fixosGle + varGle;
 
             document.getElementById('repasseValue').textContent = `R$ ${repasse.toFixed(2).replace('.', ',')}`;
             document.getElementById('totalGastos').textContent = `R$ ${totalGastos.toFixed(2).replace('.', ',')}`;
@@ -933,9 +1076,10 @@
             document.getElementById('parcelasValue').textContent = `R$ ${(parcelasCasal + parcelasDela).toFixed(2).replace('.', ',')}`;
             document.getElementById('varGleValue').textContent = `R$ ${varGle.toFixed(2).replace('.', ',')}`;
             document.getElementById('fixosGleValue').textContent = `R$ ${fixosGle.toFixed(2).replace('.', ',')}`;
+            document.getElementById('totalGleValue').textContent = `R$ ${totalGle.toFixed(2).replace('.', ',')}`;
         }
 
-        function renderizar(fixos, variaveis, parcelas) {
+        function renderizar(fixos, variaveis, parcelas, receitas) {
             const varList = document.getElementById('variaveisList');
             if (variaveis?.length) {
                 varList.innerHTML = variaveis.map(v => `
@@ -963,10 +1107,11 @@
                 const itens = (fixos || []).filter(f => f.tipo === tipo);
                 if (itens.length) {
                     list.innerHTML = itens.map(f => `
-                        <div class="list-item">
+                        <div class="list-item ${f.pago ? 'pago' : ''}">
                             <div><strong>${f.nome}</strong></div>
                             <div style="text-align: right; display: flex; gap: 8px; align-items: center;">
                                 <div class="list-item-value">R$ ${f.valor.toFixed(2).replace('.', ',')}</div>
+                                <button class="check-btn ${f.pago ? 'checked' : ''}" onclick="marcarFixoPago(${f.id}, ${f.pago})">✓</button>
                                 <button class="icon-btn edit-btn" onclick="abrirModalFixo(${f.id})">✏️</button>
                                 <button class="icon-btn delete-fixo" data-id="${f.id}">🗑️</button>
                             </div>
@@ -982,39 +1127,60 @@
             });
 
             const parcList = document.getElementById('parcelasList');
-            const parcelasAgrupadas = {};
-            (parcelas || []).forEach(p => {
-                if (!parcelasAgrupadas[p.nome.split(' (')[0]]) {
-                    parcelasAgrupadas[p.nome.split(' (')[0]] = [];
-                }
-                parcelasAgrupadas[p.nome.split(' (')[0]].push(p);
-            });
-
-            if (Object.keys(parcelasAgrupadas).length > 0) {
-                parcList.innerHTML = Object.entries(parcelasAgrupadas).map(([nome, ps]) => {
-                    const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-                    return `
-                        <div class="list-item" style="flex-direction: column; align-items: flex-start;">
-                            <div style="width: 100%; display: flex; justify-content: space-between;">
-                                <div>
-                                    <div><strong>${nome}</strong></div>
-                                    <div class="text-small">R$ ${ps[0].valor.toFixed(2).replace('.', ',')}/mês</div>
-                                </div>
-                                <div class="text-small" style="color: var(--success);">${ps.filter(p => p.pago_mes).length}/${ps.length}</div>
-                            </div>
-                            <div class="parcela-mes">
-                                ${ps.map((p, i) => `
-                                    <div class="mes-check">
-                                        <input type="checkbox" ${p.pago_mes ? 'checked' : ''} onchange="marcarParcelaPaga(${p.id}, '${p.pago_mes || 'mes' + (i+1)}')">
-                                        <div>${meses[i % 12]}</div>
-                                    </div>
-                                `).join('')}
-                            </div>
+            if (parcelas?.length) {
+                parcList.innerHTML = parcelas.map(p => `
+                    <div class="list-item ${p.pago ? 'pago' : ''}">
+                        <div><strong>${p.nome}</strong></div>
+                        <div style="text-align: right; display: flex; gap: 8px; align-items: center;">
+                            <div class="list-item-value">R$ ${p.valor.toFixed(2).replace('.', ',')}</div>
+                            <button class="check-btn ${p.pago ? 'checked' : ''}" onclick="marcarParcelaPaga(${p.id}, ${p.pago})">✓</button>
                         </div>
-                    `;
-                }).join('');
+                    </div>
+                `).join('');
             } else {
                 parcList.innerHTML = '<div class="empty-state">Nenhuma parcela</div>';
+            }
+
+            const receitasList = document.getElementById('receitasList');
+            if (receitas?.length) {
+                const totalReceitas = receitas.reduce((sum, r) => sum + r.valor, 0);
+                receitasList.innerHTML = receitas.map(r => `
+                    <div class="list-item receita-item">
+                        <div><strong>${r.tipo}</strong></div>
+                        <div style="text-align: right; display: flex; gap: 8px; align-items: center;">
+                            <div class="list-item-value">R$ ${r.valor.toFixed(2).replace('.', ',')}</div>
+                            <button class="icon-btn delete-receita" data-id="${r.id}">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+                receitasList.innerHTML += `<div class="stat-row" style="margin-top: 12px; font-weight: 700;"><span>TOTAL</span><span>R$ ${totalReceitas.toFixed(2).replace('.', ',')}</span></div>`;
+                
+                receitasList.querySelectorAll('.delete-receita').forEach(btn => {
+                    btn.addEventListener('click', () => deletarReceita(parseInt(btn.dataset.id)));
+                });
+            } else {
+                receitasList.innerHTML = '<div class="empty-state">Nenhuma receita</div>';
+            }
+
+            const despesasList = document.getElementById('despesasList');
+            const fixosGle = (fixos || []).filter(f => f.tipo === 'gle' && !f.pago);
+            const parcelasGle = (parcelas || []).filter(p => p.tipo === 'gle' && !p.pago);
+            const todasDespesas = [...fixosGle, ...parcelasGle];
+
+            if (todasDespesas.length) {
+                const totalDespesas = todasDespesas.reduce((sum, d) => sum + d.valor, 0);
+                despesasList.innerHTML = todasDespesas.map(d => `
+                    <div class="list-item despesa-item">
+                        <div><strong>${d.nome}</strong></div>
+                        <div style="text-align: right; display: flex; gap: 8px; align-items: center;">
+                            <div class="list-item-value">R$ ${d.valor.toFixed(2).replace('.', ',')}</div>
+                            <button class="check-btn ${d.pago ? 'checked' : ''}" onclick="${fixosGle.includes(d) ? 'marcarFixoPago' : 'marcarParcelaPaga'}(${d.id}, ${d.pago})">✓</button>
+                        </div>
+                    </div>
+                `).join('');
+                despesasList.innerHTML += `<div class="stat-row" style="margin-top: 12px; font-weight: 700;"><span>TOTAL</span><span>R$ ${totalDespesas.toFixed(2).replace('.', ',')}</span></div>`;
+            } else {
+                despesasList.innerHTML = '<div class="empty-state">Nenhuma despesa</div>';
             }
         }
 
@@ -1054,6 +1220,7 @@
             document.getElementById('btnSalvarVariavel').addEventListener('click', salvarVariavel);
             document.getElementById('btnSalvarFixo').addEventListener('click', salvarFixo);
             document.getElementById('btnSalvarParcela').addEventListener('click', salvarParcela);
+            document.getElementById('btnSalvarReceita').addEventListener('click', salvarReceita);
 
             carregarDados();
             setInterval(carregarDados, 30000);
