@@ -152,6 +152,13 @@
             margin: 12px 0;
         }
 
+        .total-gastos {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--danger);
+            margin: 12px 0;
+        }
+
         .stat-row {
             display: flex;
             justify-content: space-between;
@@ -208,6 +215,12 @@
             opacity: 0.6;
         }
 
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 12px;
+            width: auto;
+        }
+
         .category-select {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -241,6 +254,11 @@
             margin-bottom: 8px;
         }
 
+        .list-item.pago {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
         .list-item-value {
             font-weight: 700;
         }
@@ -251,6 +269,12 @@
             font-size: 18px;
             cursor: pointer;
             color: var(--danger);
+            padding: 4px 8px;
+        }
+
+        .edit-btn {
+            color: var(--secondary);
+            font-size: 16px;
         }
 
         .nav-bottom {
@@ -283,6 +307,69 @@
 
         .text-small { font-size: 12px; color: var(--text-light); }
         .empty-state { text-align: center; padding: 32px 16px; color: var(--text-light); }
+
+        .parcela-mes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .mes-check {
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .mes-check input {
+            width: 20px;
+            height: 20px;
+            margin-bottom: 4px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            align-items: flex-end;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px 20px 0 0;
+            padding: 24px 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+        }
     </style>
 </head>
 <body>
@@ -304,6 +391,11 @@
                 <div class="card highlight">
                     <div style="font-size: 13px; font-weight: 600; color: #92400e; margin-bottom: 8px;">Repasse para Lia</div>
                     <div class="repasse-value" id="repasseValue">R$ 0,00</div>
+                </div>
+
+                <div class="card">
+                    <div style="font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px;">TOTAL DE GASTOS</div>
+                    <div class="total-gastos" id="totalGastos">R$ 0,00</div>
                 </div>
 
                 <div class="card">
@@ -340,6 +432,10 @@
                         <span class="stat-label">Fixos</span>
                         <span class="stat-value" id="fixosGleValue">R$ 0,00</span>
                     </div>
+                    <div class="stat-row" style="background: rgba(0,0,0,0.05); padding: 10px; margin: 0 -16px; border-radius: 6px; font-weight: 700;">
+                        <span class="stat-label">TOTAL</span>
+                        <span class="stat-value" id="totalGleValue">R$ 0,00</span>
+                    </div>
                 </div>
             </div>
 
@@ -347,20 +443,19 @@
                 <div class="card">
                     <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Fixos Casal</div>
                     <div id="fixosCasalList"></div>
-                    <button class="btn" id="btnAddCasal" style="margin-top: 12px;">+ Adicionar</button>
                 </div>
 
                 <div class="card">
                     <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Fixos Dela</div>
                     <div id="fixosDelaList"></div>
-                    <button class="btn" id="btnAddDela" style="margin-top: 12px;">+ Adicionar</button>
                 </div>
 
                 <div class="card">
                     <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Fixos Seus</div>
                     <div id="fixosGleList"></div>
-                    <button class="btn" id="btnAddGle" style="margin-top: 12px;">+ Adicionar</button>
                 </div>
+
+                <button class="btn" onclick="abrirModalFixo()">+ Adicionar Fixo</button>
             </div>
 
             <div class="screen" id="screenVariaveis">
@@ -412,7 +507,7 @@
                 <div class="card">
                     <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Parcelas</div>
                     <div id="parcelasList"></div>
-                    <button class="btn" id="btnAddParcela" style="margin-top: 12px;">+ Adicionar</button>
+                    <button class="btn" onclick="abrirModalParcela()" style="margin-top: 12px;">+ Adicionar Parcela</button>
                 </div>
             </div>
         </div>
@@ -422,6 +517,73 @@
             <button class="nav-item" data-tela="screenFixos">⚙️ Fixos</button>
             <button class="nav-item" data-tela="screenVariaveis">➕ Variáveis</button>
             <button class="nav-item" data-tela="screenParcelas">💳 Parcelas</button>
+        </div>
+    </div>
+
+    <!-- MODAL FIXO -->
+    <div class="modal" id="modalFixo">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="modalFixoTitle">Adicionar Fixo</span>
+                <button class="modal-close" onclick="fecharModalFixo()">✕</button>
+            </div>
+
+            <div class="form-group">
+                <label>Tipo</label>
+                <div class="category-select" id="tipoFixoSelect">
+                    <div class="category-pill selected" data-tipo="casal">👥 Casal</div>
+                    <div class="category-pill" data-tipo="dela">👩 Dela</div>
+                    <div class="category-pill" data-tipo="gle">👨 Você</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Nome</label>
+                <input type="text" id="fixoNome" placeholder="Ex: Aluguel">
+            </div>
+
+            <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="fixoValor" placeholder="0,00" step="0.01" min="0">
+            </div>
+
+            <button class="btn" id="btnSalvarFixo">💾 Salvar</button>
+        </div>
+    </div>
+
+    <!-- MODAL PARCELA -->
+    <div class="modal" id="modalParcela">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Adicionar Parcela</span>
+                <button class="modal-close" onclick="fecharModalParcela()">✕</button>
+            </div>
+
+            <div class="form-group">
+                <label>Tipo (De quem é?)</label>
+                <div class="category-select" id="tipoParcelaSelect">
+                    <div class="category-pill selected" data-tipo="casal">👥 Casal</div>
+                    <div class="category-pill" data-tipo="dela">👩 Dela</div>
+                    <div class="category-pill" data-tipo="gle">👨 Você</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Nome</label>
+                <input type="text" id="parcelaNome" placeholder="Ex: Notebook">
+            </div>
+
+            <div class="form-group">
+                <label>Valor por Parcela (R$)</label>
+                <input type="number" id="parcelaValor" placeholder="0,00" step="0.01" min="0">
+            </div>
+
+            <div class="form-group">
+                <label>Número de Parcelas</label>
+                <input type="number" id="parcelasNum" placeholder="12" min="1" max="60">
+            </div>
+
+            <button class="btn" id="btnSalvarParcela">💾 Salvar</button>
         </div>
     </div>
 
@@ -437,6 +599,9 @@
         let tipoAtual = 'casal';
         let categoriaAtual = 'Uber';
         let mesAtual = 'atual';
+        let tipoFixoAtual = 'casal';
+        let tipoParcelaAtual = 'casal';
+        let fixoEditandoId = null;
 
         function mostrarAlerta(msg, tipo = 'success') {
             const container = document.getElementById('alertContainer');
@@ -494,6 +659,75 @@
             categoriaAtual = CATEGORIAS[tipoAtual][0];
         }
 
+        // MODAL FIXO
+        function abrirModalFixo(id = null) {
+            fixoEditandoId = id;
+            const modal = document.getElementById('modalFixo');
+            const title = document.getElementById('modalFixoTitle');
+            
+            if (id) {
+                title.textContent = 'Editar Fixo';
+                // Carregar dados do fixo
+                supabaseClient.from('fixos').select('*').eq('id', id).single().then(({ data }) => {
+                    document.getElementById('fixoNome').value = data.nome;
+                    document.getElementById('fixoValor').value = data.valor;
+                    tipoFixoAtual = data.tipo;
+                    document.querySelectorAll('#tipoFixoSelect .category-pill').forEach(p => {
+                        p.classList.toggle('selected', p.dataset.tipo === data.tipo);
+                    });
+                });
+            } else {
+                title.textContent = 'Adicionar Fixo';
+                document.getElementById('fixoNome').value = '';
+                document.getElementById('fixoValor').value = '';
+                tipoFixoAtual = 'casal';
+                document.querySelectorAll('#tipoFixoSelect .category-pill').forEach((p, i) => {
+                    p.classList.toggle('selected', i === 0);
+                });
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function fecharModalFixo() {
+            document.getElementById('modalFixo').classList.remove('active');
+            fixoEditandoId = null;
+        }
+
+        function abrirModalParcela() {
+            document.getElementById('modalParcela').classList.add('active');
+            document.getElementById('parcelaNome').value = '';
+            document.getElementById('parcelaValor').value = '';
+            document.getElementById('parcelasNum').value = '12';
+            tipoParcelaAtual = 'casal';
+            document.querySelectorAll('#tipoParcelaSelect .category-pill').forEach((p, i) => {
+                p.classList.toggle('selected', i === 0);
+            });
+        }
+
+        function fecharModalParcela() {
+            document.getElementById('modalParcela').classList.remove('active');
+        }
+
+        // TIPO FIXO SELECT
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('tipoFixoSelect').addEventListener('click', (e) => {
+                if (e.target.classList.contains('category-pill')) {
+                    document.querySelectorAll('#tipoFixoSelect .category-pill').forEach(x => x.classList.remove('selected'));
+                    e.target.classList.add('selected');
+                    tipoFixoAtual = e.target.dataset.tipo;
+                }
+            });
+
+            document.getElementById('tipoParcelaSelect').addEventListener('click', (e) => {
+                if (e.target.classList.contains('category-pill')) {
+                    document.querySelectorAll('#tipoParcelaSelect .category-pill').forEach(x => x.classList.remove('selected'));
+                    e.target.classList.add('selected');
+                    tipoParcelaAtual = e.target.dataset.tipo;
+                }
+            });
+        });
+
         async function salvarVariavel() {
             const valor = parseFloat(document.getElementById('varValor').value);
             const descricao = document.getElementById('varDescricao').value;
@@ -530,32 +764,89 @@
             }
         }
 
-        async function salvarFixo(tipo, nome, valor) {
-            try {
-                const { error } = await supabaseClient.from('fixos').insert([{
-                    tipo,
-                    nome,
-                    valor: parseFloat(valor)
-                }]);
+        async function salvarFixo() {
+            const nome = document.getElementById('fixoNome').value;
+            const valor = parseFloat(document.getElementById('fixoValor').value);
 
-                if (error) throw error;
-                mostrarAlerta('✅ Fixo salvo!');
+            if (!nome || !valor) {
+                mostrarAlerta('⚠️ Preencha nome e valor', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('btnSalvarFixo');
+            btn.disabled = true;
+
+            try {
+                if (fixoEditandoId) {
+                    const { error } = await supabaseClient.from('fixos').update({
+                        nome,
+                        valor
+                    }).eq('id', fixoEditandoId);
+                    if (error) throw error;
+                    mostrarAlerta('✅ Fixo atualizado!');
+                } else {
+                    const { error } = await supabaseClient.from('fixos').insert([{
+                        tipo: tipoFixoAtual,
+                        nome,
+                        valor
+                    }]);
+                    if (error) throw error;
+                    mostrarAlerta('✅ Fixo salvo!');
+                }
+
+                fecharModalFixo();
                 await carregarDados();
             } catch(err) {
+                console.error(err);
                 mostrarAlerta('❌ ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
             }
         }
 
-        async function salvarParcela(tipo, nome, valor) {
-            try {
-                const { error } = await supabaseClient.from('parcelas').insert([{
-                    tipo,
-                    nome,
-                    valor: parseFloat(valor)
-                }]);
+        async function salvarParcela() {
+            const nome = document.getElementById('parcelaNome').value;
+            const valor = parseFloat(document.getElementById('parcelaValor').value);
+            const numParcelas = parseInt(document.getElementById('parcelasNum').value);
 
+            if (!nome || !valor || !numParcelas) {
+                mostrarAlerta('⚠️ Preencha todos os campos', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('btnSalvarParcela');
+            btn.disabled = true;
+
+            try {
+                for (let i = 1; i <= numParcelas; i++) {
+                    const { error } = await supabaseClient.from('parcelas').insert([{
+                        tipo: tipoParcelaAtual,
+                        nome: `${nome} (${i}/${numParcelas})`,
+                        valor,
+                        numero_parcela: i,
+                        total_parcelas: numParcelas,
+                        pago_mes: null
+                    }]);
+                    if (error) throw error;
+                }
+
+                mostrarAlerta('✅ Parcelas salvas!');
+                fecharModalParcela();
+                await carregarDados();
+            } catch(err) {
+                console.error(err);
+                mostrarAlerta('❌ ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function marcarParcelaPaga(id, mes) {
+            try {
+                const { error } = await supabaseClient.from('parcelas').update({
+                    pago_mes: mes
+                }).eq('id', id);
                 if (error) throw error;
-                mostrarAlerta('✅ Parcela salva!');
                 await carregarDados();
             } catch(err) {
                 mostrarAlerta('❌ ' + err.message, 'error');
@@ -623,14 +914,18 @@
             });
 
             (parcelas || []).forEach(p => {
-                if (p.tipo === 'casal') parcelasCasal += p.valor;
-                else if (p.tipo === 'dela') parcelasDela += p.valor;
-                else if (p.tipo === 'gle') parcelasGle += p.valor;
+                if (!p.pago_mes) {
+                    if (p.tipo === 'casal') parcelasCasal += p.valor;
+                    else if (p.tipo === 'dela') parcelasDela += p.valor;
+                    else if (p.tipo === 'gle') parcelasGle += p.valor;
+                }
             });
 
             const repasse = (fixosCasal / 2) + fixosDela + (varCasal / 2) + varDela + parcelasCasal + parcelasDela - 620;
+            const totalGastos = fixosCasal + fixosDela + varCasal + varDela + parcelasCasal + parcelasDela;
 
             document.getElementById('repasseValue').textContent = `R$ ${repasse.toFixed(2).replace('.', ',')}`;
+            document.getElementById('totalGastos').textContent = `R$ ${totalGastos.toFixed(2).replace('.', ',')}`;
             document.getElementById('fixosCasalValue').textContent = `R$ ${(fixosCasal / 2).toFixed(2).replace('.', ',')}`;
             document.getElementById('fixosDelaValue').textContent = `R$ ${fixosDela.toFixed(2).replace('.', ',')}`;
             document.getElementById('varCasalValue').textContent = `R$ ${(varCasal / 2).toFixed(2).replace('.', ',')}`;
@@ -670,8 +965,9 @@
                     list.innerHTML = itens.map(f => `
                         <div class="list-item">
                             <div><strong>${f.nome}</strong></div>
-                            <div style="text-align: right;">
+                            <div style="text-align: right; display: flex; gap: 8px; align-items: center;">
                                 <div class="list-item-value">R$ ${f.valor.toFixed(2).replace('.', ',')}</div>
+                                <button class="icon-btn edit-btn" onclick="abrirModalFixo(${f.id})">✏️</button>
                                 <button class="icon-btn delete-fixo" data-id="${f.id}">🗑️</button>
                             </div>
                         </div>
@@ -686,21 +982,43 @@
             });
 
             const parcList = document.getElementById('parcelasList');
-            if (parcelas?.length) {
-                parcList.innerHTML = parcelas.map(p => `
-                    <div class="list-item">
-                        <div><strong>${p.nome}</strong></div>
-                        <div class="list-item-value">R$ ${p.valor.toFixed(2).replace('.', ',')}</div>
-                    </div>
-                `).join('');
+            const parcelasAgrupadas = {};
+            (parcelas || []).forEach(p => {
+                if (!parcelasAgrupadas[p.nome.split(' (')[0]]) {
+                    parcelasAgrupadas[p.nome.split(' (')[0]] = [];
+                }
+                parcelasAgrupadas[p.nome.split(' (')[0]].push(p);
+            });
+
+            if (Object.keys(parcelasAgrupadas).length > 0) {
+                parcList.innerHTML = Object.entries(parcelasAgrupadas).map(([nome, ps]) => {
+                    const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+                    return `
+                        <div class="list-item" style="flex-direction: column; align-items: flex-start;">
+                            <div style="width: 100%; display: flex; justify-content: space-between;">
+                                <div>
+                                    <div><strong>${nome}</strong></div>
+                                    <div class="text-small">R$ ${ps[0].valor.toFixed(2).replace('.', ',')}/mês</div>
+                                </div>
+                                <div class="text-small" style="color: var(--success);">${ps.filter(p => p.pago_mes).length}/${ps.length}</div>
+                            </div>
+                            <div class="parcela-mes">
+                                ${ps.map((p, i) => `
+                                    <div class="mes-check">
+                                        <input type="checkbox" ${p.pago_mes ? 'checked' : ''} onchange="marcarParcelaPaga(${p.id}, '${p.pago_mes || 'mes' + (i+1)}')">
+                                        <div>${meses[i % 12]}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
             } else {
                 parcList.innerHTML = '<div class="empty-state">Nenhuma parcela</div>';
             }
         }
 
-        // INICIALIZAÇÃO
         async function init() {
-            // Aguardar a biblioteca carregar
             let tentativas = 0;
             while (!window.supabase && tentativas < 30) {
                 await new Promise(r => setTimeout(r, 100));
@@ -722,53 +1040,20 @@
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             document.getElementById('headerDate').textContent = `${meses[agora.getMonth()]} ${agora.getFullYear()}`;
 
-            // Nav
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', () => mudarTela(item.dataset.tela));
             });
 
-            // Months
             document.querySelectorAll('[data-mes]').forEach(btn => {
                 btn.addEventListener('click', () => mudarMes(btn.dataset.mes));
             });
 
-            // Tipo e categoria
             inicializarTipoSelect();
             atualizarCategorias();
 
-            // Buttons
             document.getElementById('btnSalvarVariavel').addEventListener('click', salvarVariavel);
-            document.getElementById('btnAddCasal').addEventListener('click', () => {
-                const nome = prompt('Nome do fixo:');
-                if (nome) {
-                    const valor = prompt('Valor:');
-                    if (valor) salvarFixo('casal', nome, valor);
-                }
-            });
-            document.getElementById('btnAddDela').addEventListener('click', () => {
-                const nome = prompt('Nome do fixo:');
-                if (nome) {
-                    const valor = prompt('Valor:');
-                    if (valor) salvarFixo('dela', nome, valor);
-                }
-            });
-            document.getElementById('btnAddGle').addEventListener('click', () => {
-                const nome = prompt('Nome do fixo:');
-                if (nome) {
-                    const valor = prompt('Valor:');
-                    if (valor) salvarFixo('gle', nome, valor);
-                }
-            });
-            document.getElementById('btnAddParcela').addEventListener('click', () => {
-                const tipo = prompt('Tipo (casal/dela/gle):');
-                if (tipo) {
-                    const nome = prompt('Nome:');
-                    if (nome) {
-                        const valor = prompt('Valor:');
-                        if (valor) salvarParcela(tipo, nome, valor);
-                    }
-                }
-            });
+            document.getElementById('btnSalvarFixo').addEventListener('click', salvarFixo);
+            document.getElementById('btnSalvarParcela').addEventListener('click', salvarParcela);
 
             carregarDados();
             setInterval(carregarDados, 30000);
