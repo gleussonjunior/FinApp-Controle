@@ -630,8 +630,9 @@
     // Compara o campo "mes" do banco com o mês atual.
     // Aceita tanto o número (5) quanto a string legada ('atual').
     function mesCompativel(campoMes) {
-        if (campoMes === 'atual') return true;          // dado legado
-        return Number(campoMes) === mesAtual;           // dado novo
+        if (campoMes === null || campoMes === undefined) return true; // sem mês = legado, mostra sempre
+        if (campoMes === "atual") return true;                        // string legada
+        return Number(campoMes) === mesAtual;                         // número novo
     }
 
     function mostrarAlerta(msg, tipo = 'success') {
