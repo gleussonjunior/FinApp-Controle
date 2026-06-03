@@ -427,7 +427,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        let supabase = null;
+        let supabaseClient = null;
         const CATEGORIAS = {
             casal: ['Uber', 'Mercado', 'Saídas', 'Extra', 'Pets', 'Outros'],
             dela: ['Pessoais Lia', 'Outros'],
@@ -508,7 +508,7 @@
             btn.disabled = true;
 
             try {
-                const { error } = await supabase.from('variaveis').insert([{
+                const { error } = await supabaseClient.from('variaveis').insert([{
                     tipo: tipoAtual,
                     categoria: categoriaAtual,
                     valor,
@@ -532,7 +532,7 @@
 
         async function salvarFixo(tipo, nome, valor) {
             try {
-                const { error } = await supabase.from('fixos').insert([{
+                const { error } = await supabaseClient.from('fixos').insert([{
                     tipo,
                     nome,
                     valor: parseFloat(valor)
@@ -548,7 +548,7 @@
 
         async function salvarParcela(tipo, nome, valor) {
             try {
-                const { error } = await supabase.from('parcelas').insert([{
+                const { error } = await supabaseClient.from('parcelas').insert([{
                     tipo,
                     nome,
                     valor: parseFloat(valor)
@@ -565,7 +565,7 @@
         async function deletarVariavel(id) {
             if (!confirm('Deletar variável?')) return;
             try {
-                const { error } = await supabase.from('variaveis').delete().eq('id', id);
+                const { error } = await supabaseClient.from('variaveis').delete().eq('id', id);
                 if (error) throw error;
                 mostrarAlerta('✅ Deletado!');
                 await carregarDados();
@@ -577,7 +577,7 @@
         async function deletarFixo(id) {
             if (!confirm('Deletar fixo?')) return;
             try {
-                const { error } = await supabase.from('fixos').delete().eq('id', id);
+                const { error } = await supabaseClient.from('fixos').delete().eq('id', id);
                 if (error) throw error;
                 mostrarAlerta('✅ Deletado!');
                 await carregarDados();
@@ -587,15 +587,15 @@
         }
 
         async function carregarDados() {
-            if (!supabase) {
+            if (!supabaseClient) {
                 console.log('Aguardando Supabase...');
                 return;
             }
             
             try {
-                const { data: fixos } = await supabase.from('fixos').select('*');
-                const { data: variaveis } = await supabase.from('variaveis').select('*').eq('mes', mesAtual);
-                const { data: parcelas } = await supabase.from('parcelas').select('*');
+                const { data: fixos } = await supabaseClient.from('fixos').select('*');
+                const { data: variaveis } = await supabaseClient.from('variaveis').select('*').eq('mes', mesAtual);
+                const { data: parcelas } = await supabaseClient.from('parcelas').select('*');
 
                 calcularRepasse(fixos, variaveis, parcelas);
                 renderizar(fixos, variaveis, parcelas);
@@ -713,7 +713,7 @@
             }
 
             const { createClient } = window.supabase;
-            supabase = createClient(
+            supabaseClient = createClient(
                 'https://nsuawtxahbsivvhgxqlb.supabase.co',
                 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zdWF3dHhhaGJzaXZ2aGd4cWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NDQxNTcsImV4cCI6MjA5NjAyMDE1N30.y0mEk8Iee5xXpVr7wUgrqYIDKNLUDSZfxdetsDYbNnE'
             );
