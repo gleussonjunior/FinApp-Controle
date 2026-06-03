@@ -137,6 +137,10 @@
             border-color: var(--secondary);
         }
 
+        .month-btn:hover {
+            border-color: var(--secondary);
+        }
+
         .card {
             background: var(--bg);
             border: 1px solid var(--border);
@@ -303,6 +307,7 @@
             cursor: pointer;
             font-size: 18px;
             color: var(--danger);
+            padding: 4px 8px;
             transition: all 0.2s ease;
         }
 
@@ -367,9 +372,9 @@
 
             <!-- TELA 1: INÍCIO -->
             <div class="screen active" id="screenInicio">
-                <div class="month-selector">
-                    <button class="month-btn active" onclick="mudarMes('atual')">Mês Atual</button>
-                    <button class="month-btn" onclick="mudarMes('proximo')">Próximo Mês</button>
+                <div class="month-selector" id="mesesInicio">
+                    <button class="month-btn active" data-mes="atual">Mês Atual</button>
+                    <button class="month-btn" data-mes="proximo">Próximo Mês</button>
                 </div>
 
                 <div class="card highlight">
@@ -428,19 +433,19 @@
                 <div class="card">
                     <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Fixos Casal</div>
                     <div id="fixosCasalList"></div>
-                    <button class="btn btn-primary" style="margin-top: 12px;" onclick="abrirModalFixo('casal')">+ Adicionar</button>
+                    <button class="btn btn-primary" style="margin-top: 12px;" id="btnAddCasal">+ Adicionar</button>
                 </div>
 
                 <div class="card">
                     <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Fixos Dela</div>
                     <div id="fixosDelaList"></div>
-                    <button class="btn btn-primary" style="margin-top: 12px;" onclick="abrirModalFixo('dela')">+ Adicionar</button>
+                    <button class="btn btn-primary" style="margin-top: 12px;" id="btnAddDela">+ Adicionar</button>
                 </div>
 
                 <div class="card">
                     <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Fixos Seus</div>
                     <div id="fixosGleList"></div>
-                    <button class="btn btn-primary" style="margin-top: 12px;" onclick="abrirModalFixo('gle')">+ Adicionar</button>
+                    <button class="btn btn-primary" style="margin-top: 12px;" id="btnAddGle">+ Adicionar</button>
                 </div>
             </div>
 
@@ -481,9 +486,7 @@
                         </select>
                     </div>
 
-                    <button class="btn btn-primary" id="btnSalvarVariavel" onclick="salvarVariavel()">
-                        💾 Salvar
-                    </button>
+                    <button class="btn btn-primary" id="btnSalvarVariavel">💾 Salvar</button>
                 </div>
 
                 <div class="card">
@@ -497,25 +500,25 @@
                 <div class="card">
                     <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Parcelas</div>
                     <div id="parcelasList"></div>
-                    <button class="btn btn-primary" style="margin-top: 12px;" onclick="abrirModalParcela()">+ Adicionar</button>
+                    <button class="btn btn-primary" style="margin-top: 12px;" id="btnAddParcela">+ Adicionar</button>
                 </div>
             </div>
         </div>
 
         <div class="nav-bottom">
-            <button class="nav-item active" onclick="mudarTela('screenInicio')">
+            <button class="nav-item active" data-tela="screenInicio">
                 <div class="nav-icon">📊</div>
                 <div>Início</div>
             </button>
-            <button class="nav-item" onclick="mudarTela('screenFixos')">
+            <button class="nav-item" data-tela="screenFixos">
                 <div class="nav-icon">⚙️</div>
                 <div>Fixos</div>
             </button>
-            <button class="nav-item" onclick="mudarTela('screenVariaveis')">
+            <button class="nav-item" data-tela="screenVariaveis">
                 <div class="nav-icon">➕</div>
                 <div>Variáveis</div>
             </button>
-            <button class="nav-item" onclick="mudarTela('screenParcelas')">
+            <button class="nav-item" data-tela="screenParcelas">
                 <div class="nav-icon">💳</div>
                 <div>Parcelas</div>
             </button>
@@ -523,13 +526,8 @@
     </div>
 
     <script>
-        // ==================== SUPABASE CONFIG ====================
-        const SUPABASE_URL = 'https://nsuawtxahbsivvhgxqlb.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zdWF3dHhhaGJzaXZ2aGd4cWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NDQxNTcsImV4cCI6MjA5NjAyMDE1N30.y0mEk8Iee5xXpVr7wUgrqYIDKNLUDSZfxdetsDYbNnE';
-
-        const { createClient } = window.supabase;
-        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
+        // ==================== GLOBALS ====================
+        let supabase;
         const CATEGORIAS = {
             casal: ['Uber', 'Mercado', 'Saídas', 'Extra', 'Pets', 'Outros'],
             dela: ['Pessoais Lia', 'Outros'],
@@ -555,27 +553,26 @@
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
             document.getElementById(telaId).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            event.target.closest('.nav-item').classList.add('active');
+            document.querySelector(`[data-tela="${telaId}"]`).classList.add('active');
             carregarDados();
         }
 
         function mudarMes(mes) {
             mesAtual = mes;
-            document.querySelectorAll('.month-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            document.querySelectorAll('.month-selector .month-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-mes="${mes}"]`).classList.add('active');
             carregarDados();
         }
 
         // ==================== TIPO E CATEGORIA ====================
         function inicializarTipoSelect() {
-            const select = document.getElementById('tipoSelect');
-            select.querySelectorAll('.category-pill').forEach(el => {
-                el.addEventListener('click', (e) => {
-                    select.querySelectorAll('.category-pill').forEach(x => x.classList.remove('selected'));
+            document.getElementById('tipoSelect').addEventListener('click', (e) => {
+                if (e.target.classList.contains('category-pill')) {
+                    document.querySelectorAll('#tipoSelect .category-pill').forEach(x => x.classList.remove('selected'));
                     e.target.classList.add('selected');
                     tipoAtual = e.target.dataset.tipo;
                     atualizarCategorias();
-                });
+                }
             });
         }
 
@@ -586,17 +583,21 @@
                 const div = document.createElement('div');
                 div.className = `category-pill ${cat === categoriaAtual ? 'selected' : ''}`;
                 div.textContent = cat;
-                div.addEventListener('click', (e) => {
-                    select.querySelectorAll('.category-pill').forEach(x => x.classList.remove('selected'));
-                    e.target.classList.add('selected');
-                    categoriaAtual = cat;
-                });
                 select.appendChild(div);
             });
+            
+            select.addEventListener('click', (e) => {
+                if (e.target.classList.contains('category-pill')) {
+                    document.querySelectorAll('#categoriaSelect .category-pill').forEach(x => x.classList.remove('selected'));
+                    e.target.classList.add('selected');
+                    categoriaAtual = e.target.textContent;
+                }
+            });
+            
             categoriaAtual = CATEGORIAS[tipoAtual][0];
         }
 
-        // ==================== SALVAR ====================
+        // ==================== SUPABASE ====================
         async function salvarVariavel() {
             const valor = parseFloat(document.getElementById('varValor').value);
             const descricao = document.getElementById('varDescricao').value;
@@ -610,57 +611,84 @@
             const btn = document.getElementById('btnSalvarVariavel');
             btn.disabled = true;
 
-            const { error } = await supabase.from('variaveis').insert([{
-                tipo: tipoAtual,
-                categoria: categoriaAtual,
-                valor,
-                descricao,
-                mes
-            }]);
+            try {
+                const { error } = await supabase.from('variaveis').insert([{
+                    tipo: tipoAtual,
+                    categoria: categoriaAtual,
+                    valor,
+                    descricao,
+                    mes
+                }]);
 
-            btn.disabled = false;
-
-            if (error) {
-                mostrarAlerta('❌ Erro ao salvar', 'error');
-                console.error(error);
-            } else {
+                if (error) throw error;
+                
                 mostrarAlerta('✅ Variável salva!', 'success');
                 document.getElementById('varValor').value = '';
                 document.getElementById('varDescricao').value = '';
-                carregarDados();
+                await carregarDados();
+            } catch(err) {
+                console.error(err);
+                mostrarAlerta('❌ Erro ao salvar', 'error');
+            } finally {
+                btn.disabled = false;
             }
         }
 
         async function salvarFixo(tipo, nome, valor) {
-            const { error } = await supabase.from('fixos').insert([{
-                tipo,
-                nome,
-                valor
-            }]);
+            try {
+                const { error } = await supabase.from('fixos').insert([{
+                    tipo,
+                    nome,
+                    valor: parseFloat(valor)
+                }]);
 
-            if (error) {
-                mostrarAlerta('❌ Erro ao salvar', 'error');
-            } else {
+                if (error) throw error;
                 mostrarAlerta('✅ Fixo salvo!', 'success');
-                carregarDados();
+                await carregarDados();
+            } catch(err) {
+                console.error(err);
+                mostrarAlerta('❌ Erro ao salvar', 'error');
+            }
+        }
+
+        async function salvarParcela(tipo, nome, valor) {
+            try {
+                const { error } = await supabase.from('parcelas').insert([{
+                    tipo,
+                    nome,
+                    valor: parseFloat(valor)
+                }]);
+
+                if (error) throw error;
+                mostrarAlerta('✅ Parcela salva!', 'success');
+                await carregarDados();
+            } catch(err) {
+                console.error(err);
+                mostrarAlerta('❌ Erro ao salvar', 'error');
             }
         }
 
         async function deletarVariavel(id) {
             if (!confirm('Deletar variável?')) return;
-            const { error } = await supabase.from('variaveis').delete().eq('id', id);
-            if (!error) {
+            try {
+                const { error } = await supabase.from('variaveis').delete().eq('id', id);
+                if (error) throw error;
                 mostrarAlerta('✅ Deletado!', 'success');
-                carregarDados();
+                await carregarDados();
+            } catch(err) {
+                mostrarAlerta('❌ Erro ao deletar', 'error');
             }
         }
 
         async function deletarFixo(id) {
             if (!confirm('Deletar fixo?')) return;
-            const { error } = await supabase.from('fixos').delete().eq('id', id);
-            if (!error) {
+            try {
+                const { error } = await supabase.from('fixos').delete().eq('id', id);
+                if (error) throw error;
                 mostrarAlerta('✅ Deletado!', 'success');
-                carregarDados();
+                await carregarDados();
+            } catch(err) {
+                mostrarAlerta('❌ Erro ao deletar', 'error');
             }
         }
 
@@ -684,19 +712,19 @@
             let varCasal = 0, varDela = 0, varGle = 0;
             let parcelasCasal = 0, parcelasDela = 0, parcelasGle = 0;
 
-            fixos?.forEach(f => {
+            (fixos || []).forEach(f => {
                 if (f.tipo === 'casal') fixosCasal += f.valor;
                 else if (f.tipo === 'dela') fixosDela += f.valor;
                 else if (f.tipo === 'gle') fixosGle += f.valor;
             });
 
-            variaveis?.forEach(v => {
+            (variaveis || []).forEach(v => {
                 if (v.tipo === 'casal') varCasal += v.valor;
                 else if (v.tipo === 'dela') varDela += v.valor;
                 else if (v.tipo === 'gle') varGle += v.valor;
             });
 
-            parcelas?.forEach(p => {
+            (parcelas || []).forEach(p => {
                 if (p.tipo === 'casal') parcelasCasal += p.valor;
                 else if (p.tipo === 'dela') parcelasDela += p.valor;
                 else if (p.tipo === 'gle') parcelasGle += p.valor;
@@ -725,7 +753,7 @@
                             <div class="list-item-title">${v.descricao}</div>
                             <div class="text-small">${v.categoria}</div>
                         </div>
-                        <div style="text-align: right;">
+                        <div style="text-align: right; display: flex; gap: 8px; align-items: center;">
                             <div class="list-item-value">R$ ${v.valor.toFixed(2).replace('.', ',')}</div>
                             <button class="icon-btn" onclick="deletarVariavel(${v.id})">🗑️</button>
                         </div>
@@ -738,12 +766,12 @@
             // Fixos
             ['casal', 'dela', 'gle'].forEach(tipo => {
                 const list = document.getElementById(`fixos${tipo.charAt(0).toUpperCase() + tipo.slice(1)}List`);
-                const itens = fixos?.filter(f => f.tipo === tipo) || [];
+                const itens = (fixos || []).filter(f => f.tipo === tipo);
                 if (itens.length) {
                     list.innerHTML = itens.map(f => `
                         <div class="list-item">
                             <div class="list-item-title">${f.nome}</div>
-                            <div style="text-align: right;">
+                            <div style="text-align: right; display: flex; gap: 8px; align-items: center;">
                                 <div class="list-item-value">R$ ${f.valor.toFixed(2).replace('.', ',')}</div>
                                 <button class="icon-btn" onclick="deletarFixo(${f.id})">🗑️</button>
                             </div>
@@ -768,30 +796,59 @@
             }
         }
 
-        function abrirModalFixo(tipo) {
-            const nome = prompt('Nome do fixo:');
-            const valor = prompt('Valor:');
-            if (nome && valor) salvarFixo(tipo, nome, parseFloat(valor));
-        }
-
-        function abrirModalParcela() {
-            const tipo = prompt('Tipo (casal/dela/gle):');
-            const nome = prompt('Nome:');
-            const valor = prompt('Valor:');
-            if (tipo && nome && valor) {
-                supabase.from('parcelas').insert([{ tipo, nome, valor: parseFloat(valor) }]).then(() => carregarDados());
-            }
-        }
-
         // ==================== INICIALIZAÇÃO ====================
-        document.addEventListener('DOMContentLoaded', () => {
-            inicializarTipoSelect();
-            atualizarCategorias();
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Init Supabase
+            const { createClient } = window.supabase;
+            supabase = createClient(
+                'https://nsuawtxahbsivvhgxqlb.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zdWF3dHhhaGJzaXZ2aGd4cWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NDQxNTcsImV4cCI6MjA5NjAyMDE1N30.y0mEk8Iee5xXpVr7wUgrqYIDKNLUDSZfxdetsDYbNnE'
+            );
 
+            // Header date
             const agora = new Date();
             const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             document.getElementById('headerDate').textContent = `${meses[agora.getMonth()]} ${agora.getFullYear()}`;
 
+            // Nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => mudarTela(item.dataset.tela));
+            });
+
+            // Month buttons
+            document.querySelectorAll('[data-mes]').forEach(btn => {
+                btn.addEventListener('click', () => mudarMes(btn.dataset.mes));
+            });
+
+            // Tipo e categoria
+            inicializarTipoSelect();
+            atualizarCategorias();
+
+            // Buttons
+            document.getElementById('btnSalvarVariavel').addEventListener('click', salvarVariavel);
+            document.getElementById('btnAddCasal').addEventListener('click', () => {
+                const nome = prompt('Nome do fixo:');
+                const valor = prompt('Valor:');
+                if (nome && valor) salvarFixo('casal', nome, valor);
+            });
+            document.getElementById('btnAddDela').addEventListener('click', () => {
+                const nome = prompt('Nome do fixo:');
+                const valor = prompt('Valor:');
+                if (nome && valor) salvarFixo('dela', nome, valor);
+            });
+            document.getElementById('btnAddGle').addEventListener('click', () => {
+                const nome = prompt('Nome do fixo:');
+                const valor = prompt('Valor:');
+                if (nome && valor) salvarFixo('gle', nome, valor);
+            });
+            document.getElementById('btnAddParcela').addEventListener('click', () => {
+                const tipo = prompt('Tipo (casal/dela/gle):');
+                const nome = prompt('Nome:');
+                const valor = prompt('Valor:');
+                if (tipo && nome && valor) salvarParcela(tipo, nome, valor);
+            });
+
+            // Load initial data
             carregarDados();
             setInterval(carregarDados, 30000);
         });
