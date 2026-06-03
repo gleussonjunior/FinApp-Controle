@@ -1054,7 +1054,6 @@
             mostrarAlerta(fixoEditandoId ? '✅ Fixo atualizado!' : '✅ Fixo salvo!');
             fecharModalFixo();
             await carregarDados();
-            mudarTela('screenFixos');
         } catch(e) {
             const msg = e?.message || String(e);
             console.error('salvarFixo exception:', e);
@@ -1245,12 +1244,6 @@
 
     // ===== RENDERIZAR FIXOS COLAPSÁVEIS =====
     function renderizarGruposFixos(fixos) {
-        // Preservar quais grupos estão abertos antes de re-renderizar
-        const abertos = new Set(['fixosBody-casal','fixosBody-dela','fixosBody-gle'].filter(id => {
-            const el = document.getElementById(id);
-            return el && !el.classList.contains('collapsed');
-        }));
-
         const grupos = [
             { tipo: 'casal', label: '👥 Fixos Casal' },
             { tipo: 'dela',  label: '👩 Fixos Dela'  },
@@ -1289,10 +1282,10 @@
                         <div style="font-size:14px;font-weight:700;">${label}</div>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <span style="font-size:13px;font-weight:600;color:var(--text-light);">${fmt(total)}</span>
-                            <span class="toggle-icon ${abertos.has(bodyId) ? '' : 'collapsed'}" id="${iconId}">▾</span>
+                            <span class="toggle-icon" id="${iconId}">▾</span>
                         </div>
                     </div>
-                    <div class="collapsible-body ${abertos.has(bodyId) ? '' : 'collapsed'}" id="${bodyId}">
+                    <div class="collapsible-body" id="${bodyId}">
                         <div style="margin-top:12px;">
                             ${lista}
                             ${totalRow}
