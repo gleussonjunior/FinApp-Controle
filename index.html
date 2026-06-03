@@ -45,13 +45,151 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            display: flex;
+            align-items: center;
         }
 
         .header-title {
+            flex: 1;
             text-align: center;
             font-size: 36px;
             font-weight: 700;
             letter-spacing: -1px;
+        }
+
+        .header-spacer { width: 36px; flex-shrink: 0; }
+
+        .header-btn {
+            width: 36px;
+            height: 36px;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            opacity: 0.75;
+            flex-shrink: 0;
+            transition: opacity 0.2s, background 0.2s;
+        }
+        .header-btn:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+
+        /* ===== OVERLAY GRÁFICOS ===== */
+        .graficos-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 150;
+            flex-direction: column;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .graficos-overlay.active { display: flex; }
+
+        .graficos-header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .graficos-header-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .mes-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 16px 20px 8px;
+            flex-shrink: 0;
+        }
+
+        .mes-nav-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--text);
+            transition: background 0.2s;
+        }
+        .mes-nav-btn:hover { background: var(--bg-alt); }
+
+        .mes-nav-label {
+            font-size: 16px;
+            font-weight: 700;
+            min-width: 110px;
+            text-align: center;
+        }
+
+        .graficos-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            padding-bottom: 32px;
+        }
+
+        .resumo-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .resumo-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: var(--shadow);
+        }
+
+        .resumo-card-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .resumo-card-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .chart-container {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .chart-wrap {
+            position: relative;
+            height: 280px;
         }
 
         .month-badge {
@@ -402,7 +540,15 @@
 <div class="container">
 
     <div class="header">
+        <div class="header-spacer"></div>
         <div class="header-title">FinApp</div>
+        <button class="header-btn" id="btnAbrirGraficos" title="Gráficos">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="18" y="3" width="4" height="18" rx="1"/>
+                <rect x="10" y="8" width="4" height="13" rx="1"/>
+                <rect x="2" y="13" width="4" height="8" rx="1"/>
+            </svg>
+        </button>
     </div>
 
     <div class="content">
@@ -522,6 +668,57 @@
 
 </div>
 
+<!-- OVERLAY GRÁFICOS -->
+<div class="graficos-overlay" id="graficosOverlay">
+    <div class="graficos-header">
+        <span class="graficos-header-title">Análise de Gastos</span>
+        <button class="header-btn" id="btnFecharGraficos">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="mes-nav">
+        <button class="mes-nav-btn" id="btnMesAnterior">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+        </button>
+        <span class="mes-nav-label" id="mesGraficoLabel">Junho 2026</span>
+        <button class="mes-nav-btn" id="btnMesProximo">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="graficos-content">
+        <div class="resumo-cards">
+            <div class="resumo-card">
+                <div class="resumo-card-label">Entradas</div>
+                <div class="resumo-card-value" id="graficoTotalReceitas" style="color:var(--success)">R$ 0,00</div>
+            </div>
+            <div class="resumo-card">
+                <div class="resumo-card-label">Saídas</div>
+                <div class="resumo-card-value" id="graficoTotalGastos" style="color:var(--danger)">R$ 0,00</div>
+            </div>
+            <div class="resumo-card" style="grid-column:1/-1;">
+                <div class="resumo-card-label">Saldo</div>
+                <div class="resumo-card-value" id="graficoSaldo">R$ 0,00</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">Gastos por Categoria</div>
+            <div class="chart-wrap">
+                <canvas id="canvasGrafico"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL FIXO -->
 <div class="modal" id="modalFixo">
     <div class="modal-content">
@@ -592,6 +789,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     const SUPABASE_URL = 'https://nsuawtxahbsivvhgxqlb.supabase.co';
@@ -612,6 +810,9 @@
     let tipoFixoAtual  = 'casal';
     let fixoEditandoId   = null;
     let receitaEditandoId = null;
+    let mesGrafico    = new Date().getMonth();
+    let anoGrafico    = new Date().getFullYear();
+    let chartInstance = null;
     let receitaCasal      = false;
 
     // ===== HELPERS =====
@@ -1093,6 +1294,164 @@
         container.innerHTML = html;
     }
 
+    // ===== GRÁFICOS =====
+    function abrirGraficos() {
+        mesGrafico = new Date().getMonth();
+        anoGrafico = new Date().getFullYear();
+        document.getElementById('graficosOverlay').classList.add('active');
+        atualizarMesGraficoLabel();
+        carregarDadosGrafico();
+    }
+
+    function fecharGraficos() {
+        document.getElementById('graficosOverlay').classList.remove('active');
+        if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+    }
+
+    function atualizarMesGraficoLabel() {
+        document.getElementById('mesGraficoLabel').textContent = `${MESES[mesGrafico]} ${anoGrafico}`;
+    }
+
+    function navegarMesGrafico(delta) {
+        mesGrafico += delta;
+        if (mesGrafico > 11) { mesGrafico = 0;  anoGrafico++; }
+        if (mesGrafico < 0)  { mesGrafico = 11; anoGrafico--; }
+        atualizarMesGraficoLabel();
+        carregarDadosGrafico();
+    }
+
+    async function carregarDadosGrafico() {
+        if (!db) return;
+        try {
+            const [r1, r2, r3] = await Promise.all([
+                db.from('fixos').select('*'),
+                db.from('variaveis').select('*'),
+                db.from('receitas').select('*')
+            ]);
+
+            const fixos     = r1.data || [];
+            const variaveis = r2.data || [];
+            const receitas  = r3.data || [];
+
+            // Filtro por mês do gráfico (sem usar mesCompativel global)
+            const ehMesGrafico = (campo) => {
+                if (campo === null || campo === undefined) return mesGrafico === new Date().getMonth();
+                if (campo === 'atual') return mesGrafico === new Date().getMonth();
+                return Number(campo) === mesGrafico;
+            };
+
+            const fixosMes = fixos.filter(f => ehMesGrafico(f.mes) && !f.pago);
+            const varMes   = variaveis.filter(v => ehMesGrafico(v.mes));
+            const recMes   = receitas.filter(r => ehMesGrafico(r.mes));
+
+            // Totais dos cards
+            const totalReceitas = recMes.reduce((s, r) => s + Number(r.valor), 0);
+            const totalFixos    = fixosMes.reduce((s, f) => s + Number(f.valor), 0);
+            const totalVar      = varMes.reduce((s, v) => s + Number(v.valor), 0);
+            const totalGastos   = totalFixos + totalVar;
+            const saldo         = totalReceitas - totalGastos;
+
+            document.getElementById('graficoTotalReceitas').textContent = fmt(totalReceitas);
+            document.getElementById('graficoTotalGastos').textContent   = fmt(totalGastos);
+            const elSaldo = document.getElementById('graficoSaldo');
+            elSaldo.textContent = fmt(saldo);
+            elSaldo.style.color = saldo >= 0 ? 'var(--success)' : 'var(--danger)';
+
+            // Categorias para o gráfico
+            const cats = {};
+
+            // Variáveis por categoria
+            varMes.forEach(v => {
+                const cat = v.categoria || 'Outros';
+                cats[cat] = (cats[cat] || 0) + Number(v.valor);
+            });
+
+            // Fixos agrupados por tipo
+            let fixosCasal = 0, fixosDela = 0, fixosGle = 0;
+            fixosMes.forEach(f => {
+                if      (f.tipo === 'casal') fixosCasal += Number(f.valor);
+                else if (f.tipo === 'dela')  fixosDela  += Number(f.valor);
+                else if (f.tipo === 'gle')   fixosGle   += Number(f.valor);
+            });
+            if (fixosCasal > 0) cats['Fixos Casal'] = fixosCasal;
+            if (fixosDela  > 0) cats['Fixos Dela']  = fixosDela;
+            if (fixosGle   > 0) cats['Fixos Seus']  = fixosGle;
+
+            // Ordenar por valor desc
+            const sorted = Object.entries(cats).sort((a, b) => b[1] - a[1]);
+            const labels = sorted.map(([k]) => k);
+            const values = sorted.map(([, v]) => v);
+
+            const palette = {
+                'Mercado':     '#3b82f6',
+                'Uber':        '#8b5cf6',
+                'Saídas':      '#ec4899',
+                'Extra':       '#f59e0b',
+                'Pets':        '#10b981',
+                'Pessoais Gle':'#06b6d4',
+                'Pessoais Lia':'#f97316',
+                'Outros':      '#9ca3af',
+                'Fixos Casal': '#1e3a8a',
+                'Fixos Dela':  '#9d174d',
+                'Fixos Seus':  '#064e3b',
+            };
+            const bgColors = labels.map(l => palette[l] || '#6b7280');
+
+            // Destruir chart anterior
+            if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+
+            if (!labels.length) {
+                document.querySelector('.chart-wrap').innerHTML =
+                    '<div class="empty-state" style="padding-top:80px;">Sem dados para este mês</div>';
+                return;
+            }
+
+            document.querySelector('.chart-wrap').innerHTML = '<canvas id="canvasGrafico"></canvas>';
+            const ctx = document.getElementById('canvasGrafico').getContext('2d');
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: bgColors,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ` R$ ${Number(ctx.raw).toFixed(2).replace('.', ',')}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: {
+                                font: { size: 11 },
+                                callback: v => `R$ ${Number(v).toLocaleString('pt-BR')}`
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 11 }, maxRotation: 40 }
+                        }
+                    }
+                }
+            });
+        } catch(e) {
+            console.error('carregarDadosGrafico:', e);
+        }
+    }
+
     // ===== FECHAR MÊS =====
     async function fecharMes() {
         const proximoMes  = (mesAtual + 1) % 12;
@@ -1156,6 +1515,12 @@
         // Toggle casal receita
         document.getElementById('receitaCasalSim').addEventListener('click', () => setReceitaCasal(true));
         document.getElementById('receitaCasalNao').addEventListener('click', () => setReceitaCasal(false));
+
+        // Gráficos
+        document.getElementById('btnAbrirGraficos').addEventListener('click', abrirGraficos);
+        document.getElementById('btnFecharGraficos').addEventListener('click', fecharGraficos);
+        document.getElementById('btnMesAnterior').addEventListener('click', () => navegarMesGrafico(-1));
+        document.getElementById('btnMesProximo').addEventListener('click',  () => navegarMesGrafico(1));
 
         // Fechar modais
         document.getElementById('btnFecharModalFixo').addEventListener('click',    fecharModalFixo);
