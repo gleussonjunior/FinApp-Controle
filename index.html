@@ -45,76 +45,31 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
+            display: flex;
             align-items: center;
         }
 
-        .header-left  { justify-self: start; }
-        .header-center { justify-self: center; }
-        .header-right { justify-self: end; position: relative; }
-
         .header-title {
+            flex: 1;
+            text-align: center;
             font-size: 36px;
             font-weight: 700;
             letter-spacing: -1px;
         }
 
-        .header-subtitle {
-            font-size: 13px;
-            opacity: 0.85;
-            font-weight: 500;
+        .month-badge {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-light);
+            padding: 8px 0 4px;
+            letter-spacing: 0.5px;
         }
-
-        .menu-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 4px;
-        }
-
-        .menu-btn:hover { background: rgba(255,255,255,0.1); }
-
-        .menu-dropdown {
-            display: none;
-            position: absolute;
-            top: 44px;
-            right: 0;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            box-shadow: var(--shadow-lg);
-            min-width: 160px;
-            z-index: 300;
-            overflow: hidden;
-        }
-
-        .menu-dropdown.active { display: block; }
-
-        .menu-item {
-            display: block;
-            width: 100%;
-            padding: 12px 16px;
-            border: none;
-            background: none;
-            text-align: left;
-            cursor: pointer;
-            color: var(--text);
-            font-size: 14px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .menu-item:last-child { border-bottom: none; }
-        .menu-item:hover { background: var(--bg-alt); }
 
         /* ===== CONTENT ===== */
         .content {
             flex: 1;
             padding: 16px;
-            padding-bottom: 100px;
+            padding-bottom: 110px;
             overflow-y: auto;
         }
 
@@ -129,7 +84,6 @@
             font-size: 14px;
             font-weight: 600;
         }
-
         .alert.success { background: rgba(16,185,129,0.1); color: #047857; border: 1px solid var(--success); }
         .alert.error   { background: rgba(239,68,68,0.1);  color: #b91c1c; border: 1px solid var(--danger); }
 
@@ -171,15 +125,13 @@
             cursor: pointer;
             user-select: none;
         }
-
-        .card-header-toggle:hover { opacity: 0.8; }
+        .card-header-toggle:active { opacity: 0.7; }
 
         .toggle-icon {
             font-size: 18px;
-            transition: transform 0.25s ease;
             color: var(--text-light);
+            transition: transform 0.25s ease;
         }
-
         .toggle-icon.collapsed { transform: rotate(-90deg); }
 
         .collapsible-body {
@@ -188,11 +140,7 @@
             max-height: 600px;
             opacity: 1;
         }
-
-        .collapsible-body.collapsed {
-            max-height: 0;
-            opacity: 0;
-        }
+        .collapsible-body.collapsed { max-height: 0; opacity: 0; }
 
         /* ===== STAT ROWS ===== */
         .stat-row {
@@ -203,7 +151,6 @@
             border-bottom: 1px solid var(--border);
             font-size: 14px;
         }
-
         .stat-row:last-child { border-bottom: none; }
         .stat-label { color: var(--text-light); }
         .stat-value { font-weight: 700; white-space: nowrap; margin-left: 8px; }
@@ -217,8 +164,9 @@
             font-size: 16px;
             margin-bottom: 12px;
             font-family: inherit;
+            background: var(--bg);
+            color: var(--text);
         }
-
         input:focus, select:focus {
             outline: none;
             border-color: var(--secondary);
@@ -245,9 +193,8 @@
             width: 100%;
             background: var(--secondary);
             color: white;
-            transition: all 0.2s ease;
+            transition: background 0.2s ease;
         }
-
         .btn:hover:not(:disabled) { background: #0284c7; }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
@@ -258,7 +205,6 @@
             gap: 8px;
             margin-bottom: 12px;
         }
-
         .category-pill {
             padding: 10px;
             border: 2px solid var(--border);
@@ -268,9 +214,8 @@
             font-size: 12px;
             font-weight: 600;
             background: var(--bg);
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
-
         .category-pill:hover { border-color: var(--secondary); }
         .category-pill.selected { background: var(--secondary); color: white; border-color: var(--secondary); }
 
@@ -285,11 +230,15 @@
             margin-bottom: 8px;
             gap: 8px;
         }
-
         .list-item.pago { opacity: 0.45; text-decoration: line-through; }
 
         .list-item-info { flex: 1; min-width: 0; overflow: hidden; }
-        .list-item-info strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .list-item-info strong {
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
         .list-item-value { font-weight: 700; white-space: nowrap; }
         .list-item-actions { display: flex; gap: 4px; flex-shrink: 0; align-items: center; }
 
@@ -302,7 +251,6 @@
             padding: 4px 6px;
             border-radius: 4px;
         }
-
         .edit-btn { color: var(--secondary); }
 
         .check-btn {
@@ -320,7 +268,6 @@
             align-items: center;
             justify-content: center;
         }
-
         .check-btn.checked { background: var(--success); color: white; border-color: var(--success); }
 
         .receita-item { background: rgba(16,185,129,0.05); border-left: 4px solid var(--success); }
@@ -344,24 +291,30 @@
 
         .nav-item {
             flex: 1;
-            padding: 16px 8px;
+            padding: 14px 4px;
             border: none;
             background: none;
             color: var(--text-light);
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s ease;
+            line-height: 1.3;
         }
-
         .nav-item.active {
             color: var(--secondary);
             background: rgba(14,165,233,0.08);
         }
-
         .nav-item.nav-destaque {
-            color: var(--secondary);
-            background: rgba(14,165,233,0.12);
+            color: white;
+            background: #16a34a;
+            font-size: 13px;
+            padding: 10px 4px;
+            border-radius: 0;
+        }
+        .nav-item.nav-destaque.active {
+            background: #15803d;
+            color: white;
         }
 
         /* ===== MODALS ===== */
@@ -374,7 +327,6 @@
             align-items: flex-end;
             justify-content: center;
         }
-
         .modal.active { display: flex; }
 
         .modal-content {
@@ -409,28 +361,16 @@
             justify-content: center;
             border-radius: 4px;
         }
-
         .modal-close:hover { background: var(--bg-alt); }
     </style>
 </head>
 <body>
 <div class="container">
 
+    <!-- HEADER -->
+    <!-- HEADER -->
     <div class="header">
-        <div class="header-left">
-            <div class="header-subtitle" id="headerDate">Junho 2026</div>
-        </div>
-        <div class="header-center">
-            <div class="header-title">FinApp</div>
-        </div>
-        <div class="header-right">
-            <button class="menu-btn" id="menuBtn">☰</button>
-            <div class="menu-dropdown" id="menuDropdown">
-                <button class="menu-item" data-tela="screenFixos">⚙️ Fixos</button>
-                <button class="menu-item" data-tela="screenParcelas">💳 Parcelas</button>
-                <button class="menu-item" data-tela="screenEntradas">💰 Entradas</button>
-            </div>
-        </div>
+        <div class="header-title">FinApp</div>
     </div>
 
     <div class="content">
@@ -438,7 +378,7 @@
 
         <!-- INÍCIO -->
         <div class="screen active" id="screenInicio">
-
+            <div class="month-badge" id="headerDate">Junho 2026</div>
             <div class="card highlight">
                 <div style="font-size:13px;font-weight:600;color:#92400e;margin-bottom:4px;">Repasse para Lia</div>
                 <div class="repasse-value" id="repasseValue">R$ 0,00</div>
@@ -449,7 +389,6 @@
                 <div class="total-gastos" id="totalGastos">R$ 0,00</div>
             </div>
 
-            <!-- Detalhamento colapsável -->
             <div class="card">
                 <div class="card-header-toggle" id="toggleDetalhamento">
                     <div style="font-size:14px;font-weight:700;">Detalhamento</div>
@@ -466,7 +405,6 @@
                 </div>
             </div>
 
-            <!-- Seus Gastos colapsável -->
             <div class="card">
                 <div class="card-header-toggle" id="toggleGle">
                     <div style="font-size:14px;font-weight:700;">Seus Gastos (Gle)</div>
@@ -477,14 +415,13 @@
                         <div class="stat-row"><span class="stat-label">Variáveis</span><span class="stat-value" id="varGleValue">R$ 0,00</span></div>
                         <div class="stat-row"><span class="stat-label">Fixos</span><span class="stat-value" id="fixosGleValue">R$ 0,00</span></div>
                         <div class="stat-row"><span class="stat-label">Parcelas</span><span class="stat-value" id="parcelasGleValue">R$ 0,00</span></div>
-                        <div class="stat-row" style="background:rgba(0,0,0,0.04);padding:10px;margin:0 -16px;border-radius:6px;font-weight:700;">
+                        <div class="stat-row" style="background:rgba(0,0,0,0.04);padding:10px;margin:4px -16px 0;border-radius:6px;font-weight:700;">
                             <span class="stat-label">TOTAL</span>
                             <span class="stat-value" id="totalGleValue">R$ 0,00</span>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
 
         <!-- FIXOS -->
@@ -508,7 +445,6 @@
         <div class="screen" id="screenVariaveis">
             <div class="card">
                 <h2 style="margin-bottom:20px;font-size:16px;">Lançar Variável</h2>
-
                 <div class="form-group">
                     <label>Tipo</label>
                     <div class="category-select" id="tipoSelect">
@@ -517,25 +453,20 @@
                         <div class="category-pill" data-tipo="gle">👨 Você</div>
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label>Categoria</label>
                     <div class="category-select" id="categoriaSelect"></div>
                 </div>
-
                 <div class="form-group">
                     <label>Valor (R$)</label>
                     <input type="number" id="varValor" placeholder="0,00" step="0.01" min="0">
                 </div>
-
                 <div class="form-group">
                     <label>Descrição</label>
                     <input type="text" id="varDescricao" placeholder="Ex: Supermercado">
                 </div>
-
                 <button class="btn" id="btnSalvarVariavel">💾 Salvar</button>
             </div>
-
             <div class="card">
                 <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Variáveis Lançadas</div>
                 <div id="variaveisList"></div>
@@ -561,12 +492,16 @@
         </div>
     </div>
 
+    <!-- NAV BOTTOM: 5 botões -->
     <div class="nav-bottom">
-        <button class="nav-item active" data-tela="screenInicio">📊 Início</button>
-        <button class="nav-item nav-destaque" data-tela="screenVariaveis">➕ Variáveis</button>
+        <button class="nav-item active" data-tela="screenInicio">📊<br>Início</button>
+        <button class="nav-item"          data-tela="screenFixos">⚙️<br>Fixos</button>
+        <button class="nav-item nav-destaque" data-tela="screenVariaveis">➕<br>Variáveis</button>
+        <button class="nav-item"          data-tela="screenParcelas">💳<br>Parcelas</button>
+        <button class="nav-item"          data-tela="screenEntradas">💰<br>Entradas</button>
     </div>
 
-</div>
+</div><!-- .container -->
 
 <!-- MODAL FIXO -->
 <div class="modal" id="modalFixo">
@@ -677,21 +612,27 @@
         dela:  ['Pessoais Lia', 'Outros'],
         gle:   ['Pessoais Gle', 'Outros']
     };
-
     const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-    let db            = null;
-    let mesAtual      = new Date().getMonth();  // número 0-11
-    let tipoAtual     = 'casal';
-    let categoriaAtual = 'Uber';
-    let tipoFixoAtual  = 'casal';
+    let db               = null;
+    let mesAtual         = new Date().getMonth(); // 0–11
+    let tipoAtual        = 'casal';
+    let categoriaAtual   = 'Uber';
+    let tipoFixoAtual    = 'casal';
     let tipoParcelaAtual = 'casal';
     let fixoEditandoId   = null;
     let parcelaEditandoId = null;
 
     // ===== HELPERS =====
-    const fmt = n => `R$ ${Number(n).toFixed(2).replace('.', ',')}`;
+    const fmt = n => `R$ ${Number(n || 0).toFixed(2).replace('.', ',')}`;
+
+    // Compara o campo "mes" do banco com o mês atual.
+    // Aceita tanto o número (5) quanto a string legada ('atual').
+    function mesCompativel(campoMes) {
+        if (campoMes === 'atual') return true;          // dado legado
+        return Number(campoMes) === mesAtual;           // dado novo
+    }
 
     function mostrarAlerta(msg, tipo = 'success') {
         const el = document.createElement('div');
@@ -715,7 +656,6 @@
 
     // ===== NAVEGAÇÃO =====
     function mudarTela(telaId) {
-        fecharMenu();
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(telaId).classList.add('active');
         document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -724,20 +664,13 @@
         carregarDados();
     }
 
-    // ===== MENU =====
-    function fecharMenu() {
-        document.getElementById('menuDropdown').classList.remove('active');
-    }
-
     // ===== COLLAPSIBLE =====
     function toggleSection(bodyId, iconId) {
-        const body = document.getElementById(bodyId);
-        const icon = document.getElementById(iconId);
-        body.classList.toggle('collapsed');
-        icon.classList.toggle('collapsed');
+        document.getElementById(bodyId).classList.toggle('collapsed');
+        document.getElementById(iconId).classList.toggle('collapsed');
     }
 
-    // ===== TIPO SELECT =====
+    // ===== TIPO/CATEGORIA SELECT =====
     function inicializarTipoSelect() {
         document.getElementById('tipoSelect').addEventListener('click', e => {
             const pill = e.target.closest('.category-pill');
@@ -759,6 +692,8 @@
             container.appendChild(div);
         });
         categoriaAtual = CATEGORIAS[tipoAtual][0];
+
+        // Novo listener a cada vez que categorias são recriadas
         container.addEventListener('click', e => {
             const pill = e.target.closest('.category-pill');
             if (!pill) return;
@@ -779,10 +714,13 @@
                 if (error) { mostrarAlerta('❌ Erro ao carregar fixo', 'error'); return; }
                 document.getElementById('fixoNome').value  = data.nome  || '';
                 document.getElementById('fixoValor').value = data.valor || '';
-                document.getElementById('fixoMes').value   = data.mes ?? mesAtual;
+                // mes pode ser número ou string 'atual' (legado)
+                const mes = (data.mes === 'atual' || data.mes === null || data.mes === undefined)
+                    ? mesAtual : Number(data.mes);
+                document.getElementById('fixoMes').value = mes;
                 tipoFixoAtual = data.tipo || 'casal';
                 document.querySelectorAll('#tipoFixoSelect .category-pill').forEach(p => {
-                    p.classList.toggle('selected', p.dataset.tipo === data.tipo);
+                    p.classList.toggle('selected', p.dataset.tipo === tipoFixoAtual);
                 });
             });
         } else {
@@ -813,10 +751,12 @@
                 if (error) { mostrarAlerta('❌ Erro ao carregar parcela', 'error'); return; }
                 document.getElementById('parcelaNome').value  = data.nome  || '';
                 document.getElementById('parcelaValor').value = data.valor || '';
-                document.getElementById('parcelaMesInicio').value = data.mes_inicio ?? mesAtual;
+                const mes = (data.mes_inicio === null || data.mes_inicio === undefined)
+                    ? mesAtual : Number(data.mes_inicio);
+                document.getElementById('parcelaMesInicio').value = mes;
                 tipoParcelaAtual = data.tipo || 'casal';
                 document.querySelectorAll('#tipoParcelaSelect .category-pill').forEach(p => {
-                    p.classList.toggle('selected', p.dataset.tipo === data.tipo);
+                    p.classList.toggle('selected', p.dataset.tipo === tipoParcelaAtual);
                 });
             });
         } else {
@@ -858,7 +798,8 @@
         btn.disabled = true;
         try {
             const { error } = await db.from('variaveis').insert([{
-                tipo: tipoAtual, categoria: categoriaAtual, valor, descricao, mes: mesAtual
+                tipo: tipoAtual, categoria: categoriaAtual,
+                valor, descricao, mes: mesAtual
             }]);
             if (error) throw error;
             mostrarAlerta('✅ Variável salva!');
@@ -866,10 +807,8 @@
             document.getElementById('varDescricao').value = '';
             await carregarDados();
         } catch(e) {
-            mostrarAlerta('❌ ' + (e.message || 'Erro'), 'error');
-        } finally {
-            btn.disabled = false;
-        }
+            mostrarAlerta('❌ ' + (e.message || 'Erro ao salvar'), 'error');
+        } finally { btn.disabled = false; }
     }
 
     async function salvarFixo() {
@@ -881,37 +820,36 @@
         const btn = document.getElementById('btnSalvarFixo');
         btn.disabled = true;
         try {
-            const payload = { nome, valor, mes };
             if (fixoEditandoId) {
-                const { error } = await db.from('fixos').update(payload).eq('id', fixoEditandoId);
+                const { error } = await db.from('fixos').update({ nome, valor, mes }).eq('id', fixoEditandoId);
                 if (error) throw error;
                 mostrarAlerta('✅ Fixo atualizado!');
             } else {
-                const { error } = await db.from('fixos').insert([{ tipo: tipoFixoAtual, ...payload }]);
+                const { error } = await db.from('fixos').insert([{ tipo: tipoFixoAtual, nome, valor, mes }]);
                 if (error) throw error;
                 mostrarAlerta('✅ Fixo salvo!');
             }
             fecharModalFixo();
             await carregarDados();
         } catch(e) {
-            mostrarAlerta('❌ ' + (e.message || 'Erro'), 'error');
-        } finally {
-            btn.disabled = false;
-        }
+            mostrarAlerta('❌ ' + (e.message || 'Erro ao salvar'), 'error');
+        } finally { btn.disabled = false; }
     }
 
     async function salvarParcela() {
-        const nome       = document.getElementById('parcelaNome').value.trim();
-        const valor      = parseFloat(document.getElementById('parcelaValor').value);
-        const mesInicio  = parseInt(document.getElementById('parcelaMesInicio').value);
-        const numParc    = parcelaEditandoId ? 1 : parseInt(document.getElementById('parcelasNum').value);
+        const nome      = document.getElementById('parcelaNome').value.trim();
+        const valor     = parseFloat(document.getElementById('parcelaValor').value);
+        const mesInicio = parseInt(document.getElementById('parcelaMesInicio').value);
+        const numParc   = parcelaEditandoId ? 1 : parseInt(document.getElementById('parcelasNum').value);
         if (!nome || !valor || !numParc) { mostrarAlerta('⚠️ Preencha todos os campos', 'error'); return; }
 
         const btn = document.getElementById('btnSalvarParcela');
         btn.disabled = true;
         try {
             if (parcelaEditandoId) {
-                const { error } = await db.from('parcelas').update({ nome, valor, mes_inicio: mesInicio }).eq('id', parcelaEditandoId);
+                const { error } = await db.from('parcelas')
+                    .update({ nome, valor, mes_inicio: mesInicio })
+                    .eq('id', parcelaEditandoId);
                 if (error) throw error;
                 mostrarAlerta('✅ Parcela atualizada!');
             } else {
@@ -927,10 +865,8 @@
             fecharModalParcela();
             await carregarDados();
         } catch(e) {
-            mostrarAlerta('❌ ' + (e.message || 'Erro'), 'error');
-        } finally {
-            btn.disabled = false;
-        }
+            mostrarAlerta('❌ ' + (e.message || 'Erro ao salvar'), 'error');
+        } finally { btn.disabled = false; }
     }
 
     async function salvarReceita() {
@@ -951,27 +887,21 @@
             fecharModalReceita();
             await carregarDados();
         } catch(e) {
-            mostrarAlerta('❌ ' + (e.message || 'Erro'), 'error');
-        } finally {
-            btn.disabled = false;
-        }
+            mostrarAlerta('❌ ' + (e.message || 'Erro ao salvar'), 'error');
+        } finally { btn.disabled = false; }
     }
 
-    // ===== AÇÕES =====
+    // ===== AÇÕES INLINE =====
     async function marcarFixoPago(id, pago) {
-        try {
-            const { error } = await db.from('fixos').update({ pago: !pago }).eq('id', id);
-            if (error) throw error;
-            await carregarDados();
-        } catch(e) { mostrarAlerta('❌ Erro', 'error'); }
+        const { error } = await db.from('fixos').update({ pago: !pago }).eq('id', id);
+        if (error) { mostrarAlerta('❌ Erro', 'error'); return; }
+        await carregarDados();
     }
 
     async function marcarParcelaPaga(id, pago) {
-        try {
-            const { error } = await db.from('parcelas').update({ pago: !pago }).eq('id', id);
-            if (error) throw error;
-            await carregarDados();
-        } catch(e) { mostrarAlerta('❌ Erro', 'error'); }
+        const { error } = await db.from('parcelas').update({ pago: !pago }).eq('id', id);
+        if (error) { mostrarAlerta('❌ Erro', 'error'); return; }
+        await carregarDados();
     }
 
     async function deletarVariavel(id) {
@@ -1016,15 +946,17 @@
                 db.from('parcelas').select('*'),
                 db.from('receitas').select('*')
             ]);
-            const fixos     = r1.data || [];
-            const variaveis = r2.data || [];
-            const parcelas  = r3.data || [];
-            const receitas  = r4.data || [];
 
-            calcularRepasse(fixos, variaveis, parcelas);
-            renderizar(fixos, variaveis, parcelas, receitas);
+            if (r1.error || r2.error || r3.error || r4.error) {
+                console.error('Supabase error:', r1.error || r2.error || r3.error || r4.error);
+                mostrarAlerta('❌ Erro ao buscar dados', 'error');
+                return;
+            }
+
+            calcularRepasse(r1.data, r2.data, r3.data);
+            renderizar(r1.data, r2.data, r3.data, r4.data);
         } catch(e) {
-            console.error(e);
+            console.error('carregarDados:', e);
         }
     }
 
@@ -1034,27 +966,27 @@
         let varCasal   = 0, varDela   = 0, varGle   = 0;
         let parcCasal  = 0, parcDela  = 0, parcGle  = 0;
 
-        fixos.forEach(f => {
-            if (Number(f.mes) === mesAtual && !f.pago) {
-                if (f.tipo === 'casal') fixosCasal += f.valor;
-                else if (f.tipo === 'dela') fixosDela += f.valor;
-                else if (f.tipo === 'gle')  fixosGle  += f.valor;
+        (fixos || []).forEach(f => {
+            if (mesCompativel(f.mes) && !f.pago) {
+                if (f.tipo === 'casal')      fixosCasal += Number(f.valor);
+                else if (f.tipo === 'dela')  fixosDela  += Number(f.valor);
+                else if (f.tipo === 'gle')   fixosGle   += Number(f.valor);
             }
         });
 
-        variaveis.forEach(v => {
-            if (Number(v.mes) === mesAtual) {
-                if (v.tipo === 'casal') varCasal += v.valor;
-                else if (v.tipo === 'dela') varDela += v.valor;
-                else if (v.tipo === 'gle')  varGle  += v.valor;
+        (variaveis || []).forEach(v => {
+            if (mesCompativel(v.mes)) {
+                if (v.tipo === 'casal')      varCasal += Number(v.valor);
+                else if (v.tipo === 'dela')  varDela  += Number(v.valor);
+                else if (v.tipo === 'gle')   varGle   += Number(v.valor);
             }
         });
 
-        parcelas.forEach(p => {
-            if (Number(p.mes_inicio) === mesAtual && !p.pago) {
-                if (p.tipo === 'casal') parcCasal += p.valor;
-                else if (p.tipo === 'dela') parcDela += p.valor;
-                else if (p.tipo === 'gle')  parcGle  += p.valor;
+        (parcelas || []).forEach(p => {
+            if (mesCompativel(p.mes_inicio) && !p.pago) {
+                if (p.tipo === 'casal')      parcCasal += Number(p.valor);
+                else if (p.tipo === 'dela')  parcDela  += Number(p.valor);
+                else if (p.tipo === 'gle')   parcGle   += Number(p.valor);
             }
         });
 
@@ -1062,25 +994,24 @@
         const totalGasto = fixosCasal + fixosDela + varCasal + varDela + parcCasal + parcDela;
         const totalGle   = fixosGle + varGle + parcGle;
 
-        document.getElementById('repasseValue').textContent    = fmt(repasse);
-        document.getElementById('totalGastos').textContent     = fmt(totalGasto);
-        document.getElementById('fixosCasalValue').textContent = fmt(fixosCasal/2);
-        document.getElementById('fixosDelaValue').textContent  = fmt(fixosDela);
-        document.getElementById('varCasalValue').textContent   = fmt(varCasal/2);
-        document.getElementById('varDelaValue').textContent    = fmt(varDela);
-        document.getElementById('parcelasValue').textContent   = fmt(parcCasal + parcDela);
-        document.getElementById('varGleValue').textContent     = fmt(varGle);
-        document.getElementById('fixosGleValue').textContent   = fmt(fixosGle);
-        document.getElementById('parcelasGleValue').textContent= fmt(parcGle);
-        document.getElementById('totalGleValue').textContent   = fmt(totalGle);
+        document.getElementById('repasseValue').textContent     = fmt(repasse);
+        document.getElementById('totalGastos').textContent      = fmt(totalGasto);
+        document.getElementById('fixosCasalValue').textContent  = fmt(fixosCasal / 2);
+        document.getElementById('fixosDelaValue').textContent   = fmt(fixosDela);
+        document.getElementById('varCasalValue').textContent    = fmt(varCasal / 2);
+        document.getElementById('varDelaValue').textContent     = fmt(varDela);
+        document.getElementById('parcelasValue').textContent    = fmt(parcCasal + parcDela);
+        document.getElementById('varGleValue').textContent      = fmt(varGle);
+        document.getElementById('fixosGleValue').textContent    = fmt(fixosGle);
+        document.getElementById('parcelasGleValue').textContent = fmt(parcGle);
+        document.getElementById('totalGleValue').textContent    = fmt(totalGle);
     }
 
     // ===== RENDERIZAR =====
     function renderizar(fixos, variaveis, parcelas, receitas) {
         // Variáveis
-        const varList = document.getElementById('variaveisList');
-        const varMes  = variaveis.filter(v => Number(v.mes) === mesAtual);
-        varList.innerHTML = varMes.length
+        const varMes = (variaveis || []).filter(v => mesCompativel(v.mes));
+        document.getElementById('variaveisList').innerHTML = varMes.length
             ? varMes.map(v => `
                 <div class="list-item">
                     <div class="list-item-info">
@@ -1094,12 +1025,11 @@
                 </div>`).join('')
             : '<div class="empty-state">Nenhuma variável</div>';
 
-        // Fixos
+        // Fixos por tipo
         ['casal','dela','gle'].forEach(tipo => {
-            const id   = `fixos${tipo[0].toUpperCase()+tipo.slice(1)}List`;
-            const list = document.getElementById(id);
-            const itens = fixos.filter(f => f.tipo === tipo && Number(f.mes) === mesAtual);
-            list.innerHTML = itens.length
+            const listId = `fixos${tipo[0].toUpperCase()+tipo.slice(1)}List`;
+            const itens  = (fixos || []).filter(f => f.tipo === tipo && mesCompativel(f.mes));
+            document.getElementById(listId).innerHTML = itens.length
                 ? itens.map(f => `
                     <div class="list-item ${f.pago ? 'pago' : ''}">
                         <div class="list-item-info"><strong>${f.nome}</strong></div>
@@ -1114,9 +1044,8 @@
         });
 
         // Parcelas
-        const parcList = document.getElementById('parcelasList');
-        const parcMes  = parcelas.filter(p => Number(p.mes_inicio) === mesAtual);
-        parcList.innerHTML = parcMes.length
+        const parcMes = (parcelas || []).filter(p => mesCompativel(p.mes_inicio));
+        document.getElementById('parcelasList').innerHTML = parcMes.length
             ? parcMes.map(p => `
                 <div class="list-item ${p.pago ? 'pago' : ''}">
                     <div class="list-item-info"><strong>${p.nome}</strong></div>
@@ -1130,67 +1059,72 @@
             : '<div class="empty-state">Nenhuma parcela</div>';
 
         // Receitas
-        const recList = document.getElementById('receitasList');
-        const recMes  = receitas.filter(r => Number(r.mes) === mesAtual);
+        const recMes = (receitas || []).filter(r => mesCompativel(r.mes));
         if (recMes.length) {
-            const total = recMes.reduce((s, r) => s + r.valor, 0);
-            recList.innerHTML = recMes.map(r => `
-                <div class="list-item receita-item">
-                    <div class="list-item-info"><strong>${r.tipo}</strong></div>
-                    <div class="list-item-actions">
-                        <span class="list-item-value">${fmt(r.valor)}</span>
-                        <button class="icon-btn" onclick="deletarReceita(${r.id})">🗑️</button>
-                    </div>
-                </div>`).join('');
-            recList.innerHTML += `<div class="stat-row" style="margin-top:12px;"><span>TOTAL</span><span class="stat-value">${fmt(total)}</span></div>`;
+            const total = recMes.reduce((s, r) => s + Number(r.valor), 0);
+            document.getElementById('receitasList').innerHTML =
+                recMes.map(r => `
+                    <div class="list-item receita-item">
+                        <div class="list-item-info"><strong>${r.tipo}</strong></div>
+                        <div class="list-item-actions">
+                            <span class="list-item-value">${fmt(r.valor)}</span>
+                            <button class="icon-btn" onclick="deletarReceita(${r.id})">🗑️</button>
+                        </div>
+                    </div>`).join('')
+                + `<div class="stat-row" style="margin-top:12px;">
+                       <span>TOTAL</span>
+                       <span class="stat-value">${fmt(total)}</span>
+                   </div>`;
         } else {
-            recList.innerHTML = '<div class="empty-state">Nenhuma receita</div>';
+            document.getElementById('receitasList').innerHTML = '<div class="empty-state">Nenhuma receita</div>';
         }
     }
 
     // ===== INIT =====
     async function init() {
+        // Espera biblioteca Supabase carregar
         let t = 0;
-        while (!window.supabase && t++ < 50) await new Promise(r => setTimeout(r, 100));
-        if (!window.supabase) { mostrarAlerta('❌ Falha ao carregar Supabase', 'error'); return; }
+        while (!window.supabase && t++ < 50) {
+            await new Promise(r => setTimeout(r, 100));
+        }
+        if (!window.supabase) {
+            mostrarAlerta('❌ Falha ao carregar Supabase', 'error');
+            return;
+        }
 
         db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // Header data
         const agora = new Date();
-        document.getElementById('headerDate').textContent = `${MESES[agora.getMonth()]} ${agora.getFullYear()}`;
+        document.getElementById('headerDate').textContent =
+            `${MESES[agora.getMonth()]} ${agora.getFullYear()}`;
 
-        // Navegação nav-bottom
+        // Nav-bottom
         document.querySelectorAll('.nav-item[data-tela]').forEach(btn => {
             btn.addEventListener('click', () => mudarTela(btn.dataset.tela));
         });
 
-        // Menu dropdown
-        document.getElementById('menuBtn').addEventListener('click', () => {
-            document.getElementById('menuDropdown').classList.toggle('active');
-        });
-        document.querySelectorAll('.menu-item[data-tela]').forEach(btn => {
-            btn.addEventListener('click', () => mudarTela(btn.dataset.tela));
-        });
-
         // Collapsible
-        document.getElementById('toggleDetalhamento').addEventListener('click', () => toggleSection('bodyDetalhamento','iconDetalhamento'));
-        document.getElementById('toggleGle').addEventListener('click', () => toggleSection('bodyGle','iconGle'));
+        document.getElementById('toggleDetalhamento').addEventListener('click', () =>
+            toggleSection('bodyDetalhamento', 'iconDetalhamento'));
+        document.getElementById('toggleGle').addEventListener('click', () =>
+            toggleSection('bodyGle', 'iconGle'));
 
-        // Botões abrir modais
-        document.getElementById('btnAbrirModalFixo').addEventListener('click', () => abrirModalFixo());
+        // Abrir modais
+        document.getElementById('btnAbrirModalFixo').addEventListener('click',    () => abrirModalFixo());
         document.getElementById('btnAbrirModalParcela').addEventListener('click', () => abrirModalParcela());
         document.getElementById('btnAbrirModalReceita').addEventListener('click', () => abrirModalReceita());
 
-        // Botões fechar modais
-        document.getElementById('btnFecharModalFixo').addEventListener('click', fecharModalFixo);
+        // Fechar modais
+        document.getElementById('btnFecharModalFixo').addEventListener('click',    fecharModalFixo);
         document.getElementById('btnFecharModalParcela').addEventListener('click', fecharModalParcela);
         document.getElementById('btnFecharModalReceita').addEventListener('click', fecharModalReceita);
 
-        // Botões salvar
+        // Salvar
         document.getElementById('btnSalvarVariavel').addEventListener('click', salvarVariavel);
-        document.getElementById('btnSalvarFixo').addEventListener('click', salvarFixo);
-        document.getElementById('btnSalvarParcela').addEventListener('click', salvarParcela);
-        document.getElementById('btnSalvarReceita').addEventListener('click', salvarReceita);
+        document.getElementById('btnSalvarFixo').addEventListener('click',     salvarFixo);
+        document.getElementById('btnSalvarParcela').addEventListener('click',  salvarParcela);
+        document.getElementById('btnSalvarReceita').addEventListener('click',  salvarReceita);
 
         // Tipo Fixo
         document.getElementById('tipoFixoSelect').addEventListener('click', e => {
@@ -1210,9 +1144,10 @@
             tipoParcelaAtual = p.dataset.tipo;
         });
 
-        // Receita Outro
+        // Receita "Outro"
         document.getElementById('receitaTipo').addEventListener('change', e => {
-            document.getElementById('receitaOutroGroup').style.display = e.target.value === 'Outro' ? 'block' : 'none';
+            document.getElementById('receitaOutroGroup').style.display =
+                e.target.value === 'Outro' ? 'block' : 'none';
         });
 
         inicializarTipoSelect();
