@@ -855,7 +855,7 @@
         el.className = `alert ${tipo}`;
         el.textContent = msg;
         document.getElementById('alertContainer').appendChild(el);
-        setTimeout(() => el.remove(), 3000);
+        setTimeout(() => el.remove(), 8000);
     }
 
     function preencherMeses(selectId) {
@@ -1039,14 +1039,14 @@
                 const res = await db.from('fixos').update(payload).eq('id', fixoEditandoId);
                 supaError = res.error;
             } else {
-                const res = await db.from('fixos').insert([{ ...payload, pago: false }]);
+                const res = await db.from('fixos').insert([payload]);
                 supaError = res.error;
             }
 
             if (supaError) {
                 const msg = supaError.message || supaError.details || JSON.stringify(supaError);
                 console.error('Supabase error:', supaError);
-                alert('Erro Supabase: ' + msg); // debug — remover depois
+
                 mostrarAlerta('❌ ' + msg, 'error');
                 return;
             }
@@ -1057,7 +1057,7 @@
         } catch(e) {
             const msg = e?.message || String(e);
             console.error('salvarFixo exception:', e);
-            alert('Exceção: ' + msg); // debug — remover depois
+
             mostrarAlerta('❌ ' + msg, 'error');
         } finally {
             if (btn) btn.disabled = false;
