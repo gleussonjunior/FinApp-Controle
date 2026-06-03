@@ -541,7 +541,7 @@
 
     <div class="header">
         <div class="header-spacer"></div>
-        <div class="header-title">FinApp</div>
+        <div class="header-title" id="btnHome" style="cursor:pointer;">FinApp</div>
         <button class="header-btn" id="btnAbrirGraficos" title="Gráficos">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="18" y="3" width="4" height="18" rx="1"/>
@@ -756,6 +756,10 @@
             <input type="number" id="fixoValor" placeholder="0,00" step="0.01" min="0">
         </div>
         <div class="form-group">
+            <label>Categoria</label>
+            <select id="fixoCategoria"></select>
+        </div>
+        <div class="form-group">
             <label>Mês</label>
             <select id="fixoMes"></select>
         </div>
@@ -807,6 +811,14 @@
 <script>
     const SUPABASE_URL = 'https://nsuawtxahbsivvhgxqlb.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zdWF3dHhhaGJzaXZ2aGd4cWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NDQxNTcsImV4cCI6MjA5NjAyMDE1N30.y0mEk8Iee5xXpVr7wUgrqYIDKNLUDSZfxdetsDYbNnE';
+
+    const CATEGORIAS_FIXOS = ['Parcelas','Educação','Saúde','Streaming','Storage','Telefonia','Moradia','IA','Outros'];
+
+    const COR_CATEGORIA_FIXO = {
+        'Parcelas':'#f59e0b','Educação':'#3b82f6','Saúde':'#10b981',
+        'Streaming':'#8b5cf6','Storage':'#06b6d4','Telefonia':'#6366f1',
+        'Moradia':'#b45309','IA':'#ec4899','Outros':'#9ca3af'
+    };
 
     const CATEGORIAS = {
         casal: ['Uber', 'Mercado', 'Saídas', 'Extra', 'Pets', 'Outros'],
@@ -919,6 +931,7 @@
                 const mes = (data.mes === null || data.mes === undefined || data.mes === 'atual')
                     ? mesAtual : Number(data.mes);
                 document.getElementById('fixoMes').value = mes;
+                preencherCategoriaFixo(data.categoria || 'Outros');
                 tipoFixoAtual = data.tipo || 'casal';
                 document.querySelectorAll('#tipoFixoSelect .category-pill').forEach(p => {
                     p.classList.toggle('selected', p.dataset.tipo === tipoFixoAtual);
@@ -928,6 +941,7 @@
             document.getElementById('fixoNome').value  = '';
             document.getElementById('fixoValor').value = '';
             document.getElementById('fixoMes').value   = mesAtual;
+            preencherCategoriaFixo('Outros');
             tipoFixoAtual = 'casal';
             document.querySelectorAll('#tipoFixoSelect .category-pill').forEach((p, i) => {
                 p.classList.toggle('selected', i === 0);
@@ -1014,7 +1028,8 @@
                 if (error) throw error;
                 mostrarAlerta('✅ Fixo atualizado!');
             } else {
-                const { error } = await db.from('fixos').insert([{ tipo: tipoFixoAtual, nome, valor, mes }]);
+                const categoria = document.getElementById('fixoCategoria').value;
+                const { error } = await db.from('fixos').insert([{ tipo: tipoFixoAtual, nome, valor, mes, categoria }]);
                 if (error) throw error;
                 mostrarAlerta('✅ Fixo salvo!');
             }
@@ -1184,6 +1199,13 @@
     }
 
     // ===== HELPER DATA/HORA =====
+    function preencherCategoriaFixo(selecionada = 'Outros') {
+        const sel = document.getElementById('fixoCategoria');
+        sel.innerHTML = CATEGORIAS_FIXOS.map(c =>
+            `<option value="${c}" ${c === selecionada ? 'selected' : ''}>${c}</option>`
+        ).join('');
+    }
+
     function formatarDataHora(str) {
         if (!str) return '';
         try {
@@ -1213,7 +1235,10 @@
             const lista = itens.length
                 ? itens.map(f => `
                     <div class="list-item ${f.pago ? 'pago' : ''}">
-                        <div class="list-item-info"><strong>${f.nome}</strong></div>
+                        <div class="list-item-info">
+                            <strong>${f.nome}</strong>
+                            ${f.categoria ? `<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:6px;background:${COR_CATEGORIA_FIXO[f.categoria]||'#9ca3af'}22;color:${COR_CATEGORIA_FIXO[f.categoria]||'#9ca3af'}">${f.categoria}</span>` : ''}
+                        </div>
                         <div class="list-item-actions">
                             <span class="list-item-value">${fmt(f.valor)}</span>
                             <button class="check-btn ${f.pago ? 'checked' : ''}" onclick="marcarFixoPago(${f.id},${f.pago})">✓</button>
@@ -1512,6 +1537,9 @@
 
         const agora = new Date();
         document.getElementById('headerDate').textContent = `${MESES[agora.getMonth()]} ${agora.getFullYear()}`;
+
+        // Header title -> home
+        document.getElementById('btnHome').addEventListener('click', () => mudarTela('screenInicio'));
 
         // Nav
         document.querySelectorAll('.nav-item[data-tela]').forEach(btn => {
