@@ -571,9 +571,12 @@
             <div class="card">
                 <div class="card-header-toggle" id="toggleDetalhamento">
                     <div style="font-size:14px;font-weight:700;">Detalhamento</div>
-                    <span class="toggle-icon" id="iconDetalhamento">▾</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span id="totalDetalhamentoCollapsed" style="font-size:13px;font-weight:600;color:var(--text-light);"></span>
+                        <span class="toggle-icon collapsed" id="iconDetalhamento">▾</span>
+                    </div>
                 </div>
-                <div class="collapsible-body" id="bodyDetalhamento">
+                <div class="collapsible-body collapsed" id="bodyDetalhamento">
                     <div style="margin-top:12px;">
                         <div class="stat-row"><span class="stat-label">Fixos Casal (÷2)</span><span class="stat-value" id="fixosCasalValue">R$ 0,00</span></div>
                         <div class="stat-row"><span class="stat-label">Fixos Dela</span><span class="stat-value" id="fixosDelaValue">R$ 0,00</span></div>
@@ -588,9 +591,12 @@
             <div class="card">
                 <div class="card-header-toggle" id="toggleGle">
                     <div style="font-size:14px;font-weight:700;">Seus Gastos (Gle)</div>
-                    <span class="toggle-icon" id="iconGle">▾</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span id="totalGleCollapsed" style="font-size:13px;font-weight:600;color:var(--text-light);"></span>
+                        <span class="toggle-icon collapsed" id="iconGle">▾</span>
+                    </div>
                 </div>
-                <div class="collapsible-body" id="bodyGle">
+                <div class="collapsible-body collapsed" id="bodyGle">
                     <div style="margin-top:12px;">
                         <div class="stat-row"><span class="stat-label">Variáveis Pessoais</span><span class="stat-value" id="varGleValue">R$ 0,00</span></div>
                         <div class="stat-row"><span class="stat-label">Fixos Pessoais</span><span class="stat-value" id="fixosGleValue">R$ 0,00</span></div>
@@ -710,10 +716,17 @@
             </div>
         </div>
 
+        <div class="chart-container" style="margin-bottom:16px;">
+            <div class="chart-title">Gastos Variáveis por Categoria</div>
+            <div id="wrapChartVar" class="chart-wrap">
+                <canvas id="canvasGraficoVar"></canvas>
+            </div>
+        </div>
+
         <div class="chart-container">
-            <div class="chart-title">Gastos por Categoria</div>
-            <div class="chart-wrap">
-                <canvas id="canvasGrafico"></canvas>
+            <div class="chart-title">Contas Fixas</div>
+            <div id="wrapChartFixos" style="position:relative;">
+                <canvas id="canvasGraficoFixos"></canvas>
             </div>
         </div>
     </div>
@@ -812,7 +825,8 @@
     let receitaEditandoId = null;
     let mesGrafico    = new Date().getMonth();
     let anoGrafico    = new Date().getFullYear();
-    let chartInstance = null;
+    let chartVarInstance   = null;
+    let chartFixosInstance = null;
     let receitaCasal      = false;
 
     // ===== HELPERS =====
@@ -1133,6 +1147,11 @@
         document.getElementById('varCasalGleValue').textContent      = fmt(varCasal / 2);
         document.getElementById('entradasCasalGleValue').textContent = entradasCasal > 0 ? `-${fmt(entradasCasal/2)}` : '-R$ 0,00';
         document.getElementById('totalGleValue').textContent         = fmt(totalGle);
+
+        // Totais visíveis quando collapsed
+        const repasseSemDesconto = (fixosCasal/2) + fixosDela + (varCasal/2) + varDela;
+        document.getElementById('totalDetalhamentoCollapsed').textContent = fmt(repasseSemDesconto);
+        document.getElementById('totalGleCollapsed').textContent          = fmt(totalGle);
     }
 
     // ===== RENDERIZAR =====
@@ -1162,6 +1181,19 @@
                     </div>
                 </div>`).join('')
             : '<div class="empty-state">Nenhuma receita</div>';
+    }
+
+    // ===== HELPER DATA/HORA =====
+    function formatarDataHora(str) {
+        if (!str) return '';
+        try {
+            const d = new Date(str);
+            const dia  = String(d.getDate()).padStart(2, '0');
+            const mes  = String(d.getMonth() + 1).padStart(2, '0');
+            const hora = String(d.getHours()).padStart(2, '0');
+            const min  = String(d.getMinutes()).padStart(2, '0');
+            return `${dia}/${mes} · ${hora}:${min}`;
+        } catch { return ''; }
     }
 
     // ===== RENDERIZAR FIXOS COLAPSÁVEIS =====
@@ -1204,7 +1236,7 @@
                             <span class="toggle-icon collapsed" id="${iconId}">▾</span>
                         </div>
                     </div>
-                    <div class="collapsible-body" id="${bodyId}">
+                    <div class="collapsible-body collapsed" id="${bodyId}">
                         <div style="margin-top:12px;">
                             ${lista}
                             ${totalRow}
@@ -1260,7 +1292,10 @@
                         <div style="padding:0 12px 8px;">
                             ${itens.map(v => `
                                 <div class="list-item" style="margin-top:8px;">
-                                    <div class="list-item-info"><strong>${v.descricao}</strong></div>
+                                    <div class="list-item-info">
+                                        <strong>${v.descricao}</strong>
+                                        ${v.criado ? `<div class="text-small" style="margin-top:2px;">${formatarDataHora(v.criado)}</div>` : ''}
+                                    </div>
                                     <div class="list-item-actions">
                                         <span class="list-item-value">${fmt(v.valor)}</span>
                                         <button class="icon-btn" onclick="deletarVariavel(${v.id})">🗑️</button>
@@ -1305,7 +1340,8 @@
 
     function fecharGraficos() {
         document.getElementById('graficosOverlay').classList.remove('active');
-        if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+        if (chartVarInstance)   { chartVarInstance.destroy();   chartVarInstance   = null; }
+        if (chartFixosInstance) { chartFixosInstance.destroy(); chartFixosInstance = null; }
     }
 
     function atualizarMesGraficoLabel() {
@@ -1357,96 +1393,79 @@
             elSaldo.textContent = fmt(saldo);
             elSaldo.style.color = saldo >= 0 ? 'var(--success)' : 'var(--danger)';
 
-            // Categorias para o gráfico
-            const cats = {};
+            // ---- GRÁFICO 1: Variáveis por categoria ----
+            if (chartVarInstance)   { chartVarInstance.destroy();   chartVarInstance   = null; }
+            if (chartFixosInstance) { chartFixosInstance.destroy(); chartFixosInstance = null; }
 
-            // Variáveis por categoria
-            varMes.forEach(v => {
-                const cat = v.categoria || 'Outros';
-                cats[cat] = (cats[cat] || 0) + Number(v.valor);
-            });
-
-            // Fixos agrupados por tipo
-            let fixosCasal = 0, fixosDela = 0, fixosGle = 0;
-            fixosMes.forEach(f => {
-                if      (f.tipo === 'casal') fixosCasal += Number(f.valor);
-                else if (f.tipo === 'dela')  fixosDela  += Number(f.valor);
-                else if (f.tipo === 'gle')   fixosGle   += Number(f.valor);
-            });
-            if (fixosCasal > 0) cats['Fixos Casal'] = fixosCasal;
-            if (fixosDela  > 0) cats['Fixos Dela']  = fixosDela;
-            if (fixosGle   > 0) cats['Fixos Seus']  = fixosGle;
-
-            // Ordenar por valor desc
-            const sorted = Object.entries(cats).sort((a, b) => b[1] - a[1]);
-            const labels = sorted.map(([k]) => k);
-            const values = sorted.map(([, v]) => v);
-
-            const palette = {
-                'Mercado':     '#3b82f6',
-                'Uber':        '#8b5cf6',
-                'Saídas':      '#ec4899',
-                'Extra':       '#f59e0b',
-                'Pets':        '#10b981',
-                'Pessoais Gle':'#06b6d4',
-                'Pessoais Lia':'#f97316',
-                'Outros':      '#9ca3af',
-                'Fixos Casal': '#1e3a8a',
-                'Fixos Dela':  '#9d174d',
-                'Fixos Seus':  '#064e3b',
+            const paletteCat = {
+                'Mercado':'#3b82f6','Uber':'#8b5cf6','Saídas':'#ec4899',
+                'Extra':'#f59e0b','Pets':'#10b981','Pessoais Gle':'#06b6d4',
+                'Pessoais Lia':'#f97316','Outros':'#9ca3af'
             };
-            const bgColors = labels.map(l => palette[l] || '#6b7280');
+            const cats = {};
+            varMes.forEach(v => { const c = v.categoria||'Outros'; cats[c]=(cats[c]||0)+Number(v.valor); });
+            const sortedVar = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
 
-            // Destruir chart anterior
-            if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
-
-            if (!labels.length) {
-                document.querySelector('.chart-wrap').innerHTML =
-                    '<div class="empty-state" style="padding-top:80px;">Sem dados para este mês</div>';
-                return;
-            }
-
-            document.querySelector('.chart-wrap').innerHTML = '<canvas id="canvasGrafico"></canvas>';
-            const ctx = document.getElementById('canvasGrafico').getContext('2d');
-
-            chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: bgColors,
-                        borderRadius: 6,
-                        borderSkipped: false,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: ctx => ` R$ ${Number(ctx.raw).toFixed(2).replace('.', ',')}`
-                            }
-                        }
+            const wrapVar = document.getElementById('wrapChartVar');
+            if (!sortedVar.length) {
+                wrapVar.innerHTML = '<div class="empty-state" style="padding:40px 0">Sem variáveis neste mês</div>';
+                wrapVar.style.height = 'auto';
+            } else {
+                wrapVar.style.height = '260px';
+                wrapVar.innerHTML = '<canvas id="canvasGraficoVar"></canvas>';
+                chartVarInstance = new Chart(document.getElementById('canvasGraficoVar').getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: sortedVar.map(([k])=>k),
+                        datasets: [{ data: sortedVar.map(([,v])=>v),
+                            backgroundColor: sortedVar.map(([k])=>paletteCat[k]||'#6b7280'),
+                            borderRadius: 6, borderSkipped: false }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(0,0,0,0.05)' },
-                            ticks: {
-                                font: { size: 11 },
-                                callback: v => `R$ ${Number(v).toLocaleString('pt-BR')}`
-                            }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { font: { size: 11 }, maxRotation: 40 }
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>` R$ ${Number(c.raw).toFixed(2).replace('.',',')}`}} },
+                        scales: {
+                            y: { beginAtZero:true, grid:{color:'rgba(0,0,0,0.04)'},
+                                ticks:{font:{size:11},callback:v=>`R$ ${Number(v).toLocaleString('pt-BR')}`}},
+                            x: { grid:{display:false}, ticks:{font:{size:11},maxRotation:35} }
                         }
                     }
-                }
-            });
+                });
+            }
+
+            // ---- GRÁFICO 2: Fixos individuais (barras horizontais) ----
+            const corFixo = { casal:'#1e40af', dela:'#9d174d', gle:'#065f46' };
+            const sortedFixos = [...fixosMes].sort((a,b)=>Number(b.valor)-Number(a.valor));
+
+            const wrapFixos = document.getElementById('wrapChartFixos');
+            if (!sortedFixos.length) {
+                wrapFixos.innerHTML = '<div class="empty-state" style="padding:40px 0">Sem fixos neste mês</div>';
+                wrapFixos.style.height = 'auto';
+            } else {
+                const alturaFixos = Math.max(180, sortedFixos.length * 38);
+                wrapFixos.style.height = alturaFixos + 'px';
+                wrapFixos.style.position = 'relative';
+                wrapFixos.innerHTML = '<canvas id="canvasGraficoFixos"></canvas>';
+                chartFixosInstance = new Chart(document.getElementById('canvasGraficoFixos').getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: sortedFixos.map(f=>f.nome),
+                        datasets: [{ data: sortedFixos.map(f=>Number(f.valor)),
+                            backgroundColor: sortedFixos.map(f=>corFixo[f.tipo]||'#6b7280'),
+                            borderRadius: 4, borderSkipped: false }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>` R$ ${Number(c.raw).toFixed(2).replace('.',',')}`}} },
+                        scales: {
+                            x: { beginAtZero:true, grid:{color:'rgba(0,0,0,0.04)'},
+                                ticks:{font:{size:11},callback:v=>`R$ ${Number(v).toLocaleString('pt-BR')}`}},
+                            y: { grid:{display:false}, ticks:{font:{size:11}} }
+                        }
+                    }
+                });
+            }
         } catch(e) {
             console.error('carregarDadosGrafico:', e);
         }
