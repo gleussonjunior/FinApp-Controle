@@ -1024,7 +1024,8 @@
         btn.disabled = true;
         try {
             if (fixoEditandoId) {
-                const { error } = await db.from('fixos').update({ tipo: tipoFixoAtual, nome, valor, mes }).eq('id', fixoEditandoId);
+                const categoria = document.getElementById('fixoCategoria').value;
+                const { error } = await db.from('fixos').update({ tipo: tipoFixoAtual, nome, valor, mes, categoria }).eq('id', fixoEditandoId);
                 if (error) throw error;
                 mostrarAlerta('✅ Fixo atualizado!');
             } else {
