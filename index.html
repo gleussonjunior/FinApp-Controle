@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinApp — Controle Financeiro</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -45,7 +46,6 @@
             flex-direction: column;
         }
 
-        /* Header - REDUZIDO */
         .header {
             background: linear-gradient(135deg, var(--primary) 0%, #2d2d2d 100%);
             color: white;
@@ -68,7 +68,6 @@
             font-weight: 500;
         }
 
-        /* Content */
         .content {
             flex: 1;
             padding: 16px;
@@ -90,7 +89,26 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Month Selector */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .alert.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .alert.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
         .month-selector {
             display: flex;
             gap: 8px;
@@ -119,11 +137,6 @@
             border-color: var(--secondary);
         }
 
-        .month-btn:hover {
-            border-color: var(--secondary);
-        }
-
-        /* Card */
         .card {
             background: var(--bg);
             border: 1px solid var(--border);
@@ -139,7 +152,6 @@
             border-width: 2px;
         }
 
-        /* Repasse */
         .repasse-value {
             font-size: 32px;
             font-weight: 700;
@@ -169,16 +181,11 @@
             color: var(--text);
         }
 
-        .stat-value.positive {
-            color: var(--success);
-        }
-
         .stat-value.negative {
             color: var(--danger);
         }
 
-        /* Form */
-        input, select, textarea {
+        input, select {
             width: 100%;
             padding: 12px;
             border: 1px solid var(--border);
@@ -206,7 +213,6 @@
             margin-bottom: 16px;
         }
 
-        /* Buttons */
         .btn {
             padding: 12px 20px;
             border: none;
@@ -227,18 +233,16 @@
             color: white;
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background: #0284c7;
             transform: translateY(-2px);
         }
 
-        .btn-small {
-            padding: 8px 12px;
-            font-size: 12px;
-            width: auto;
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
-        /* Category Pills */
         .category-select {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -268,7 +272,6 @@
             color: white;
         }
 
-        /* List Items */
         .list-item {
             display: flex;
             align-items: center;
@@ -282,25 +285,16 @@
 
         .list-item-info {
             flex: 1;
-            min-width: 0;
         }
 
         .list-item-title {
             font-weight: 600;
             font-size: 14px;
-            color: var(--text);
         }
 
         .list-item-value {
             font-weight: 700;
             font-size: 16px;
-            color: var(--text);
-            text-align: right;
-        }
-
-        .list-item-actions {
-            display: flex;
-            gap: 8px;
         }
 
         .icon-btn {
@@ -308,86 +302,14 @@
             border: none;
             cursor: pointer;
             font-size: 18px;
-            padding: 4px;
-            color: var(--text-light);
+            color: var(--danger);
             transition: all 0.2s ease;
         }
 
         .icon-btn:hover {
-            color: var(--danger);
-            transform: scale(1.1);
+            transform: scale(1.2);
         }
 
-        /* Checkbox */
-        .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 8px;
-        }
-
-        .checkbox-wrapper:hover {
-            background: var(--bg-alt);
-        }
-
-        .checkbox-wrapper.checked {
-            background: rgba(16, 185, 129, 0.1);
-            border-color: var(--success);
-        }
-
-        .checkbox {
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border);
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
-        }
-
-        .checkbox-wrapper.checked .checkbox {
-            background: var(--success);
-            border-color: var(--success);
-            color: white;
-        }
-
-        .checkbox-label {
-            flex: 1;
-        }
-
-        .checkbox-title {
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .checkbox-value {
-            font-weight: 700;
-            text-align: right;
-        }
-
-        /* Badge */
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-left: 8px;
-        }
-
-        .badge-casal { background: rgba(139, 92, 246, 0.2); color: var(--casal); }
-        .badge-dela { background: rgba(236, 72, 153, 0.2); color: var(--dela); }
-        .badge-gle { background: rgba(6, 182, 212, 0.2); color: var(--gle); }
-
-        /* Nav Bottom */
         .nav-bottom {
             position: fixed;
             bottom: 0;
@@ -428,84 +350,9 @@
             margin-bottom: 4px;
         }
 
-        /* Type Badge Inline */
-        .type-label {
-            font-size: 11px;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 3px;
-            display: inline-block;
-            margin-left: 8px;
-        }
-
-        .type-label.casal {
-            background: rgba(139, 92, 246, 0.2);
-            color: var(--casal);
-        }
-
-        .type-label.dela {
-            background: rgba(236, 72, 153, 0.2);
-            color: var(--dela);
-        }
-
-        .type-label.gle {
-            background: rgba(6, 182, 212, 0.2);
-            color: var(--gle);
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 200;
-            align-items: flex-end;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--bg);
-            width: 100%;
-            max-width: 500px;
-            border-radius: 20px 20px 0 0;
-            padding: 24px 20px;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-
-        .modal-header {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--text-light);
-        }
-
-        /* Utils */
         .text-center { text-align: center; }
         .text-small { font-size: 12px; color: var(--text-light); }
+        .empty-state { text-align: center; padding: 32px 16px; color: var(--text-light); }
     </style>
 </head>
 <body>
@@ -516,6 +363,8 @@
         </div>
 
         <div class="content">
+            <div id="alertContainer"></div>
+
             <!-- TELA 1: INÍCIO -->
             <div class="screen active" id="screenInicio">
                 <div class="month-selector">
@@ -576,24 +425,22 @@
 
             <!-- TELA 2: FIXOS -->
             <div class="screen" id="screenFixos">
-                <div class="month-selector">
-                    <button class="month-btn active" onclick="mudarMes('atual')">Mês Atual</button>
-                    <button class="month-btn" onclick="mudarMes('proximo')">Próximo Mês</button>
-                </div>
-
                 <div class="card">
-                    <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Fixos Casal (÷2 no Repasse)</div>
+                    <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Fixos Casal</div>
                     <div id="fixosCasalList"></div>
+                    <button class="btn btn-primary" style="margin-top: 12px;" onclick="abrirModalFixo('casal')">+ Adicionar</button>
                 </div>
 
                 <div class="card">
                     <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Fixos Dela</div>
                     <div id="fixosDelaList"></div>
+                    <button class="btn btn-primary" style="margin-top: 12px;" onclick="abrirModalFixo('dela')">+ Adicionar</button>
                 </div>
 
                 <div class="card">
                     <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Fixos Seus</div>
                     <div id="fixosGleList"></div>
+                    <button class="btn btn-primary" style="margin-top: 12px;" onclick="abrirModalFixo('gle')">+ Adicionar</button>
                 </div>
             </div>
 
@@ -634,7 +481,7 @@
                         </select>
                     </div>
 
-                    <button class="btn btn-primary" onclick="salvarVariavel()">
+                    <button class="btn btn-primary" id="btnSalvarVariavel" onclick="salvarVariavel()">
                         💾 Salvar
                     </button>
                 </div>
@@ -647,19 +494,14 @@
 
             <!-- TELA 4: PARCELAS -->
             <div class="screen" id="screenParcelas">
-                <div class="month-selector">
-                    <button class="month-btn active" onclick="mudarMes('atual')">Mês Atual</button>
-                    <button class="month-btn" onclick="mudarMes('proximo')">Próximo Mês</button>
-                </div>
-
                 <div class="card">
                     <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Parcelas</div>
                     <div id="parcelasList"></div>
+                    <button class="btn btn-primary" style="margin-top: 12px;" onclick="abrirModalParcela()">+ Adicionar</button>
                 </div>
             </div>
         </div>
 
-        <!-- NAV BOTTOM -->
         <div class="nav-bottom">
             <button class="nav-item active" onclick="mudarTela('screenInicio')">
                 <div class="nav-icon">📊</div>
@@ -681,9 +523,13 @@
     </div>
 
     <script>
-        // ==================== CONFIG ====================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcvdsmMlxzd7vEG81R0tuP9-QGc3PxoQMNnZ98HTWUuKErye7IARLASh9fP-_tMg-R/exec';
-        
+        // ==================== SUPABASE CONFIG ====================
+        const SUPABASE_URL = 'https://nsuawtxahbsivvhgxqlb.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zdWF3dHhhaGJzaXZ2aGd4cWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NDQxNTcsImV4cCI6MjA5NjAyMDE1N30.y0mEk8Iee5xXpVr7wUgrqYIDKNLUDSZfxdetsDYbNnE';
+
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
         const CATEGORIAS = {
             casal: ['Uber', 'Mercado', 'Saídas', 'Extra', 'Pets', 'Outros'],
             dela: ['Pessoais Lia', 'Outros'],
@@ -693,31 +539,31 @@
         let tipoAtual = 'casal';
         let categoriaAtual = 'Uber';
         let mesAtual = 'atual';
-        
-        let dados = {
-            fixos: {},
-            variáveis: [],
-            parcelas: {}
-        };
+
+        // ==================== ALERTS ====================
+        function mostrarAlerta(msg, tipo = 'success') {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert ${tipo}`;
+            alert.textContent = msg;
+            container.appendChild(alert);
+            setTimeout(() => alert.remove(), 3000);
+        }
 
         // ==================== NAVEGAÇÃO ====================
         function mudarTela(telaId) {
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
             document.getElementById(telaId).classList.add('active');
-
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             event.target.closest('.nav-item').classList.add('active');
-
-            atualizarDashboard();
+            carregarDados();
         }
 
         function mudarMes(mes) {
             mesAtual = mes;
-            document.querySelectorAll('.month-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
+            document.querySelectorAll('.month-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
-            atualizarDashboard();
+            carregarDados();
         }
 
         // ==================== TIPO E CATEGORIA ====================
@@ -751,113 +597,190 @@
         }
 
         // ==================== SALVAR ====================
-        function salvarVariavel() {
+        async function salvarVariavel() {
             const valor = parseFloat(document.getElementById('varValor').value);
             const descricao = document.getElementById('varDescricao').value;
             const mes = document.getElementById('varMes').value;
 
             if (!valor || !descricao) {
-                alert('Preencha valor e descrição');
+                mostrarAlerta('⚠️ Preencha valor e descrição', 'error');
                 return;
             }
 
-            const variavel = {
+            const btn = document.getElementById('btnSalvarVariavel');
+            btn.disabled = true;
+
+            const { error } = await supabase.from('variaveis').insert([{
                 tipo: tipoAtual,
                 categoria: categoriaAtual,
                 valor,
                 descricao,
-                mes,
-                data: new Date().toISOString()
-            };
+                mes
+            }]);
 
-            enviarGoogleAppsScript('salvarVariavel', variavel);
-            
-            document.getElementById('varValor').value = '';
-            document.getElementById('varDescricao').value = '';
-            document.getElementById('varMes').value = 'atual';
+            btn.disabled = false;
 
-            alert('✅ Variável salva!');
-        }
-
-        // ==================== FIXOS ====================
-        function salvarFixo(tipo, nome, valor) {
-            const fixo = { tipo, nome, valor };
-            enviarGoogleAppsScript('salvarFixo', fixo);
-        }
-
-        function atualizarFixo(tipo, nome, novoValor, pago) {
-            const fixo = { tipo, nome, valor: novoValor, pago };
-            enviarGoogleAppsScript('atualizarFixo', fixo);
-        }
-
-        // ==================== GOOGLE APPS SCRIPT ====================
-        function enviarGoogleAppsScript(acao, dados) {
-            if (SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbwXpcN0LD_Cyh1Gy64ZYMNTyQkz8uXgXZw5sZZyK4cuWmf9Mmg_wXsxqAejzcmN4Unl/exec') {
-                console.log('⚠️ Configure a URL do Google Apps Script');
-                return;
-            }
-
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ acao, dados })
-            })
-            .then(r => r.json())
-            .then(data => {
-                console.log('✅', data);
+            if (error) {
+                mostrarAlerta('❌ Erro ao salvar', 'error');
+                console.error(error);
+            } else {
+                mostrarAlerta('✅ Variável salva!', 'success');
+                document.getElementById('varValor').value = '';
+                document.getElementById('varDescricao').value = '';
                 carregarDados();
-            })
-            .catch(err => console.error('❌', err));
-        }
-
-        function carregarDados() {
-            if (SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbwXpcN0LD_Cyh1Gy64ZYMNTyQkz8uXgXZw5sZZyK4cuWmf9Mmg_wXsxqAejzcmN4Unl/exec') {
-                console.log('⚠️ Configure a URL');
-                return;
             }
-
-            fetch(SCRIPT_URL + '?acao=buscarDados')
-                .then(r => r.json())
-                .then(data => {
-                    dados = data;
-                    atualizarDashboard();
-                })
-                .catch(err => console.error('❌', err));
         }
 
-        // ==================== DASHBOARD ====================
-        function atualizarDashboard() {
-            // Buscar fixos do mês
-            let fixosCasalTotal = 0;
-            let fixosDelaTotal = 0;
-            let fixosGleTotal = 0;
+        async function salvarFixo(tipo, nome, valor) {
+            const { error } = await supabase.from('fixos').insert([{
+                tipo,
+                nome,
+                valor
+            }]);
 
-            // Buscar variáveis do mês
-            let varCasalTotal = 0;
-            let varDelaTotal = 0;
-            let varGleTotal = 0;
+            if (error) {
+                mostrarAlerta('❌ Erro ao salvar', 'error');
+            } else {
+                mostrarAlerta('✅ Fixo salvo!', 'success');
+                carregarDados();
+            }
+        }
 
-            // Buscar parcelas
-            let parcelasTotal = 0;
-            let parcelasGleTotal = 0;
+        async function deletarVariavel(id) {
+            if (!confirm('Deletar variável?')) return;
+            const { error } = await supabase.from('variaveis').delete().eq('id', id);
+            if (!error) {
+                mostrarAlerta('✅ Deletado!', 'success');
+                carregarDados();
+            }
+        }
 
-            // Cálculo
-            const repasse = (fixosCasalTotal / 2) + fixosDelaTotal + (varCasalTotal / 2) + varDelaTotal + parcelasTotal - 620;
+        async function deletarFixo(id) {
+            if (!confirm('Deletar fixo?')) return;
+            const { error } = await supabase.from('fixos').delete().eq('id', id);
+            if (!error) {
+                mostrarAlerta('✅ Deletado!', 'success');
+                carregarDados();
+            }
+        }
+
+        // ==================== CARREGAMENTO ====================
+        async function carregarDados() {
+            try {
+                const { data: fixos } = await supabase.from('fixos').select('*');
+                const { data: variaveis } = await supabase.from('variaveis').select('*').eq('mes', mesAtual);
+                const { data: parcelas } = await supabase.from('parcelas').select('*');
+
+                calcularRepasse(fixos, variaveis, parcelas);
+                renderizar(fixos, variaveis, parcelas);
+            } catch(err) {
+                console.error(err);
+                mostrarAlerta('❌ Erro ao carregar dados', 'error');
+            }
+        }
+
+        function calcularRepasse(fixos, variaveis, parcelas) {
+            let fixosCasal = 0, fixosDela = 0, fixosGle = 0;
+            let varCasal = 0, varDela = 0, varGle = 0;
+            let parcelasCasal = 0, parcelasDela = 0, parcelasGle = 0;
+
+            fixos?.forEach(f => {
+                if (f.tipo === 'casal') fixosCasal += f.valor;
+                else if (f.tipo === 'dela') fixosDela += f.valor;
+                else if (f.tipo === 'gle') fixosGle += f.valor;
+            });
+
+            variaveis?.forEach(v => {
+                if (v.tipo === 'casal') varCasal += v.valor;
+                else if (v.tipo === 'dela') varDela += v.valor;
+                else if (v.tipo === 'gle') varGle += v.valor;
+            });
+
+            parcelas?.forEach(p => {
+                if (p.tipo === 'casal') parcelasCasal += p.valor;
+                else if (p.tipo === 'dela') parcelasDela += p.valor;
+                else if (p.tipo === 'gle') parcelasGle += p.valor;
+            });
+
+            const repasse = (fixosCasal / 2) + fixosDela + (varCasal / 2) + varDela + parcelasCasal + parcelasDela - 620;
 
             document.getElementById('repasseValue').textContent = `R$ ${repasse.toFixed(2).replace('.', ',')}`;
-            document.getElementById('fixosCasalValue').textContent = `R$ ${(fixosCasalTotal / 2).toFixed(2).replace('.', ',')}`;
-            document.getElementById('fixosDelaValue').textContent = `R$ ${fixosDelaTotal.toFixed(2).replace('.', ',')}`;
-            document.getElementById('varCasalValue').textContent = `R$ ${(varCasalTotal / 2).toFixed(2).replace('.', ',')}`;
-            document.getElementById('varDelaValue').textContent = `R$ ${varDelaTotal.toFixed(2).replace('.', ',')}`;
-            document.getElementById('parcelasValue').textContent = `R$ ${parcelasTotal.toFixed(2).replace('.', ',')}`;
-            document.getElementById('varGleValue').textContent = `R$ ${varGleTotal.toFixed(2).replace('.', ',')}`;
-            document.getElementById('fixosGleValue').textContent = `R$ ${fixosGleTotal.toFixed(2).replace('.', ',')}`;
-            document.getElementById('parcelasGleValue').textContent = `R$ ${parcelasGleTotal.toFixed(2).replace('.', ',')}`;
-
-            renderizarListas();
+            document.getElementById('fixosCasalValue').textContent = `R$ ${(fixosCasal / 2).toFixed(2).replace('.', ',')}`;
+            document.getElementById('fixosDelaValue').textContent = `R$ ${fixosDela.toFixed(2).replace('.', ',')}`;
+            document.getElementById('varCasalValue').textContent = `R$ ${(varCasal / 2).toFixed(2).replace('.', ',')}`;
+            document.getElementById('varDelaValue').textContent = `R$ ${varDela.toFixed(2).replace('.', ',')}`;
+            document.getElementById('parcelasValue').textContent = `R$ ${(parcelasCasal + parcelasDela).toFixed(2).replace('.', ',')}`;
+            document.getElementById('varGleValue').textContent = `R$ ${varGle.toFixed(2).replace('.', ',')}`;
+            document.getElementById('fixosGleValue').textContent = `R$ ${fixosGle.toFixed(2).replace('.', ',')}`;
+            document.getElementById('parcelasGleValue').textContent = `R$ ${parcelasGle.toFixed(2).replace('.', ',')}`;
         }
 
-        function renderizarListas() {
-            // TODO: Renderizar fixos, variáveis, parcelas
+        function renderizar(fixos, variaveis, parcelas) {
+            // Variáveis
+            const varList = document.getElementById('variaveisList');
+            if (variaveis?.length) {
+                varList.innerHTML = variaveis.map(v => `
+                    <div class="list-item">
+                        <div class="list-item-info">
+                            <div class="list-item-title">${v.descricao}</div>
+                            <div class="text-small">${v.categoria}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="list-item-value">R$ ${v.valor.toFixed(2).replace('.', ',')}</div>
+                            <button class="icon-btn" onclick="deletarVariavel(${v.id})">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                varList.innerHTML = '<div class="empty-state">Nenhuma variável</div>';
+            }
+
+            // Fixos
+            ['casal', 'dela', 'gle'].forEach(tipo => {
+                const list = document.getElementById(`fixos${tipo.charAt(0).toUpperCase() + tipo.slice(1)}List`);
+                const itens = fixos?.filter(f => f.tipo === tipo) || [];
+                if (itens.length) {
+                    list.innerHTML = itens.map(f => `
+                        <div class="list-item">
+                            <div class="list-item-title">${f.nome}</div>
+                            <div style="text-align: right;">
+                                <div class="list-item-value">R$ ${f.valor.toFixed(2).replace('.', ',')}</div>
+                                <button class="icon-btn" onclick="deletarFixo(${f.id})">🗑️</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = '<div class="empty-state">Nenhum fixo</div>';
+                }
+            });
+
+            // Parcelas
+            const parcList = document.getElementById('parcelasList');
+            if (parcelas?.length) {
+                parcList.innerHTML = parcelas.map(p => `
+                    <div class="list-item">
+                        <div class="list-item-title">${p.nome}</div>
+                        <div class="list-item-value">R$ ${p.valor.toFixed(2).replace('.', ',')}</div>
+                    </div>
+                `).join('');
+            } else {
+                parcList.innerHTML = '<div class="empty-state">Nenhuma parcela</div>';
+            }
+        }
+
+        function abrirModalFixo(tipo) {
+            const nome = prompt('Nome do fixo:');
+            const valor = prompt('Valor:');
+            if (nome && valor) salvarFixo(tipo, nome, parseFloat(valor));
+        }
+
+        function abrirModalParcela() {
+            const tipo = prompt('Tipo (casal/dela/gle):');
+            const nome = prompt('Nome:');
+            const valor = prompt('Valor:');
+            if (tipo && nome && valor) {
+                supabase.from('parcelas').insert([{ tipo, nome, valor: parseFloat(valor) }]).then(() => carregarDados());
+            }
         }
 
         // ==================== INICIALIZAÇÃO ====================
