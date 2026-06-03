@@ -1244,6 +1244,14 @@
 
     // ===== RENDERIZAR FIXOS COLAPSÁVEIS =====
     function renderizarGruposFixos(fixos) {
+        // DEBUG — remover depois
+        console.log('renderizarGruposFixos recebeu:', fixos.length, 'fixos');
+        console.log('mesAtual:', mesAtual);
+        fixos.forEach(f => {
+            const ok = f.tipo === 'gle' && mesCompativel(f.mes);
+            if (f.tipo === 'gle') console.log('gle fixo:', f.nome, '| mes:', f.mes, '| mesCompativel:', mesCompativel(f.mes), '| passa filtro:', ok);
+        });
+
         const grupos = [
             { tipo: 'casal', label: '👥 Fixos Casal' },
             { tipo: 'dela',  label: '👩 Fixos Dela'  },
