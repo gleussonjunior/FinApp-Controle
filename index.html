@@ -3,26 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinApp — Controle Financeiro</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>📊</text></svg>">
+    <title>FinApp</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --primary: #1a1a1a;
             --secondary: #0ea5e9;
-            --success: #10b981;
-            --danger: #ef4444;
-            --bg: #ffffff;
-            --bg-alt: #f9fafb;
-            --border: #e5e7eb;
-            --text: #1f2937;
-            --text-light: #6b7280;
-            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --success:   #10b981;
+            --danger:    #ef4444;
+            --bg:        #ffffff;
+            --bg-alt:    #f9fafb;
+            --border:    #e5e7eb;
+            --text:      #1f2937;
+            --text-light:#6b7280;
+            --shadow:    0 1px 3px rgba(0,0,0,0.1);
             --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
         }
 
@@ -40,9 +34,9 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            position: relative;
         }
 
+        /* ===== HEADER ===== */
         .header {
             background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
             color: white;
@@ -52,39 +46,24 @@
             top: 0;
             z-index: 100;
             display: grid;
-            align-items: center;
             grid-template-columns: 1fr auto 1fr;
+            align-items: center;
         }
 
-        .header-left {
-            justify-self: start;
-            
-        }
-
-        .header-center {
-            justify-self: center;
-        }
-
-        .header-right {
-            
-            justify-self: end;
-            position: relative;
-        }
+        .header-left  { justify-self: start; }
+        .header-center { justify-self: center; }
+        .header-right { justify-self: end; position: relative; }
 
         .header-title {
             font-size: 36px;
-            line-height: 1;
             font-weight: 700;
             letter-spacing: -1px;
-            margin: 0;
         }
 
         .header-subtitle {
             font-size: 13px;
-            
             opacity: 0.85;
             font-weight: 500;
-            margin: 0;
         }
 
         .menu-btn {
@@ -95,30 +74,25 @@
             cursor: pointer;
             padding: 8px;
             border-radius: 4px;
-            transition: background 0.2s;
         }
 
-        .menu-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
+        .menu-btn:hover { background: rgba(255,255,255,0.1); }
 
         .menu-dropdown {
+            display: none;
             position: absolute;
-            top: 50px;
+            top: 44px;
             right: 0;
             background: var(--bg);
             border: 1px solid var(--border);
             border-radius: 8px;
             box-shadow: var(--shadow-lg);
             min-width: 160px;
-            z-index: 200;
-            display: none;
+            z-index: 300;
             overflow: hidden;
         }
 
-        .menu-dropdown.active {
-            display: block;
-        }
+        .menu-dropdown.active { display: block; }
 
         .menu-item {
             display: block;
@@ -131,64 +105,35 @@
             color: var(--text);
             font-size: 14px;
             border-bottom: 1px solid var(--border);
-            transition: background 0.2s;
         }
 
-        .menu-item:last-child {
-            border-bottom: none;
-        }
+        .menu-item:last-child { border-bottom: none; }
+        .menu-item:hover { background: var(--bg-alt); }
 
-        .menu-item:hover {
-            background: var(--bg-alt);
-        }
-
+        /* ===== CONTENT ===== */
         .content {
             flex: 1;
             padding: 16px;
+            padding-bottom: 100px;
             overflow-y: auto;
-            padding-bottom: 160px;
         }
 
-        .screen {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
+        .screen { display: none; }
+        .screen.active { display: block; }
 
-        .screen.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        /* ===== ALERTS ===== */
         .alert {
             padding: 12px 16px;
             border-radius: 8px;
             margin-bottom: 16px;
             font-size: 14px;
             font-weight: 600;
-            animation: slideDown 0.3s ease;
         }
 
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .alert.success { background: rgba(16,185,129,0.1); color: #047857; border: 1px solid var(--success); }
+        .alert.error   { background: rgba(239,68,68,0.1);  color: #b91c1c; border: 1px solid var(--danger); }
 
-        .alert.success {
-            background: rgba(16, 185, 129, 0.1);
-            color: #047857;
-            border: 1px solid var(--success);
-        }
-
-        .alert.error {
-            background: rgba(239, 68, 68, 0.1);
-            color: #b91c1c;
-            border: 1px solid var(--danger);
-        }
-
+        /* ===== CARDS ===== */
         .card {
             background: var(--bg);
             border: 1px solid var(--border);
@@ -200,15 +145,14 @@
 
         .card.highlight {
             background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-color: #f59e0b;
-            border-width: 2px;
+            border: 2px solid #f59e0b;
         }
 
         .repasse-value {
             font-size: 32px;
             font-weight: 700;
             color: #b45309;
-            margin: 12px 0;
+            margin: 8px 0 4px;
             word-break: break-word;
         }
 
@@ -216,9 +160,41 @@
             font-size: 24px;
             font-weight: 700;
             color: var(--danger);
-            margin: 12px 0;
+            margin: 8px 0 4px;
         }
 
+        /* ===== COLLAPSIBLE ===== */
+        .card-header-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .card-header-toggle:hover { opacity: 0.8; }
+
+        .toggle-icon {
+            font-size: 18px;
+            transition: transform 0.25s ease;
+            color: var(--text-light);
+        }
+
+        .toggle-icon.collapsed { transform: rotate(-90deg); }
+
+        .collapsible-body {
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.3s ease;
+            max-height: 600px;
+            opacity: 1;
+        }
+
+        .collapsible-body.collapsed {
+            max-height: 0;
+            opacity: 0;
+        }
+
+        /* ===== STAT ROWS ===== */
         .stat-row {
             display: flex;
             justify-content: space-between;
@@ -228,20 +204,11 @@
             font-size: 14px;
         }
 
-        .stat-row:last-child {
-            border-bottom: none;
-        }
+        .stat-row:last-child { border-bottom: none; }
+        .stat-label { color: var(--text-light); }
+        .stat-value { font-weight: 700; white-space: nowrap; margin-left: 8px; }
 
-        .stat-label {
-            color: var(--text-light);
-        }
-
-        .stat-value {
-            font-weight: 700;
-            white-space: nowrap;
-            margin-left: 8px;
-        }
-
+        /* ===== FORM ===== */
         input, select {
             width: 100%;
             padding: 12px;
@@ -250,13 +217,12 @@
             font-size: 16px;
             margin-bottom: 12px;
             font-family: inherit;
-            transition: border-color 0.2s;
         }
 
         input:focus, select:focus {
             outline: none;
             border-color: var(--secondary);
-            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+            box-shadow: 0 0 0 3px rgba(14,165,233,0.1);
         }
 
         label {
@@ -267,9 +233,7 @@
             color: var(--text);
         }
 
-        .form-group {
-            margin-bottom: 16px;
-        }
+        .form-group { margin-bottom: 16px; }
 
         .btn {
             padding: 12px 20px;
@@ -284,24 +248,12 @@
             transition: all 0.2s ease;
         }
 
-        .btn:hover:not(:disabled) {
-            background: #0284c7;
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
+        .btn:hover:not(:disabled) { background: #0284c7; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        .btn:active:not(:disabled) {
-            transform: translateY(0);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
+        /* ===== CATEGORY PILLS ===== */
         .category-select {
             display: grid;
-            align-items: flex-end;
             grid-template-columns: repeat(2, 1fr);
             gap: 8px;
             margin-bottom: 12px;
@@ -315,21 +267,14 @@
             text-align: center;
             font-size: 12px;
             font-weight: 600;
-            transition: all 0.2s ease;
             background: var(--bg);
+            transition: all 0.2s ease;
         }
 
-        .category-pill:hover {
-            border-color: var(--secondary);
-            background: rgba(14, 165, 233, 0.05);
-        }
+        .category-pill:hover { border-color: var(--secondary); }
+        .category-pill.selected { background: var(--secondary); color: white; border-color: var(--secondary); }
 
-        .category-pill.selected {
-            background: var(--secondary);
-            color: white;
-            border-color: var(--secondary);
-        }
-
+        /* ===== LIST ITEMS ===== */
         .list-item {
             display: flex;
             justify-content: space-between;
@@ -339,43 +284,14 @@
             border-radius: 8px;
             margin-bottom: 8px;
             gap: 8px;
-            transition: all 0.2s ease;
         }
 
-        .list-item:hover {
-            border-color: var(--secondary);
-            box-shadow: var(--shadow);
-        }
+        .list-item.pago { opacity: 0.45; text-decoration: line-through; }
 
-        .list-item.pago {
-            opacity: 0.5;
-            text-decoration: line-through;
-        }
-
-        .list-item-info {
-            flex: 1;
-            min-width: 0;
-            overflow: hidden;
-        }
-
-        .list-item-info strong {
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .list-item-value {
-            font-weight: 700;
-            white-space: nowrap;
-            color: var(--text);
-        }
-
-        .list-item-actions {
-            display: flex;
-            gap: 4px;
-            flex-shrink: 0;
-        }
+        .list-item-info { flex: 1; min-width: 0; overflow: hidden; }
+        .list-item-info strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .list-item-value { font-weight: 700; white-space: nowrap; }
+        .list-item-actions { display: flex; gap: 4px; flex-shrink: 0; align-items: center; }
 
         .icon-btn {
             background: none;
@@ -384,22 +300,10 @@
             cursor: pointer;
             color: var(--danger);
             padding: 4px 6px;
-            transition: all 0.2s ease;
             border-radius: 4px;
         }
 
-        .icon-btn:hover {
-            transform: scale(1.15);
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        .edit-btn {
-            color: var(--secondary);
-        }
-
-        .edit-btn:hover {
-            background: rgba(14, 165, 233, 0.1);
-        }
+        .edit-btn { color: var(--secondary); }
 
         .check-btn {
             width: 24px;
@@ -411,25 +315,19 @@
             background: var(--bg);
             color: var(--success);
             font-weight: bold;
-            padding: 0;
+            font-size: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
-            font-size: 14px;
         }
 
-        .check-btn:hover {
-            border-color: var(--success);
-            background: rgba(16, 185, 129, 0.1);
-        }
+        .check-btn.checked { background: var(--success); color: white; border-color: var(--success); }
 
-        .check-btn.checked {
-            background: var(--success);
-            color: white;
-            border-color: var(--success);
-        }
+        .receita-item { background: rgba(16,185,129,0.05); border-left: 4px solid var(--success); }
+        .empty-state { text-align: center; padding: 32px 16px; color: var(--text-light); }
+        .text-small { font-size: 12px; color: var(--text-light); }
 
+        /* ===== NAV BOTTOM ===== */
         .nav-bottom {
             position: fixed;
             bottom: 0;
@@ -441,7 +339,7 @@
             border-top: 1px solid var(--border);
             display: flex;
             z-index: 90;
-            box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
         }
 
         .nav-item {
@@ -455,54 +353,29 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-            transition: all 0.2s ease;
-        }
-
-        .nav-item:active {
-            transform: scale(0.95);
-        }
 
         .nav-item.active {
-
-        .nav-destaque {
             color: var(--secondary);
-            background: rgba(14, 165, 233, 0.15);
-            border-radius: 8px;
-            font-weight: 700;
+            background: rgba(14,165,233,0.08);
         }
+
+        .nav-item.nav-destaque {
             color: var(--secondary);
-            background: rgba(14, 165, 233, 0.1);
-            border-radius: 8px;
+            background: rgba(14,165,233,0.12);
         }
 
-        .text-small {
-            font-size: 12px;
-            color: var(--text-light);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 16px;
-            color: var(--text-light);
-        }
-
+        /* ===== MODALS ===== */
         .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            inset: 0;
             background: rgba(0,0,0,0.5);
             z-index: 200;
             align-items: flex-end;
             justify-content: center;
-            animation: fadeIn 0.2s ease;
         }
 
-        .modal.active {
-            display: flex;
-        }
+        .modal.active { display: flex; }
 
         .modal-content {
             background: var(--bg);
@@ -529,1006 +402,827 @@
             font-size: 24px;
             cursor: pointer;
             color: var(--text-light);
-            padding: 0;
             width: 32px;
             height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 4px;
-            transition: all 0.2s ease;
         }
 
-        .modal-close:hover {
-            background: var(--bg-alt);
-            color: var(--text);
-        }
-
-
-        .fab:hover {
-            background: #0284c7;
-            transform: scale(1.12);
-            box-shadow: 0 15px 35px rgba(14, 165, 233, 0.3);
-        }
-
-        .fab:active {
-            transform: scale(0.95);
-        }
-
-        .receita-item {
-            background: rgba(16, 185, 129, 0.05);
-            border-left: 4px solid var(--success);
-        }
-
-        @media (max-width: 480px) {
-            .header-title {
-                font-size: 32px;
-            }
-
-            .content {
-                padding: 12px;
-            }
-
-            .card {
-                padding: 12px;
-            }
-        }
+        .modal-close:hover { background: var(--bg-alt); }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="header-left">
-                <div class="header-subtitle" id="headerDate">Junho 2026</div>
-            </div>
-            <div class="header-center">
-                <div class="header-title">FinApp</div>
-            </div>
-            <div class="header-right">
-                <button class="menu-btn" onclick="toggleMenu()" aria-label="Menu">☰</button>
-                <div class="menu-dropdown" id="menuDropdown">
-                    <button class="menu-item" onclick="mudarTela('screenFixos'); closeMenu();">⚙️ Fixos</button>
-                    <button class="menu-item" onclick="mudarTela('screenParcelas'); closeMenu();">💳 Parcelas</button>
-                    <button class="menu-item" onclick="mudarTela('screenEntradas'); closeMenu();">💰 Entradas</button>
-                </div>
+<div class="container">
+
+    <div class="header">
+        <div class="header-left">
+            <div class="header-subtitle" id="headerDate">Junho 2026</div>
+        </div>
+        <div class="header-center">
+            <div class="header-title">FinApp</div>
+        </div>
+        <div class="header-right">
+            <button class="menu-btn" id="menuBtn">☰</button>
+            <div class="menu-dropdown" id="menuDropdown">
+                <button class="menu-item" data-tela="screenFixos">⚙️ Fixos</button>
+                <button class="menu-item" data-tela="screenParcelas">💳 Parcelas</button>
+                <button class="menu-item" data-tela="screenEntradas">💰 Entradas</button>
             </div>
         </div>
+    </div>
 
-        <div class="content">
-            <div id="alertContainer"></div>
+    <div class="content">
+        <div id="alertContainer"></div>
 
-            <!-- INÍCIO -->
-            <div class="screen active" id="screenInicio">
-                <div class="card highlight">
-                    <div style="font-size: 13px; font-weight: 600; color: #92400e; margin-bottom: 8px;">Repasse para Lia</div>
-                    <div class="repasse-value" id="repasseValue">R$ 0,00</div>
+        <!-- INÍCIO -->
+        <div class="screen active" id="screenInicio">
+
+            <div class="card highlight">
+                <div style="font-size:13px;font-weight:600;color:#92400e;margin-bottom:4px;">Repasse para Lia</div>
+                <div class="repasse-value" id="repasseValue">R$ 0,00</div>
+            </div>
+
+            <div class="card">
+                <div style="font-size:13px;font-weight:600;color:#666;margin-bottom:4px;">Gastos totais do mês</div>
+                <div class="total-gastos" id="totalGastos">R$ 0,00</div>
+            </div>
+
+            <!-- Detalhamento colapsável -->
+            <div class="card">
+                <div class="card-header-toggle" id="toggleDetalhamento">
+                    <div style="font-size:14px;font-weight:700;">Detalhamento</div>
+                    <span class="toggle-icon" id="iconDetalhamento">▾</span>
                 </div>
-
-                <div class="card">
-                    <div style="font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px;">Gastos totais do mês</div>
-                    <div class="total-gastos" id="totalGastos">R$ 0,00</div>
-                </div>
-
-                <div class="card">
-                    <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Detalhamento</div>
-                    <div class="stat-row">
-                        <span class="stat-label">Fixos Casal (÷2)</span>
-                        <span class="stat-value" id="fixosCasalValue">R$ 0,00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Fixos Dela</span>
-                        <span class="stat-value" id="fixosDelaValue">R$ 0,00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Variáveis Casal (÷2)</span>
-                        <span class="stat-value" id="varCasalValue">R$ 0,00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Variáveis Dela</span>
-                        <span class="stat-value" id="varDelaValue">R$ 0,00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Parcelas</span>
-                        <span class="stat-value" id="parcelasValue">R$ 0,00</span>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Seus Gastos (Gle)</div>
-                    <div class="stat-row">
-                        <span class="stat-label">Variáveis</span>
-                        <span class="stat-value" id="varGleValue">R$ 0,00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Fixos</span>
-                        <span class="stat-value" id="fixosGleValue">R$ 0,00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Parcelas</span>
-                        <span class="stat-value" id="parcelasGleValue">R$ 0,00</span>
-                    </div>
-                    <div class="stat-row" style="background: rgba(0,0,0,0.05); padding: 10px; margin: 0 -16px; border-radius: 6px; font-weight: 700;">
-                        <span class="stat-label">TOTAL</span>
-                        <span class="stat-value" id="totalGleValue">R$ 0,00</span>
+                <div class="collapsible-body" id="bodyDetalhamento">
+                    <div style="margin-top:12px;">
+                        <div class="stat-row"><span class="stat-label">Fixos Casal (÷2)</span><span class="stat-value" id="fixosCasalValue">R$ 0,00</span></div>
+                        <div class="stat-row"><span class="stat-label">Fixos Dela</span><span class="stat-value" id="fixosDelaValue">R$ 0,00</span></div>
+                        <div class="stat-row"><span class="stat-label">Variáveis Casal (÷2)</span><span class="stat-value" id="varCasalValue">R$ 0,00</span></div>
+                        <div class="stat-row"><span class="stat-label">Variáveis Dela</span><span class="stat-value" id="varDelaValue">R$ 0,00</span></div>
+                        <div class="stat-row"><span class="stat-label">Parcelas</span><span class="stat-value" id="parcelasValue">R$ 0,00</span></div>
                     </div>
                 </div>
             </div>
 
-            <!-- FIXOS -->
-            <div class="screen" id="screenFixos">
-                <div class="card">
-                    <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Fixos Casal</div>
-                    <div id="fixosCasalList"></div>
+            <!-- Seus Gastos colapsável -->
+            <div class="card">
+                <div class="card-header-toggle" id="toggleGle">
+                    <div style="font-size:14px;font-weight:700;">Seus Gastos (Gle)</div>
+                    <span class="toggle-icon" id="iconGle">▾</span>
                 </div>
-
-                <div class="card">
-                    <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Fixos Dela</div>
-                    <div id="fixosDelaList"></div>
-                </div>
-
-                <div class="card">
-                    <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Fixos Seus</div>
-                    <div id="fixosGleList"></div>
-                </div>
-
-                <button class="btn" onclick="abrirModalFixo()">+ Adicionar Fixo</button>
-            </div>
-
-            <!-- VARIÁVEIS -->
-            <div class="screen" id="screenVariaveis">
-                <div class="card">
-                    <h2 style="margin-bottom: 20px; font-size: 16px;">Lançar Variável</h2>
-                    
-                    <div class="form-group">
-                        <label>Tipo</label>
-                        <div class="category-select" id="tipoSelect">
-                            <div class="category-pill selected" data-tipo="casal">👥 Casal</div>
-                            <div class="category-pill" data-tipo="dela">👩 Dela</div>
-                            <div class="category-pill" data-tipo="gle">👨 Você</div>
+                <div class="collapsible-body" id="bodyGle">
+                    <div style="margin-top:12px;">
+                        <div class="stat-row"><span class="stat-label">Variáveis</span><span class="stat-value" id="varGleValue">R$ 0,00</span></div>
+                        <div class="stat-row"><span class="stat-label">Fixos</span><span class="stat-value" id="fixosGleValue">R$ 0,00</span></div>
+                        <div class="stat-row"><span class="stat-label">Parcelas</span><span class="stat-value" id="parcelasGleValue">R$ 0,00</span></div>
+                        <div class="stat-row" style="background:rgba(0,0,0,0.04);padding:10px;margin:0 -16px;border-radius:6px;font-weight:700;">
+                            <span class="stat-label">TOTAL</span>
+                            <span class="stat-value" id="totalGleValue">R$ 0,00</span>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label>Categoria</label>
-                        <div class="category-select" id="categoriaSelect"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Valor (R$)</label>
-                        <input type="number" id="varValor" placeholder="0,00" step="0.01" min="0">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Descrição</label>
-                        <input type="text" id="varDescricao" placeholder="Ex: Supermercado">
-                    </div>
-
-                    <button class="btn" id="btnSalvarVariavel">💾 Salvar</button>
-                </div>
-
-                <div class="card">
-                    <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Variáveis Lançadas</div>
-                    <div id="variaveisList"></div>
                 </div>
             </div>
 
-            <!-- PARCELAS -->
-            <div class="screen" id="screenParcelas">
-                <div class="card">
-                    <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Parcelas</div>
-                    <div id="parcelasList"></div>
-                    <button class="btn" onclick="abrirModalParcela()" style="margin-top: 12px;">+ Adicionar Parcela</button>
+        </div>
+
+        <!-- FIXOS -->
+        <div class="screen" id="screenFixos">
+            <div class="card">
+                <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Fixos Casal</div>
+                <div id="fixosCasalList"></div>
+            </div>
+            <div class="card">
+                <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Fixos Dela</div>
+                <div id="fixosDelaList"></div>
+            </div>
+            <div class="card">
+                <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Fixos Seus</div>
+                <div id="fixosGleList"></div>
+            </div>
+            <button class="btn" id="btnAbrirModalFixo">+ Adicionar Fixo</button>
+        </div>
+
+        <!-- VARIÁVEIS -->
+        <div class="screen" id="screenVariaveis">
+            <div class="card">
+                <h2 style="margin-bottom:20px;font-size:16px;">Lançar Variável</h2>
+
+                <div class="form-group">
+                    <label>Tipo</label>
+                    <div class="category-select" id="tipoSelect">
+                        <div class="category-pill selected" data-tipo="casal">👥 Casal</div>
+                        <div class="category-pill" data-tipo="dela">👩 Dela</div>
+                        <div class="category-pill" data-tipo="gle">👨 Você</div>
+                    </div>
                 </div>
+
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <div class="category-select" id="categoriaSelect"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Valor (R$)</label>
+                    <input type="number" id="varValor" placeholder="0,00" step="0.01" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <input type="text" id="varDescricao" placeholder="Ex: Supermercado">
+                </div>
+
+                <button class="btn" id="btnSalvarVariavel">💾 Salvar</button>
             </div>
 
-            <!-- ENTRADAS -->
-            <div class="screen" id="screenEntradas">
-                <div class="card">
-                    <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Receitas</div>
-                    <div id="receitasList"></div>
-                    <button class="btn" onclick="abrirModalReceita()" style="margin-top: 12px;">+ Adicionar Receita</button>
-                </div>
+            <div class="card">
+                <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Variáveis Lançadas</div>
+                <div id="variaveisList"></div>
             </div>
         </div>
 
-        <div class="nav-bottom">
-            <button class="nav-item active" data-tela="screenInicio">📊 Início</button>
-            <button class="nav-item nav-destaque" data-tela="screenVariaveis">➕ Variáveis</button>
+        <!-- PARCELAS -->
+        <div class="screen" id="screenParcelas">
+            <div class="card">
+                <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Parcelas</div>
+                <div id="parcelasList"></div>
+                <button class="btn" id="btnAbrirModalParcela" style="margin-top:12px;">+ Adicionar Parcela</button>
+            </div>
         </div>
 
-
-    <!-- MODAL FIXO -->
-    <div class="modal" id="modalFixo">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span id="modalFixoTitle">Adicionar Fixo</span>
-                <button class="modal-close" onclick="fecharModalFixo()" aria-label="Fechar">✕</button>
+        <!-- ENTRADAS -->
+        <div class="screen" id="screenEntradas">
+            <div class="card">
+                <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Receitas</div>
+                <div id="receitasList"></div>
+                <button class="btn" id="btnAbrirModalReceita" style="margin-top:12px;">+ Adicionar Receita</button>
             </div>
-
-            <div class="form-group">
-                <label>Tipo</label>
-                <div class="category-select" id="tipoFixoSelect">
-                    <div class="category-pill selected" data-tipo="casal">👥 Casal</div>
-                    <div class="category-pill" data-tipo="dela">👩 Dela</div>
-                    <div class="category-pill" data-tipo="gle">👨 Você</div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Nome</label>
-                <input type="text" id="fixoNome" placeholder="Ex: Aluguel">
-            </div>
-
-            <div class="form-group">
-                <label>Valor (R$)</label>
-                <input type="number" id="fixoValor" placeholder="0,00" step="0.01" min="0">
-            </div>
-
-            <div class="form-group">
-                <label>Mês</label>
-                <select id="fixoMes"></select>
-            </div>
-
-            <button class="btn" id="btnSalvarFixo">💾 Salvar</button>
         </div>
     </div>
 
-    <!-- MODAL PARCELA -->
-    <div class="modal" id="modalParcela">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span id="modalParcelaTitle">Adicionar Parcela</span>
-                <button class="modal-close" onclick="fecharModalParcela()" aria-label="Fechar">✕</button>
-            </div>
-
-            <div class="form-group">
-                <label>Tipo (De quem é?)</label>
-                <div class="category-select" id="tipoParcelaSelect">
-                    <div class="category-pill selected" data-tipo="casal">👥 Casal</div>
-                    <div class="category-pill" data-tipo="dela">👩 Dela</div>
-                    <div class="category-pill" data-tipo="gle">👨 Você</div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Nome</label>
-                <input type="text" id="parcelaNome" placeholder="Ex: Notebook">
-            </div>
-
-            <div class="form-group">
-                <label>Valor por Parcela (R$)</label>
-                <input type="number" id="parcelaValor" placeholder="0,00" step="0.01" min="0">
-            </div>
-
-            <div class="form-group">
-                <label>Número de Parcelas</label>
-                <input type="number" id="parcelasNum" placeholder="12" min="1" max="60">
-            </div>
-
-            <div class="form-group">
-                <label>Mês da 1ª Parcela</label>
-                <select id="parcelaMesInicio"></select>
-            </div>
-
-            <button class="btn" id="btnSalvarParcela">💾 Salvar</button>
-        </div>
+    <div class="nav-bottom">
+        <button class="nav-item active" data-tela="screenInicio">📊 Início</button>
+        <button class="nav-item nav-destaque" data-tela="screenVariaveis">➕ Variáveis</button>
     </div>
 
-    <!-- MODAL RECEITA -->
-    <div class="modal" id="modalReceita">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span>Adicionar Receita</span>
-                <button class="modal-close" onclick="fecharModalReceita()" aria-label="Fechar">✕</button>
-            </div>
+</div>
 
-            <div class="form-group">
-                <label>Tipo</label>
-                <select id="receitaTipo">
-                    <option value="Salário">Salário</option>
-                    <option value="Lia">Lia</option>
-                    <option value="Débora">Débora</option>
-                    <option value="Diego Netflix">Diego Netflix</option>
-                    <option value="Andre Netflix">Andre Netflix</option>
-                    <option value="Porão Redes Sociais">Porão Redes Sociais</option>
-                    <option value="Restituição IR">Restituição IR</option>
-                    <option value="Outro">Outro</option>
-                </select>
-            </div>
-
-            <div class="form-group" id="receitaOutroGroup" style="display: none;">
-                <label>Especifique</label>
-                <input type="text" id="receitaOutroDescricao" placeholder="Digite o tipo de receita">
-            </div>
-
-            <div class="form-group">
-                <label>Valor (R$)</label>
-                <input type="number" id="receitaValor" placeholder="0,00" step="0.01" min="0">
-            </div>
-
-            <button class="btn" id="btnSalvarReceita">💾 Salvar</button>
+<!-- MODAL FIXO -->
+<div class="modal" id="modalFixo">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span id="modalFixoTitle">Adicionar Fixo</span>
+            <button class="modal-close" id="btnFecharModalFixo">✕</button>
         </div>
+        <div class="form-group">
+            <label>Tipo</label>
+            <div class="category-select" id="tipoFixoSelect">
+                <div class="category-pill selected" data-tipo="casal">👥 Casal</div>
+                <div class="category-pill" data-tipo="dela">👩 Dela</div>
+                <div class="category-pill" data-tipo="gle">👨 Você</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Nome</label>
+            <input type="text" id="fixoNome" placeholder="Ex: Aluguel">
+        </div>
+        <div class="form-group">
+            <label>Valor (R$)</label>
+            <input type="number" id="fixoValor" placeholder="0,00" step="0.01" min="0">
+        </div>
+        <div class="form-group">
+            <label>Mês</label>
+            <select id="fixoMes"></select>
+        </div>
+        <button class="btn" id="btnSalvarFixo">💾 Salvar</button>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        // ===== VARIÁVEIS GLOBAIS =====
-        let supabaseClient = null;
-        const CATEGORIAS = {
-            casal: ['Uber', 'Mercado', 'Saídas', 'Extra', 'Pets', 'Outros'],
-            dela: ['Pessoais Lia', 'Outros'],
-            gle: ['Pessoais Gle', 'Outros']
-        };
-        const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+<!-- MODAL PARCELA -->
+<div class="modal" id="modalParcela">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span id="modalParcelaTitle">Adicionar Parcela</span>
+            <button class="modal-close" id="btnFecharModalParcela">✕</button>
+        </div>
+        <div class="form-group">
+            <label>Tipo</label>
+            <div class="category-select" id="tipoParcelaSelect">
+                <div class="category-pill selected" data-tipo="casal">👥 Casal</div>
+                <div class="category-pill" data-tipo="dela">👩 Dela</div>
+                <div class="category-pill" data-tipo="gle">👨 Você</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Nome</label>
+            <input type="text" id="parcelaNome" placeholder="Ex: Notebook">
+        </div>
+        <div class="form-group">
+            <label>Valor por Parcela (R$)</label>
+            <input type="number" id="parcelaValor" placeholder="0,00" step="0.01" min="0">
+        </div>
+        <div class="form-group" id="parcelasNumGroup">
+            <label>Número de Parcelas</label>
+            <input type="number" id="parcelasNum" placeholder="12" min="1" max="60">
+        </div>
+        <div class="form-group">
+            <label>Mês da 1ª Parcela</label>
+            <select id="parcelaMesInicio"></select>
+        </div>
+        <button class="btn" id="btnSalvarParcela">💾 Salvar</button>
+    </div>
+</div>
 
-        let tipoAtual = 'casal';
-        let categoriaAtual = 'Uber';
-        let mesAtual = new Date().getMonth();
-        let tipoFixoAtual = 'casal';
-        let tipoParcelaAtual = 'casal';
-        let fixoEditandoId = null;
-        let parcelaEditandoId = null;
+<!-- MODAL RECEITA -->
+<div class="modal" id="modalReceita">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span>Adicionar Receita</span>
+            <button class="modal-close" id="btnFecharModalReceita">✕</button>
+        </div>
+        <div class="form-group">
+            <label>Tipo</label>
+            <select id="receitaTipo">
+                <option value="Salário">Salário</option>
+                <option value="Lia">Lia</option>
+                <option value="Débora">Débora</option>
+                <option value="Diego Netflix">Diego Netflix</option>
+                <option value="Andre Netflix">Andre Netflix</option>
+                <option value="Porão Redes Sociais">Porão Redes Sociais</option>
+                <option value="Restituição IR">Restituição IR</option>
+                <option value="Outro">Outro</option>
+            </select>
+        </div>
+        <div class="form-group" id="receitaOutroGroup" style="display:none;">
+            <label>Especifique</label>
+            <input type="text" id="receitaOutroDescricao" placeholder="Digite o tipo">
+        </div>
+        <div class="form-group">
+            <label>Valor (R$)</label>
+            <input type="number" id="receitaValor" placeholder="0,00" step="0.01" min="0">
+        </div>
+        <button class="btn" id="btnSalvarReceita">💾 Salvar</button>
+    </div>
+</div>
 
-        // ===== MENU =====
-        function toggleMenu() {
-            document.getElementById('menuDropdown').classList.toggle('active');
-        }
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // ===== CONFIG =====
+    const SUPABASE_URL = 'https://nsuawtxahbsivvhgxqlb.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zdWF3dHhhaGJzaXZ2aGd4cWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NDQxNTcsImV4cCI6MjA5NjAyMDE1N30.y0mEk8Iee5xXpVr7wUgrqYIDKNLUDSZfxdetsDYbNnE';
 
-        function closeMenu() {
-            document.getElementById('menuDropdown').classList.remove('active');
-        }
+    const CATEGORIAS = {
+        casal: ['Uber', 'Mercado', 'Saídas', 'Extra', 'Pets', 'Outros'],
+        dela:  ['Pessoais Lia', 'Outros'],
+        gle:   ['Pessoais Gle', 'Outros']
+    };
 
-        // ===== ALERTAS =====
-        function mostrarAlerta(msg, tipo = 'success') {
-            const container = document.getElementById('alertContainer');
-            const alert = document.createElement('div');
-            alert.className = `alert ${tipo}`;
-            alert.textContent = msg;
-            container.appendChild(alert);
-            setTimeout(() => {
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 300);
-            }, 2700);
-        }
+    const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                   'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-        // ===== NAVEGAÇÃO =====
-        function mudarTela(telaId) {
-            closeMenu();
-            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-            document.getElementById(telaId).classList.add('active');
-            
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const navBtn = document.querySelector(`[data-tela="${telaId}"]`);
-            if (navBtn) navBtn.classList.add('active');
-            
-            carregarDados();
-        }
+    let db            = null;
+    let mesAtual      = new Date().getMonth();  // número 0-11
+    let tipoAtual     = 'casal';
+    let categoriaAtual = 'Uber';
+    let tipoFixoAtual  = 'casal';
+    let tipoParcelaAtual = 'casal';
+    let fixoEditandoId   = null;
+    let parcelaEditandoId = null;
 
-        // ===== INICIALIZAÇÃO =====
-        function inicializarTipoSelect() {
-            const select = document.getElementById('tipoSelect');
-            if (!select) return;
-            
-            select.addEventListener('click', (e) => {
-                if (e.target.classList.contains('category-pill')) {
-                    document.querySelectorAll('#tipoSelect .category-pill').forEach(x => x.classList.remove('selected'));
-                    e.target.classList.add('selected');
-                    tipoAtual = e.target.dataset.tipo;
-                    atualizarCategorias();
-                }
-            });
-        }
+    // ===== HELPERS =====
+    const fmt = n => `R$ ${Number(n).toFixed(2).replace('.', ',')}`;
 
-        function atualizarCategorias() {
-            const select = document.getElementById('categoriaSelect');
-            select.innerHTML = '';
-            CATEGORIAS[tipoAtual].forEach(cat => {
-                const div = document.createElement('div');
-                div.className = `category-pill ${cat === categoriaAtual ? 'selected' : ''}`;
-                div.textContent = cat;
-                select.appendChild(div);
-            });
-            
-            select.addEventListener('click', (e) => {
-                if (e.target.classList.contains('category-pill')) {
-                    document.querySelectorAll('#categoriaSelect .category-pill').forEach(x => x.classList.remove('selected'));
-                    e.target.classList.add('selected');
-                    categoriaAtual = e.target.textContent;
-                }
-            });
-            
-            categoriaAtual = CATEGORIAS[tipoAtual][0];
-        }
+    function mostrarAlerta(msg, tipo = 'success') {
+        const el = document.createElement('div');
+        el.className = `alert ${tipo}`;
+        el.textContent = msg;
+        document.getElementById('alertContainer').appendChild(el);
+        setTimeout(() => el.remove(), 3000);
+    }
 
-        function preencherMeses(selectId) {
-            const select = document.getElementById(selectId);
-            if (!select) return;
-            
-            select.innerHTML = '';
-            MESES.forEach((m, i) => {
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = m;
-                option.selected = i === mesAtual;
-                select.appendChild(option);
-            });
-        }
-
-        // ===== MODAIS =====
-        function abrirModalFixo(id = null) {
-            fixoEditandoId = id;
-            const modal = document.getElementById('modalFixo');
-            const title = document.getElementById('modalFixoTitle');
-            preencherMeses('fixoMes');
-            
-            if (id) {
-                title.textContent = 'Editar Fixo';
-                supabaseClient.from('fixos').select('*').eq('id', id).single().then(({ data, error }) => {
-                    if (error) {
-                        mostrarAlerta('❌ Erro ao carregar fixo', 'error');
-                        return;
-                    }
-                    document.getElementById('fixoNome').value = data.nome || '';
-                    document.getElementById('fixoValor').value = data.valor || '';
-                    document.getElementById('fixoMes').value = data.mes !== null && data.mes !== undefined ? data.mes : mesAtual;
-                    tipoFixoAtual = data.tipo || 'casal';
-                    document.querySelectorAll('#tipoFixoSelect .category-pill').forEach(p => {
-                        p.classList.toggle('selected', p.dataset.tipo === data.tipo);
-                    });
-                });
-            } else {
-                title.textContent = 'Adicionar Fixo';
-                document.getElementById('fixoNome').value = '';
-                document.getElementById('fixoValor').value = '';
-                document.getElementById('fixoMes').value = mesAtual;
-                tipoFixoAtual = 'casal';
-                document.querySelectorAll('#tipoFixoSelect .category-pill').forEach((p, i) => {
-                    p.classList.toggle('selected', i === 0);
-                });
-            }
-            
-            modal.classList.add('active');
-        }
-
-        function fecharModalFixo() {
-            document.getElementById('modalFixo').classList.remove('active');
-            fixoEditandoId = null;
-        }
-
-        function abrirModalParcela(id = null) {
-            parcelaEditandoId = id;
-            const modal = document.getElementById('modalParcela');
-            const title = document.getElementById('modalParcelaTitle');
-            preencherMeses('parcelaMesInicio');
-
-            if (id) {
-                title.textContent = 'Editar Parcela';
-                supabaseClient.from('parcelas').select('*').eq('id', id).single().then(({ data, error }) => {
-                    if (error) {
-                        mostrarAlerta('❌ Erro ao carregar parcela', 'error');
-                        return;
-                    }
-                    document.getElementById('parcelaNome').value = data.nome || '';
-                    document.getElementById('parcelaValor').value = data.valor || '';
-                    document.getElementById('parcelaMesInicio').value = data.mes_inicio !== null && data.mes_inicio !== undefined ? data.mes_inicio : mesAtual;
-                    tipoParcelaAtual = data.tipo || 'casal';
-                    document.querySelectorAll('#tipoParcelaSelect .category-pill').forEach(p => {
-                        p.classList.toggle('selected', p.dataset.tipo === data.tipo);
-                    });
-                    document.getElementById('parcelasNum').style.display = 'none';
-                    document.querySelector('label[for="parcelasNum"]')?.style.display = 'none';
-                });
-            } else {
-                title.textContent = 'Adicionar Parcela';
-                document.getElementById('parcelaNome').value = '';
-                document.getElementById('parcelaValor').value = '';
-                document.getElementById('parcelasNum').value = '12';
-                document.getElementById('parcelaMesInicio').value = mesAtual;
-                document.getElementById('parcelasNum').style.display = 'block';
-                tipoParcelaAtual = 'casal';
-                document.querySelectorAll('#tipoParcelaSelect .category-pill').forEach((p, i) => {
-                    p.classList.toggle('selected', i === 0);
-                });
-            }
-            
-            modal.classList.add('active');
-        }
-
-        function fecharModalParcela() {
-            document.getElementById('modalParcela').classList.remove('active');
-            parcelaEditandoId = null;
-        }
-
-        function abrirModalReceita() {
-            document.getElementById('modalReceita').classList.add('active');
-            document.getElementById('receitaTipo').value = 'Salário';
-            document.getElementById('receitaValor').value = '';
-            document.getElementById('receitaOutroGroup').style.display = 'none';
-        }
-
-        function fecharModalReceita() {
-            document.getElementById('modalReceita').classList.remove('active');
-        }
-
-        // ===== EVENT LISTENERS DO DOM =====
-        document.addEventListener('DOMContentLoaded', () => {
-            // Tipos Fixo
-            const tipoFixoSelect = document.getElementById('tipoFixoSelect');
-            if (tipoFixoSelect) {
-                tipoFixoSelect.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('category-pill')) {
-                        document.querySelectorAll('#tipoFixoSelect .category-pill').forEach(x => x.classList.remove('selected'));
-                        e.target.classList.add('selected');
-                        tipoFixoAtual = e.target.dataset.tipo;
-                    }
-                });
-            }
-
-            // Tipos Parcela
-            const tipoParcelaSelect = document.getElementById('tipoParcelaSelect');
-            if (tipoParcelaSelect) {
-                tipoParcelaSelect.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('category-pill')) {
-                        document.querySelectorAll('#tipoParcelaSelect .category-pill').forEach(x => x.classList.remove('selected'));
-                        e.target.classList.add('selected');
-                        tipoParcelaAtual = e.target.dataset.tipo;
-                    }
-                });
-            }
-
-            // Tipo Receita
-            const receitaTipo = document.getElementById('receitaTipo');
-            if (receitaTipo) {
-                receitaTipo.addEventListener('change', (e) => {
-                    document.getElementById('receitaOutroGroup').style.display = e.target.value === 'Outro' ? 'block' : 'none';
-                });
-            }
-
-            // Navegação
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', () => mudarTela(item.dataset.tela));
-            });
-
-            // Inicializa selects
-            inicializarTipoSelect();
-            atualizarCategorias();
-
-            // Botões salvar
-            const btnSalvarVariavel = document.getElementById('btnSalvarVariavel');
-            if (btnSalvarVariavel) btnSalvarVariavel.addEventListener('click', salvarVariavel);
-            
-            const btnSalvarFixo = document.getElementById('btnSalvarFixo');
-            if (btnSalvarFixo) btnSalvarFixo.addEventListener('click', salvarFixo);
-            
-            const btnSalvarParcela = document.getElementById('btnSalvarParcela');
-            if (btnSalvarParcela) btnSalvarParcela.addEventListener('click', salvarParcela);
-            
-            const btnSalvarReceita = document.getElementById('btnSalvarReceita');
-            if (btnSalvarReceita) btnSalvarReceita.addEventListener('click', salvarReceita);
+    function preencherMeses(selectId) {
+        const sel = document.getElementById(selectId);
+        sel.innerHTML = '';
+        MESES.forEach((m, i) => {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = m;
+            opt.selected = (i === mesAtual);
+            sel.appendChild(opt);
         });
+    }
 
-        // ===== SALVAR =====
-        async function salvarVariavel() {
-            const valor = parseFloat(document.getElementById('varValor').value);
-            const descricao = document.getElementById('varDescricao').value.trim();
+    // ===== NAVEGAÇÃO =====
+    function mudarTela(telaId) {
+        fecharMenu();
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(telaId).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        const btn = document.querySelector(`.nav-item[data-tela="${telaId}"]`);
+        if (btn) btn.classList.add('active');
+        carregarDados();
+    }
 
-            if (!valor || !descricao) {
-                mostrarAlerta('⚠️ Preencha valor e descrição', 'error');
-                return;
-            }
+    // ===== MENU =====
+    function fecharMenu() {
+        document.getElementById('menuDropdown').classList.remove('active');
+    }
 
-            const btn = document.getElementById('btnSalvarVariavel');
-            btn.disabled = true;
+    // ===== COLLAPSIBLE =====
+    function toggleSection(bodyId, iconId) {
+        const body = document.getElementById(bodyId);
+        const icon = document.getElementById(iconId);
+        body.classList.toggle('collapsed');
+        icon.classList.toggle('collapsed');
+    }
 
-            try {
-                const { error } = await supabaseClient.from('variaveis').insert([{
-                    tipo: tipoAtual,
-                    categoria: categoriaAtual,
-                    valor,
-                    descricao,
-                    mes: mesAtual
-                }]);
+    // ===== TIPO SELECT =====
+    function inicializarTipoSelect() {
+        document.getElementById('tipoSelect').addEventListener('click', e => {
+            const pill = e.target.closest('.category-pill');
+            if (!pill) return;
+            document.querySelectorAll('#tipoSelect .category-pill').forEach(p => p.classList.remove('selected'));
+            pill.classList.add('selected');
+            tipoAtual = pill.dataset.tipo;
+            atualizarCategorias();
+        });
+    }
 
-                if (error) throw error;
-                
-                mostrarAlerta('✅ Variável salva!');
-                document.getElementById('varValor').value = '';
-                document.getElementById('varDescricao').value = '';
-                await carregarDados();
-            } catch(err) {
-                console.error(err);
-                mostrarAlerta('❌ ' + (err.message || 'Erro ao salvar'), 'error');
-            } finally {
-                btn.disabled = false;
-            }
+    function atualizarCategorias() {
+        const container = document.getElementById('categoriaSelect');
+        container.innerHTML = '';
+        CATEGORIAS[tipoAtual].forEach((cat, i) => {
+            const div = document.createElement('div');
+            div.className = 'category-pill' + (i === 0 ? ' selected' : '');
+            div.textContent = cat;
+            container.appendChild(div);
+        });
+        categoriaAtual = CATEGORIAS[tipoAtual][0];
+        container.addEventListener('click', e => {
+            const pill = e.target.closest('.category-pill');
+            if (!pill) return;
+            container.querySelectorAll('.category-pill').forEach(p => p.classList.remove('selected'));
+            pill.classList.add('selected');
+            categoriaAtual = pill.textContent;
+        });
+    }
+
+    // ===== MODAIS =====
+    function abrirModalFixo(id = null) {
+        fixoEditandoId = id;
+        preencherMeses('fixoMes');
+        document.getElementById('modalFixoTitle').textContent = id ? 'Editar Fixo' : 'Adicionar Fixo';
+
+        if (id) {
+            db.from('fixos').select('*').eq('id', id).single().then(({ data, error }) => {
+                if (error) { mostrarAlerta('❌ Erro ao carregar fixo', 'error'); return; }
+                document.getElementById('fixoNome').value  = data.nome  || '';
+                document.getElementById('fixoValor').value = data.valor || '';
+                document.getElementById('fixoMes').value   = data.mes ?? mesAtual;
+                tipoFixoAtual = data.tipo || 'casal';
+                document.querySelectorAll('#tipoFixoSelect .category-pill').forEach(p => {
+                    p.classList.toggle('selected', p.dataset.tipo === data.tipo);
+                });
+            });
+        } else {
+            document.getElementById('fixoNome').value  = '';
+            document.getElementById('fixoValor').value = '';
+            document.getElementById('fixoMes').value   = mesAtual;
+            tipoFixoAtual = 'casal';
+            document.querySelectorAll('#tipoFixoSelect .category-pill').forEach((p, i) => {
+                p.classList.toggle('selected', i === 0);
+            });
         }
+        document.getElementById('modalFixo').classList.add('active');
+    }
 
-        async function salvarFixo() {
-            const nome = document.getElementById('fixoNome').value.trim();
-            const valor = parseFloat(document.getElementById('fixoValor').value);
-            const mes = parseInt(document.getElementById('fixoMes').value);
+    function fecharModalFixo() {
+        document.getElementById('modalFixo').classList.remove('active');
+        fixoEditandoId = null;
+    }
 
-            if (!nome || !valor) {
-                mostrarAlerta('⚠️ Preencha nome e valor', 'error');
-                return;
+    function abrirModalParcela(id = null) {
+        parcelaEditandoId = id;
+        preencherMeses('parcelaMesInicio');
+        document.getElementById('modalParcelaTitle').textContent = id ? 'Editar Parcela' : 'Adicionar Parcela';
+        document.getElementById('parcelasNumGroup').style.display = id ? 'none' : 'block';
+
+        if (id) {
+            db.from('parcelas').select('*').eq('id', id).single().then(({ data, error }) => {
+                if (error) { mostrarAlerta('❌ Erro ao carregar parcela', 'error'); return; }
+                document.getElementById('parcelaNome').value  = data.nome  || '';
+                document.getElementById('parcelaValor').value = data.valor || '';
+                document.getElementById('parcelaMesInicio').value = data.mes_inicio ?? mesAtual;
+                tipoParcelaAtual = data.tipo || 'casal';
+                document.querySelectorAll('#tipoParcelaSelect .category-pill').forEach(p => {
+                    p.classList.toggle('selected', p.dataset.tipo === data.tipo);
+                });
+            });
+        } else {
+            document.getElementById('parcelaNome').value  = '';
+            document.getElementById('parcelaValor').value = '';
+            document.getElementById('parcelasNum').value  = '12';
+            document.getElementById('parcelaMesInicio').value = mesAtual;
+            tipoParcelaAtual = 'casal';
+            document.querySelectorAll('#tipoParcelaSelect .category-pill').forEach((p, i) => {
+                p.classList.toggle('selected', i === 0);
+            });
+        }
+        document.getElementById('modalParcela').classList.add('active');
+    }
+
+    function fecharModalParcela() {
+        document.getElementById('modalParcela').classList.remove('active');
+        parcelaEditandoId = null;
+    }
+
+    function abrirModalReceita() {
+        document.getElementById('receitaTipo').value = 'Salário';
+        document.getElementById('receitaValor').value = '';
+        document.getElementById('receitaOutroGroup').style.display = 'none';
+        document.getElementById('modalReceita').classList.add('active');
+    }
+
+    function fecharModalReceita() {
+        document.getElementById('modalReceita').classList.remove('active');
+    }
+
+    // ===== SALVAR =====
+    async function salvarVariavel() {
+        const valor     = parseFloat(document.getElementById('varValor').value);
+        const descricao = document.getElementById('varDescricao').value.trim();
+        if (!valor || !descricao) { mostrarAlerta('⚠️ Preencha valor e descrição', 'error'); return; }
+
+        const btn = document.getElementById('btnSalvarVariavel');
+        btn.disabled = true;
+        try {
+            const { error } = await db.from('variaveis').insert([{
+                tipo: tipoAtual, categoria: categoriaAtual, valor, descricao, mes: mesAtual
+            }]);
+            if (error) throw error;
+            mostrarAlerta('✅ Variável salva!');
+            document.getElementById('varValor').value     = '';
+            document.getElementById('varDescricao').value = '';
+            await carregarDados();
+        } catch(e) {
+            mostrarAlerta('❌ ' + (e.message || 'Erro'), 'error');
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    async function salvarFixo() {
+        const nome  = document.getElementById('fixoNome').value.trim();
+        const valor = parseFloat(document.getElementById('fixoValor').value);
+        const mes   = parseInt(document.getElementById('fixoMes').value);
+        if (!nome || !valor) { mostrarAlerta('⚠️ Preencha nome e valor', 'error'); return; }
+
+        const btn = document.getElementById('btnSalvarFixo');
+        btn.disabled = true;
+        try {
+            const payload = { nome, valor, mes };
+            if (fixoEditandoId) {
+                const { error } = await db.from('fixos').update(payload).eq('id', fixoEditandoId);
+                if (error) throw error;
+                mostrarAlerta('✅ Fixo atualizado!');
+            } else {
+                const { error } = await db.from('fixos').insert([{ tipo: tipoFixoAtual, ...payload }]);
+                if (error) throw error;
+                mostrarAlerta('✅ Fixo salvo!');
             }
+            fecharModalFixo();
+            await carregarDados();
+        } catch(e) {
+            mostrarAlerta('❌ ' + (e.message || 'Erro'), 'error');
+        } finally {
+            btn.disabled = false;
+        }
+    }
 
-            const btn = document.getElementById('btnSalvarFixo');
-            btn.disabled = true;
+    async function salvarParcela() {
+        const nome       = document.getElementById('parcelaNome').value.trim();
+        const valor      = parseFloat(document.getElementById('parcelaValor').value);
+        const mesInicio  = parseInt(document.getElementById('parcelaMesInicio').value);
+        const numParc    = parcelaEditandoId ? 1 : parseInt(document.getElementById('parcelasNum').value);
+        if (!nome || !valor || !numParc) { mostrarAlerta('⚠️ Preencha todos os campos', 'error'); return; }
 
-            try {
-                if (fixoEditandoId) {
-                    const { error } = await supabaseClient.from('fixos').update({
-                        nome,
-                        valor,
-                        mes
-                    }).eq('id', fixoEditandoId);
-                    if (error) throw error;
-                    mostrarAlerta('✅ Fixo atualizado!');
-                } else {
-                    const { error } = await supabaseClient.from('fixos').insert([{
-                        tipo: tipoFixoAtual,
-                        nome,
-                        valor,
-                        mes
+        const btn = document.getElementById('btnSalvarParcela');
+        btn.disabled = true;
+        try {
+            if (parcelaEditandoId) {
+                const { error } = await db.from('parcelas').update({ nome, valor, mes_inicio: mesInicio }).eq('id', parcelaEditandoId);
+                if (error) throw error;
+                mostrarAlerta('✅ Parcela atualizada!');
+            } else {
+                for (let i = 0; i < numParc; i++) {
+                    const nomeFinal = numParc > 1 ? `${nome} (${i+1}/${numParc})` : nome;
+                    const { error } = await db.from('parcelas').insert([{
+                        tipo: tipoParcelaAtual, nome: nomeFinal, valor, mes_inicio: mesInicio
                     }]);
                     if (error) throw error;
-                    mostrarAlerta('✅ Fixo salvo!');
                 }
-
-                fecharModalFixo();
-                await carregarDados();
-            } catch(err) {
-                console.error(err);
-                mostrarAlerta('❌ ' + (err.message || 'Erro ao salvar'), 'error');
-            } finally {
-                btn.disabled = false;
+                mostrarAlerta('✅ Parcelas salvas!');
             }
+            fecharModalParcela();
+            await carregarDados();
+        } catch(e) {
+            mostrarAlerta('❌ ' + (e.message || 'Erro'), 'error');
+        } finally {
+            btn.disabled = false;
         }
+    }
 
-        async function salvarParcela() {
-            const nome = document.getElementById('parcelaNome').value.trim();
-            const valor = parseFloat(document.getElementById('parcelaValor').value);
-            const numParcelas = parcelaEditandoId ? 1 : parseInt(document.getElementById('parcelasNum').value);
-            const mesInicio = parseInt(document.getElementById('parcelaMesInicio').value);
-
-            if (!nome || !valor || !numParcelas) {
-                mostrarAlerta('⚠️ Preencha todos os campos', 'error');
-                return;
-            }
-
-            const btn = document.getElementById('btnSalvarParcela');
-            btn.disabled = true;
-
-            try {
-                if (parcelaEditandoId) {
-                    const { error } = await supabaseClient.from('parcelas').update({
-                        nome,
-                        valor,
-                        mes_inicio: mesInicio
-                    }).eq('id', parcelaEditandoId);
-                    if (error) throw error;
-                    mostrarAlerta('✅ Parcela atualizada!');
-                } else {
-                    for (let i = 0; i < numParcelas; i++) {
-                        const { error } = await supabaseClient.from('parcelas').insert([{
-                            tipo: tipoParcelaAtual,
-                            nome: numParcelas > 1 ? `${nome} (${i+1}/${numParcelas})` : nome,
-                            valor,
-                            mes_inicio: mesInicio
-                        }]);
-                        if (error) throw error;
-                    }
-                    mostrarAlerta('✅ Parcelas salvas!');
-                }
-
-                fecharModalParcela();
-                await carregarDados();
-            } catch(err) {
-                console.error(err);
-                mostrarAlerta('❌ ' + (err.message || 'Erro ao salvar'), 'error');
-            } finally {
-                btn.disabled = false;
-            }
+    async function salvarReceita() {
+        let tipo = document.getElementById('receitaTipo').value;
+        if (tipo === 'Outro') {
+            tipo = document.getElementById('receitaOutroDescricao').value.trim();
+            if (!tipo) { mostrarAlerta('⚠️ Especifique o tipo', 'error'); return; }
         }
+        const valor = parseFloat(document.getElementById('receitaValor').value);
+        if (!valor) { mostrarAlerta('⚠️ Preencha o valor', 'error'); return; }
 
-        async function salvarReceita() {
-            let tipo = document.getElementById('receitaTipo').value;
-            const valor = parseFloat(document.getElementById('receitaValor').value);
-
-            if (tipo === 'Outro') {
-                tipo = document.getElementById('receitaOutroDescricao').value.trim();
-                if (!tipo) {
-                    mostrarAlerta('⚠️ Especifique o tipo de receita', 'error');
-                    return;
-                }
-            }
-
-            if (!valor) {
-                mostrarAlerta('⚠️ Preencha o valor', 'error');
-                return;
-            }
-
-            const btn = document.getElementById('btnSalvarReceita');
-            btn.disabled = true;
-
-            try {
-                const { error } = await supabaseClient.from('receitas').insert([{
-                    tipo,
-                    valor,
-                    mes: mesAtual
-                }]);
-
-                if (error) throw error;
-                mostrarAlerta('✅ Receita salva!');
-                fecharModalReceita();
-                await carregarDados();
-            } catch(err) {
-                console.error(err);
-                mostrarAlerta('❌ ' + (err.message || 'Erro ao salvar'), 'error');
-            } finally {
-                btn.disabled = false;
-            }
+        const btn = document.getElementById('btnSalvarReceita');
+        btn.disabled = true;
+        try {
+            const { error } = await db.from('receitas').insert([{ tipo, valor, mes: mesAtual }]);
+            if (error) throw error;
+            mostrarAlerta('✅ Receita salva!');
+            fecharModalReceita();
+            await carregarDados();
+        } catch(e) {
+            mostrarAlerta('❌ ' + (e.message || 'Erro'), 'error');
+        } finally {
+            btn.disabled = false;
         }
+    }
 
-        // ===== AÇÕES =====
-        async function marcarFixoPago(id, pago) {
-            try {
-                const { error } = await supabaseClient.from('fixos').update({
-                    pago: !pago
-                }).eq('id', id);
-                if (error) throw error;
-                await carregarDados();
-            } catch(err) {
-                mostrarAlerta('❌ Erro ao atualizar', 'error');
+    // ===== AÇÕES =====
+    async function marcarFixoPago(id, pago) {
+        try {
+            const { error } = await db.from('fixos').update({ pago: !pago }).eq('id', id);
+            if (error) throw error;
+            await carregarDados();
+        } catch(e) { mostrarAlerta('❌ Erro', 'error'); }
+    }
+
+    async function marcarParcelaPaga(id, pago) {
+        try {
+            const { error } = await db.from('parcelas').update({ pago: !pago }).eq('id', id);
+            if (error) throw error;
+            await carregarDados();
+        } catch(e) { mostrarAlerta('❌ Erro', 'error'); }
+    }
+
+    async function deletarVariavel(id) {
+        if (!confirm('Deletar variável?')) return;
+        const { error } = await db.from('variaveis').delete().eq('id', id);
+        if (error) { mostrarAlerta('❌ Erro', 'error'); return; }
+        mostrarAlerta('✅ Deletado!');
+        await carregarDados();
+    }
+
+    async function deletarFixo(id) {
+        if (!confirm('Deletar fixo?')) return;
+        const { error } = await db.from('fixos').delete().eq('id', id);
+        if (error) { mostrarAlerta('❌ Erro', 'error'); return; }
+        mostrarAlerta('✅ Deletado!');
+        await carregarDados();
+    }
+
+    async function deletarParcela(id) {
+        if (!confirm('Deletar parcela?')) return;
+        const { error } = await db.from('parcelas').delete().eq('id', id);
+        if (error) { mostrarAlerta('❌ Erro', 'error'); return; }
+        mostrarAlerta('✅ Deletado!');
+        await carregarDados();
+    }
+
+    async function deletarReceita(id) {
+        if (!confirm('Deletar receita?')) return;
+        const { error } = await db.from('receitas').delete().eq('id', id);
+        if (error) { mostrarAlerta('❌ Erro', 'error'); return; }
+        mostrarAlerta('✅ Deletado!');
+        await carregarDados();
+    }
+
+    // ===== CARREGAR =====
+    async function carregarDados() {
+        if (!db) return;
+        try {
+            const [r1, r2, r3, r4] = await Promise.all([
+                db.from('fixos').select('*'),
+                db.from('variaveis').select('*'),
+                db.from('parcelas').select('*'),
+                db.from('receitas').select('*')
+            ]);
+            const fixos     = r1.data || [];
+            const variaveis = r2.data || [];
+            const parcelas  = r3.data || [];
+            const receitas  = r4.data || [];
+
+            calcularRepasse(fixos, variaveis, parcelas);
+            renderizar(fixos, variaveis, parcelas, receitas);
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    // ===== CÁLCULOS =====
+    function calcularRepasse(fixos, variaveis, parcelas) {
+        let fixosCasal = 0, fixosDela = 0, fixosGle = 0;
+        let varCasal   = 0, varDela   = 0, varGle   = 0;
+        let parcCasal  = 0, parcDela  = 0, parcGle  = 0;
+
+        fixos.forEach(f => {
+            if (Number(f.mes) === mesAtual && !f.pago) {
+                if (f.tipo === 'casal') fixosCasal += f.valor;
+                else if (f.tipo === 'dela') fixosDela += f.valor;
+                else if (f.tipo === 'gle')  fixosGle  += f.valor;
             }
-        }
+        });
 
-        async function marcarParcelaPaga(id, pago) {
-            try {
-                const { error } = await supabaseClient.from('parcelas').update({
-                    pago: !pago
-                }).eq('id', id);
-                if (error) throw error;
-                await carregarDados();
-            } catch(err) {
-                mostrarAlerta('❌ Erro ao atualizar', 'error');
+        variaveis.forEach(v => {
+            if (Number(v.mes) === mesAtual) {
+                if (v.tipo === 'casal') varCasal += v.valor;
+                else if (v.tipo === 'dela') varDela += v.valor;
+                else if (v.tipo === 'gle')  varGle  += v.valor;
             }
-        }
+        });
 
-        async function deletarVariavel(id) {
-            if (!confirm('Deletar variável?')) return;
-            try {
-                const { error } = await supabaseClient.from('variaveis').delete().eq('id', id);
-                if (error) throw error;
-                mostrarAlerta('✅ Deletado!');
-                await carregarDados();
-            } catch(err) {
-                mostrarAlerta('❌ Erro ao deletar', 'error');
+        parcelas.forEach(p => {
+            if (Number(p.mes_inicio) === mesAtual && !p.pago) {
+                if (p.tipo === 'casal') parcCasal += p.valor;
+                else if (p.tipo === 'dela') parcDela += p.valor;
+                else if (p.tipo === 'gle')  parcGle  += p.valor;
             }
-        }
+        });
 
-        async function deletarFixo(id) {
-            if (!confirm('Deletar fixo?')) return;
-            try {
-                const { error } = await supabaseClient.from('fixos').delete().eq('id', id);
-                if (error) throw error;
-                mostrarAlerta('✅ Deletado!');
-                await carregarDados();
-            } catch(err) {
-                mostrarAlerta('❌ Erro ao deletar', 'error');
-            }
-        }
+        const repasse    = (fixosCasal/2) + fixosDela + (varCasal/2) + varDela + parcCasal + parcDela - 620;
+        const totalGasto = fixosCasal + fixosDela + varCasal + varDela + parcCasal + parcDela;
+        const totalGle   = fixosGle + varGle + parcGle;
 
-        async function deletarParcela(id) {
-            if (!confirm('Deletar parcela?')) return;
-            try {
-                const { error } = await supabaseClient.from('parcelas').delete().eq('id', id);
-                if (error) throw error;
-                mostrarAlerta('✅ Deletado!');
-                await carregarDados();
-            } catch(err) {
-                mostrarAlerta('❌ Erro ao deletar', 'error');
-            }
-        }
+        document.getElementById('repasseValue').textContent    = fmt(repasse);
+        document.getElementById('totalGastos').textContent     = fmt(totalGasto);
+        document.getElementById('fixosCasalValue').textContent = fmt(fixosCasal/2);
+        document.getElementById('fixosDelaValue').textContent  = fmt(fixosDela);
+        document.getElementById('varCasalValue').textContent   = fmt(varCasal/2);
+        document.getElementById('varDelaValue').textContent    = fmt(varDela);
+        document.getElementById('parcelasValue').textContent   = fmt(parcCasal + parcDela);
+        document.getElementById('varGleValue').textContent     = fmt(varGle);
+        document.getElementById('fixosGleValue').textContent   = fmt(fixosGle);
+        document.getElementById('parcelasGleValue').textContent= fmt(parcGle);
+        document.getElementById('totalGleValue').textContent   = fmt(totalGle);
+    }
 
-        async function deletarReceita(id) {
-            if (!confirm('Deletar receita?')) return;
-            try {
-                const { error } = await supabaseClient.from('receitas').delete().eq('id', id);
-                if (error) throw error;
-                mostrarAlerta('✅ Deletado!');
-                await carregarDados();
-            } catch(err) {
-                mostrarAlerta('❌ Erro ao deletar', 'error');
-            }
-        }
-
-        // ===== CARREGAR =====
-        async function carregarDados() {
-            if (!supabaseClient) return;
-            
-            try {
-                const { data: fixos, error: fixosError } = await supabaseClient.from('fixos').select('*');
-                const { data: variaveis, error: variaveisError } = await supabaseClient.from('variaveis').select('*');
-                const { data: parcelas, error: parcelasError } = await supabaseClient.from('parcelas').select('*');
-                const { data: receitas, error: receitasError } = await supabaseClient.from('receitas').select('*');
-
-                if (fixosError || variaveisError || parcelasError || receitasError) {
-                    throw new Error('Erro ao carregar dados');
-                }
-
-                calcularRepasse(fixos || [], variaveis || [], parcelas || []);
-                renderizar(fixos || [], variaveis || [], parcelas || [], receitas || []);
-            } catch(err) {
-                console.error(err);
-            }
-        }
-
-        // ===== CÁLCULOS =====
-        function calcularRepasse(fixos, variaveis, parcelas) {
-            let fixosCasal = 0, fixosDela = 0, fixosGle = 0;
-            let varCasal = 0, varDela = 0, varGle = 0;
-            let parcelasCasal = 0, parcelasDela = 0, parcelasGle = 0;
-
-            fixos.forEach(f => {
-                if (f.mes === mesAtual && !f.pago) {
-                    if (f.tipo === 'casal') fixosCasal += f.valor;
-                    else if (f.tipo === 'dela') fixosDela += f.valor;
-                    else if (f.tipo === 'gle') fixosGle += f.valor;
-                }
-            });
-
-            variaveis.forEach(v => {
-                if (v.mes === mesAtual) {
-                    if (v.tipo === 'casal') varCasal += v.valor;
-                    else if (v.tipo === 'dela') varDela += v.valor;
-                    else if (v.tipo === 'gle') varGle += v.valor;
-                }
-            });
-
-            parcelas.forEach(p => {
-                if (p.mes_inicio === mesAtual && !p.pago) {
-                    if (p.tipo === 'casal') parcelasCasal += p.valor;
-                    else if (p.tipo === 'dela') parcelasDela += p.valor;
-                    else if (p.tipo === 'gle') parcelasGle += p.valor;
-                }
-            });
-
-            const repasse = (fixosCasal / 2) + fixosDela + (varCasal / 2) + varDela + parcelasCasal + parcelasDela - 620;
-            const totalGastos = fixosCasal + fixosDela + varCasal + varDela + parcelasCasal + parcelasDela;
-            const totalGle = fixosGle + varGle + parcelasGle;
-
-            const fmt = (n) => `R$ ${n.toFixed(2).replace('.', ',')}`;
-
-            document.getElementById('repasseValue').textContent = fmt(repasse);
-            document.getElementById('totalGastos').textContent = fmt(totalGastos);
-            document.getElementById('fixosCasalValue').textContent = fmt(fixosCasal / 2);
-            document.getElementById('fixosDelaValue').textContent = fmt(fixosDela);
-            document.getElementById('varCasalValue').textContent = fmt(varCasal / 2);
-            document.getElementById('varDelaValue').textContent = fmt(varDela);
-            document.getElementById('parcelasValue').textContent = fmt(parcelasCasal + parcelasDela);
-            document.getElementById('varGleValue').textContent = fmt(varGle);
-            document.getElementById('fixosGleValue').textContent = fmt(fixosGle);
-            document.getElementById('parcelasGleValue').textContent = fmt(parcelasGle);
-            document.getElementById('totalGleValue').textContent = fmt(totalGle);
-        }
-
-        // ===== RENDERIZAR =====
-        function renderizar(fixos, variaveis, parcelas, receitas) {
-            // Variáveis
-            const varList = document.getElementById('variaveisList');
-            const variaveisMes = variaveis.filter(v => v.mes === mesAtual);
-            if (variaveisMes.length) {
-                varList.innerHTML = variaveisMes.map(v => `
-                    <div class="list-item">
-                        <div class="list-item-info">
-                            <strong>${v.descricao}</strong>
-                            <div class="text-small">${v.categoria}</div>
-                        </div>
-                        <div class="list-item-actions">
-                            <div class="list-item-value">R$ ${v.valor.toFixed(2).replace('.', ',')}</div>
-                            <button class="icon-btn" onclick="deletarVariavel(${v.id})" aria-label="Deletar">🗑️</button>
-                        </div>
+    // ===== RENDERIZAR =====
+    function renderizar(fixos, variaveis, parcelas, receitas) {
+        // Variáveis
+        const varList = document.getElementById('variaveisList');
+        const varMes  = variaveis.filter(v => Number(v.mes) === mesAtual);
+        varList.innerHTML = varMes.length
+            ? varMes.map(v => `
+                <div class="list-item">
+                    <div class="list-item-info">
+                        <strong>${v.descricao}</strong>
+                        <div class="text-small">${v.categoria}</div>
                     </div>
-                `).join('');
-            } else {
-                varList.innerHTML = '<div class="empty-state">Nenhuma variável</div>';
-            }
-
-            // Fixos
-            ['casal', 'dela', 'gle'].forEach(tipo => {
-                const list = document.getElementById(`fixos${tipo.charAt(0).toUpperCase() + tipo.slice(1)}List`);
-                const itens = fixos.filter(f => f.tipo === tipo && f.mes === mesAtual);
-                if (itens.length) {
-                    list.innerHTML = itens.map(f => `
-                        <div class="list-item ${f.pago ? 'pago' : ''}">
-                            <div class="list-item-info">
-                                <strong>${f.nome}</strong>
-                            </div>
-                            <div class="list-item-actions">
-                                <div class="list-item-value">R$ ${f.valor.toFixed(2).replace('.', ',')}</div>
-                                <button class="check-btn ${f.pago ? 'checked' : ''}" onclick="marcarFixoPago(${f.id}, ${f.pago})">✓</button>
-                                <button class="icon-btn edit-btn" onclick="abrirModalFixo(${f.id})">✏️</button>
-                                <button class="icon-btn" onclick="deletarFixo(${f.id})">🗑️</button>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    list.innerHTML = '<div class="empty-state">Nenhum fixo</div>';
-                }
-            });
-
-            // Parcelas
-            const parcList = document.getElementById('parcelasList');
-            const parcelasDoMes = parcelas.filter(p => p.mes_inicio === mesAtual);
-            if (parcelasDoMes.length) {
-                parcList.innerHTML = parcelasDoMes.map(p => `
-                    <div class="list-item ${p.pago ? 'pago' : ''}">
-                        <div class="list-item-info">
-                            <strong>${p.nome}</strong>
-                        </div>
-                        <div class="list-item-actions">
-                            <div class="list-item-value">R$ ${p.valor.toFixed(2).replace('.', ',')}</div>
-                            <button class="check-btn ${p.pago ? 'checked' : ''}" onclick="marcarParcelaPaga(${p.id}, ${p.pago})">✓</button>
-                            <button class="icon-btn edit-btn" onclick="abrirModalParcela(${p.id})">✏️</button>
-                            <button class="icon-btn" onclick="deletarParcela(${p.id})">🗑️</button>
-                        </div>
+                    <div class="list-item-actions">
+                        <span class="list-item-value">${fmt(v.valor)}</span>
+                        <button class="icon-btn" onclick="deletarVariavel(${v.id})">🗑️</button>
                     </div>
-                `).join('');
-            } else {
-                parcList.innerHTML = '<div class="empty-state">Nenhuma parcela</div>';
-            }
+                </div>`).join('')
+            : '<div class="empty-state">Nenhuma variável</div>';
 
-            // Receitas
-            const receitasList = document.getElementById('receitasList');
-            const receitasMes = receitas.filter(r => r.mes === mesAtual);
-            if (receitasMes.length) {
-                const totalReceitas = receitasMes.reduce((sum, r) => sum + r.valor, 0);
-                receitasList.innerHTML = receitasMes.map(r => `
-                    <div class="list-item receita-item">
-                        <div class="list-item-info">
-                            <strong>${r.tipo}</strong>
-                        </div>
+        // Fixos
+        ['casal','dela','gle'].forEach(tipo => {
+            const id   = `fixos${tipo[0].toUpperCase()+tipo.slice(1)}List`;
+            const list = document.getElementById(id);
+            const itens = fixos.filter(f => f.tipo === tipo && Number(f.mes) === mesAtual);
+            list.innerHTML = itens.length
+                ? itens.map(f => `
+                    <div class="list-item ${f.pago ? 'pago' : ''}">
+                        <div class="list-item-info"><strong>${f.nome}</strong></div>
                         <div class="list-item-actions">
-                            <div class="list-item-value">R$ ${r.valor.toFixed(2).replace('.', ',')}</div>
-                            <button class="icon-btn" onclick="deletarReceita(${r.id})">🗑️</button>
+                            <span class="list-item-value">${fmt(f.valor)}</span>
+                            <button class="check-btn ${f.pago ? 'checked' : ''}" onclick="marcarFixoPago(${f.id},${f.pago})">✓</button>
+                            <button class="icon-btn edit-btn" onclick="abrirModalFixo(${f.id})">✏️</button>
+                            <button class="icon-btn" onclick="deletarFixo(${f.id})">🗑️</button>
                         </div>
+                    </div>`).join('')
+                : '<div class="empty-state">Nenhum fixo</div>';
+        });
+
+        // Parcelas
+        const parcList = document.getElementById('parcelasList');
+        const parcMes  = parcelas.filter(p => Number(p.mes_inicio) === mesAtual);
+        parcList.innerHTML = parcMes.length
+            ? parcMes.map(p => `
+                <div class="list-item ${p.pago ? 'pago' : ''}">
+                    <div class="list-item-info"><strong>${p.nome}</strong></div>
+                    <div class="list-item-actions">
+                        <span class="list-item-value">${fmt(p.valor)}</span>
+                        <button class="check-btn ${p.pago ? 'checked' : ''}" onclick="marcarParcelaPaga(${p.id},${p.pago})">✓</button>
+                        <button class="icon-btn edit-btn" onclick="abrirModalParcela(${p.id})">✏️</button>
+                        <button class="icon-btn" onclick="deletarParcela(${p.id})">🗑️</button>
                     </div>
-                `).join('');
-                receitasList.innerHTML += `<div class="stat-row"><span>TOTAL</span><span class="stat-value">R$ ${totalReceitas.toFixed(2).replace('.', ',')}</span></div>`;
-            } else {
-                receitasList.innerHTML = '<div class="empty-state">Nenhuma receita</div>';
-            }
+                </div>`).join('')
+            : '<div class="empty-state">Nenhuma parcela</div>';
+
+        // Receitas
+        const recList = document.getElementById('receitasList');
+        const recMes  = receitas.filter(r => Number(r.mes) === mesAtual);
+        if (recMes.length) {
+            const total = recMes.reduce((s, r) => s + r.valor, 0);
+            recList.innerHTML = recMes.map(r => `
+                <div class="list-item receita-item">
+                    <div class="list-item-info"><strong>${r.tipo}</strong></div>
+                    <div class="list-item-actions">
+                        <span class="list-item-value">${fmt(r.valor)}</span>
+                        <button class="icon-btn" onclick="deletarReceita(${r.id})">🗑️</button>
+                    </div>
+                </div>`).join('');
+            recList.innerHTML += `<div class="stat-row" style="margin-top:12px;"><span>TOTAL</span><span class="stat-value">${fmt(total)}</span></div>`;
+        } else {
+            recList.innerHTML = '<div class="empty-state">Nenhuma receita</div>';
         }
+    }
 
-        // ===== INICIALIZAÇÃO =====
-        async function init() {
-            let tentativas = 0;
-            while (!window.supabase && tentativas < 30) {
-                await new Promise(r => setTimeout(r, 100));
-                tentativas++;
-            }
+    // ===== INIT =====
+    async function init() {
+        let t = 0;
+        while (!window.supabase && t++ < 50) await new Promise(r => setTimeout(r, 100));
+        if (!window.supabase) { mostrarAlerta('❌ Falha ao carregar Supabase', 'error'); return; }
 
-            if (!window.supabase) {
-                mostrarAlerta('❌ Erro ao carregar Supabase', 'error');
-                return;
-            }
+        db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            const { createClient } = window.supabase;
-            supabaseClient = createClient(
-                'https://nsuawtxahbsivvhgxqlb.supabase.co',
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zdWF3dHhhaGJzaXZ2aGd4cWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NDQxNTcsImV4cCI6MjA5NjAyMDE1N30.y0mEk8Iee5xXpVr7wUgrqYIDKNLUDSZfxdetsDYbNnE'
-            );
+        const agora = new Date();
+        document.getElementById('headerDate').textContent = `${MESES[agora.getMonth()]} ${agora.getFullYear()}`;
 
-            const agora = new Date();
-            document.getElementById('headerDate').textContent = `${MESES[agora.getMonth()]} ${agora.getFullYear()}`;
+        // Navegação nav-bottom
+        document.querySelectorAll('.nav-item[data-tela]').forEach(btn => {
+            btn.addEventListener('click', () => mudarTela(btn.dataset.tela));
+        });
 
-            carregarDados();
-            setInterval(carregarDados, 30000);
-        }
+        // Menu dropdown
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            document.getElementById('menuDropdown').classList.toggle('active');
+        });
+        document.querySelectorAll('.menu-item[data-tela]').forEach(btn => {
+            btn.addEventListener('click', () => mudarTela(btn.dataset.tela));
+        });
 
-        init();
-    </script>
+        // Collapsible
+        document.getElementById('toggleDetalhamento').addEventListener('click', () => toggleSection('bodyDetalhamento','iconDetalhamento'));
+        document.getElementById('toggleGle').addEventListener('click', () => toggleSection('bodyGle','iconGle'));
+
+        // Botões abrir modais
+        document.getElementById('btnAbrirModalFixo').addEventListener('click', () => abrirModalFixo());
+        document.getElementById('btnAbrirModalParcela').addEventListener('click', () => abrirModalParcela());
+        document.getElementById('btnAbrirModalReceita').addEventListener('click', () => abrirModalReceita());
+
+        // Botões fechar modais
+        document.getElementById('btnFecharModalFixo').addEventListener('click', fecharModalFixo);
+        document.getElementById('btnFecharModalParcela').addEventListener('click', fecharModalParcela);
+        document.getElementById('btnFecharModalReceita').addEventListener('click', fecharModalReceita);
+
+        // Botões salvar
+        document.getElementById('btnSalvarVariavel').addEventListener('click', salvarVariavel);
+        document.getElementById('btnSalvarFixo').addEventListener('click', salvarFixo);
+        document.getElementById('btnSalvarParcela').addEventListener('click', salvarParcela);
+        document.getElementById('btnSalvarReceita').addEventListener('click', salvarReceita);
+
+        // Tipo Fixo
+        document.getElementById('tipoFixoSelect').addEventListener('click', e => {
+            const p = e.target.closest('.category-pill');
+            if (!p) return;
+            document.querySelectorAll('#tipoFixoSelect .category-pill').forEach(x => x.classList.remove('selected'));
+            p.classList.add('selected');
+            tipoFixoAtual = p.dataset.tipo;
+        });
+
+        // Tipo Parcela
+        document.getElementById('tipoParcelaSelect').addEventListener('click', e => {
+            const p = e.target.closest('.category-pill');
+            if (!p) return;
+            document.querySelectorAll('#tipoParcelaSelect .category-pill').forEach(x => x.classList.remove('selected'));
+            p.classList.add('selected');
+            tipoParcelaAtual = p.dataset.tipo;
+        });
+
+        // Receita Outro
+        document.getElementById('receitaTipo').addEventListener('change', e => {
+            document.getElementById('receitaOutroGroup').style.display = e.target.value === 'Outro' ? 'block' : 'none';
+        });
+
+        inicializarTipoSelect();
+        atualizarCategorias();
+
+        carregarDados();
+        setInterval(carregarDados, 30000);
+    }
+
+    init();
+</script>
 </body>
 </html>
