@@ -757,7 +757,7 @@
         btn.disabled = true;
         try {
             if (fixoEditandoId) {
-                const { error } = await db.from('fixos').update({ nome, valor, mes }).eq('id', fixoEditandoId);
+                const { error } = await db.from('fixos').update({ tipo: tipoFixoAtual, nome, valor, mes }).eq('id', fixoEditandoId);
                 if (error) throw error;
                 mostrarAlerta('✅ Fixo atualizado!');
             } else {
@@ -953,7 +953,7 @@
                         <div style="font-size:14px;font-weight:700;">${label}</div>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <span style="font-size:13px;font-weight:600;color:var(--text-light);">${fmt(total)}</span>
-                            <span class="toggle-icon" id="${iconId}">▾</span>
+                            <span class="toggle-icon collapsed" id="${iconId}">▾</span>
                         </div>
                     </div>
                     <div class="collapsible-body" id="${bodyId}">
@@ -995,10 +995,10 @@
                         <span style="font-size:13px;font-weight:700;">${cat}</span>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <span style="font-size:13px;font-weight:600;color:var(--text-light);">${fmt(subtotal)}</span>
-                            <span class="toggle-icon" id="${iconId}">▾</span>
+                            <span class="toggle-icon collapsed" id="${iconId}">▾</span>
                         </div>
                     </div>
-                    <div class="collapsible-body" id="${bodyId}">
+                    <div class="collapsible-body collapsed" id="${bodyId}">
                         <div style="padding:0 12px 8px;">
                             ${itens.map(v => `
                                 <div class="list-item" style="margin-top:8px;">
