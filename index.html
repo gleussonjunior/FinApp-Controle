@@ -1030,14 +1030,16 @@
                 mostrarAlerta('✅ Fixo atualizado!');
             } else {
                 const categoria = document.getElementById('fixoCategoria').value;
-                const { error } = await db.from('fixos').insert([{ tipo: tipoFixoAtual, nome, valor, mes, categoria }]);
+                const { error } = await db.from('fixos').insert([{ tipo: tipoFixoAtual, nome, valor, mes, categoria, pago: false }]);
                 if (error) throw error;
                 mostrarAlerta('✅ Fixo salvo!');
             }
             fecharModalFixo();
             await carregarDados();
         } catch(e) {
-            mostrarAlerta('❌ ' + (e.message || 'Erro'), 'error');
+            console.error('salvarFixo erro completo:', e);
+            const msg = e?.message || e?.error_description || JSON.stringify(e) || 'Erro desconhecido';
+            mostrarAlerta('❌ ' + msg, 'error');
         } finally { btn.disabled = false; }
     }
 
