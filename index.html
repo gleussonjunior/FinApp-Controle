@@ -812,12 +812,12 @@
     const SUPABASE_URL = 'https://nsuawtxahbsivvhgxqlb.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zdWF3dHhhaGJzaXZ2aGd4cWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NDQxNTcsImV4cCI6MjA5NjAyMDE1N30.y0mEk8Iee5xXpVr7wUgrqYIDKNLUDSZfxdetsDYbNnE';
 
-    const CATEGORIAS_FIXOS = ['Parcelas','Educação','Saúde','Streaming','Storage','Telefonia','Moradia','IA','Outros'];
+    const CATEGORIAS_FIXOS = ['Parcelas','Educação','Saúde','Assinaturas','Storage','Telefonia','Moradia','Outros'];
 
     const COR_CATEGORIA_FIXO = {
         'Parcelas':'#f59e0b','Educação':'#3b82f6','Saúde':'#10b981',
-        'Streaming':'#8b5cf6','Storage':'#06b6d4','Telefonia':'#6366f1',
-        'Moradia':'#b45309','IA':'#ec4899','Outros':'#9ca3af'
+        'Assinaturas':'#8b5cf6','Storage':'#06b6d4','Telefonia':'#6366f1',
+        'Moradia':'#b45309','Outros':'#9ca3af'
     };
 
     const CATEGORIAS = {
@@ -1458,25 +1458,29 @@
                 });
             }
 
-            // ---- GRÁFICO 2: Fixos individuais (barras horizontais) ----
-            const corFixo = { casal:'#1e40af', dela:'#9d174d', gle:'#065f46' };
-            const sortedFixos = [...fixosMes].sort((a,b)=>Number(b.valor)-Number(a.valor));
+            // ---- GRÁFICO 2: Fixos por categoria (barras horizontais) ----
+            const catFixosMap = {};
+            fixosMes.forEach(f => {
+                const cat = f.categoria || 'Outros';
+                catFixosMap[cat] = (catFixosMap[cat] || 0) + Number(f.valor);
+            });
+            const sortedCatFixos = Object.entries(catFixosMap).sort((a,b) => b[1]-a[1]);
 
             const wrapFixos = document.getElementById('wrapChartFixos');
-            if (!sortedFixos.length) {
+            if (!sortedCatFixos.length) {
                 wrapFixos.innerHTML = '<div class="empty-state" style="padding:40px 0">Sem fixos neste mês</div>';
                 wrapFixos.style.height = 'auto';
             } else {
-                const alturaFixos = Math.max(180, sortedFixos.length * 38);
+                const alturaFixos = Math.max(180, sortedCatFixos.length * 44);
                 wrapFixos.style.height = alturaFixos + 'px';
                 wrapFixos.style.position = 'relative';
                 wrapFixos.innerHTML = '<canvas id="canvasGraficoFixos"></canvas>';
                 chartFixosInstance = new Chart(document.getElementById('canvasGraficoFixos').getContext('2d'), {
                     type: 'bar',
                     data: {
-                        labels: sortedFixos.map(f=>f.nome),
-                        datasets: [{ data: sortedFixos.map(f=>Number(f.valor)),
-                            backgroundColor: sortedFixos.map(f=>corFixo[f.tipo]||'#6b7280'),
+                        labels: sortedCatFixos.map(([k]) => k),
+                        datasets: [{ data: sortedCatFixos.map(([,v]) => v),
+                            backgroundColor: sortedCatFixos.map(([k]) => COR_CATEGORIA_FIXO[k] || '#9ca3af'),
                             borderRadius: 4, borderSkipped: false }]
                     },
                     options: {
