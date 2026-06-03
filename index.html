@@ -417,6 +417,7 @@
                         <div class="stat-row"><span class="stat-label">Fixos Dela</span><span class="stat-value" id="fixosDelaValue">R$ 0,00</span></div>
                         <div class="stat-row"><span class="stat-label">Variáveis Casal (÷2)</span><span class="stat-value" id="varCasalValue">R$ 0,00</span></div>
                         <div class="stat-row"><span class="stat-label">Variáveis Dela</span><span class="stat-value" id="varDelaValue">R$ 0,00</span></div>
+                        <div class="stat-row"><span class="stat-label">Desconto Ticket (Lia)</span><span class="stat-value" style="color:var(--success)">-R$ 620,00</span></div>
                     </div>
                 </div>
             </div>
@@ -428,8 +429,10 @@
                 </div>
                 <div class="collapsible-body" id="bodyGle">
                     <div style="margin-top:12px;">
-                        <div class="stat-row"><span class="stat-label">Variáveis</span><span class="stat-value" id="varGleValue">R$ 0,00</span></div>
-                        <div class="stat-row"><span class="stat-label">Fixos</span><span class="stat-value" id="fixosGleValue">R$ 0,00</span></div>
+                        <div class="stat-row"><span class="stat-label">Variáveis Pessoais</span><span class="stat-value" id="varGleValue">R$ 0,00</span></div>
+                        <div class="stat-row"><span class="stat-label">Fixos Pessoais</span><span class="stat-value" id="fixosGleValue">R$ 0,00</span></div>
+                        <div class="stat-row"><span class="stat-label">Fixos Casal (÷2)</span><span class="stat-value" id="fixosCasalGleValue">R$ 0,00</span></div>
+                        <div class="stat-row"><span class="stat-label">Variáveis Casal (÷2)</span><span class="stat-value" id="varCasalGleValue">R$ 0,00</span></div>
                         <div class="stat-row total-row"><span class="stat-label">TOTAL</span><span class="stat-value" id="totalGleValue">R$ 0,00</span></div>
                     </div>
                 </div>
@@ -438,18 +441,7 @@
 
         <!-- FIXOS -->
         <div class="screen" id="screenFixos">
-            <div class="card">
-                <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Fixos Casal</div>
-                <div id="fixosCasalList"></div>
-            </div>
-            <div class="card">
-                <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Fixos Dela</div>
-                <div id="fixosDelaList"></div>
-            </div>
-            <div class="card">
-                <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Fixos Seus</div>
-                <div id="fixosGleList"></div>
-            </div>
+            <div id="fixosContainer"></div>
             <button class="btn" id="btnAbrirModalFixo">+ Adicionar Fixo</button>
         </div>
 
@@ -882,54 +874,29 @@
 
         const repasse    = (fixosCasal/2) + fixosDela + (varCasal/2) + varDela - 620;
         const totalGasto = fixosCasal + fixosDela + varCasal + varDela;
-        const totalGle   = fixosGle + varGle;
+        const totalGle   = fixosGle + varGle + fixosCasal/2 + varCasal/2;
 
-        document.getElementById('repasseValue').textContent    = fmt(repasse);
-        document.getElementById('totalGastos').textContent     = fmt(totalGasto);
-        document.getElementById('fixosCasalValue').textContent = fmt(fixosCasal / 2);
-        document.getElementById('fixosDelaValue').textContent  = fmt(fixosDela);
-        document.getElementById('varCasalValue').textContent   = fmt(varCasal / 2);
-        document.getElementById('varDelaValue').textContent    = fmt(varDela);
-        document.getElementById('varGleValue').textContent     = fmt(varGle);
-        document.getElementById('fixosGleValue').textContent   = fmt(fixosGle);
-        document.getElementById('totalGleValue').textContent   = fmt(totalGle);
+        document.getElementById('repasseValue').textContent       = fmt(repasse);
+        document.getElementById('totalGastos').textContent        = fmt(totalGasto);
+        document.getElementById('fixosCasalValue').textContent    = fmt(fixosCasal / 2);
+        document.getElementById('fixosDelaValue').textContent     = fmt(fixosDela);
+        document.getElementById('varCasalValue').textContent      = fmt(varCasal / 2);
+        document.getElementById('varDelaValue').textContent       = fmt(varDela);
+        document.getElementById('varGleValue').textContent        = fmt(varGle);
+        document.getElementById('fixosGleValue').textContent      = fmt(fixosGle);
+        document.getElementById('fixosCasalGleValue').textContent = fmt(fixosCasal / 2);
+        document.getElementById('varCasalGleValue').textContent   = fmt(varCasal / 2);
+        document.getElementById('totalGleValue').textContent      = fmt(totalGle);
     }
 
     // ===== RENDERIZAR =====
     function renderizar(fixos, variaveis, receitas) {
-        // Variáveis
+        // Variáveis — agrupadas por categoria
         const varMes = variaveis.filter(v => mesCompativel(v.mes));
-        document.getElementById('variaveisList').innerHTML = varMes.length
-            ? varMes.map(v => `
-                <div class="list-item">
-                    <div class="list-item-info">
-                        <strong>${v.descricao}</strong>
-                        <div class="text-small">${v.categoria}</div>
-                    </div>
-                    <div class="list-item-actions">
-                        <span class="list-item-value">${fmt(v.valor)}</span>
-                        <button class="icon-btn" onclick="deletarVariavel(${v.id})">🗑️</button>
-                    </div>
-                </div>`).join('')
-            : '<div class="empty-state">Nenhuma variável</div>';
+        renderizarVariaveisPorCategoria(varMes);
 
-        // Fixos
-        ['casal','dela','gle'].forEach(tipo => {
-            const listId = `fixos${tipo[0].toUpperCase()+tipo.slice(1)}List`;
-            const itens  = fixos.filter(f => f.tipo === tipo && mesCompativel(f.mes));
-            document.getElementById(listId).innerHTML = itens.length
-                ? itens.map(f => `
-                    <div class="list-item ${f.pago ? 'pago' : ''}">
-                        <div class="list-item-info"><strong>${f.nome}</strong></div>
-                        <div class="list-item-actions">
-                            <span class="list-item-value">${fmt(f.valor)}</span>
-                            <button class="check-btn ${f.pago ? 'checked' : ''}" onclick="marcarFixoPago(${f.id},${f.pago})">✓</button>
-                            <button class="icon-btn edit-btn" onclick="abrirModalFixo(${f.id})">✏️</button>
-                            <button class="icon-btn" onclick="deletarFixo(${f.id})">🗑️</button>
-                        </div>
-                    </div>`).join('')
-                : '<div class="empty-state">Nenhum fixo</div>';
-        });
+        // Fixos — grupos colapsáveis com total
+        renderizarGruposFixos(fixos);
 
         // Receitas
         const recMes = receitas.filter(r => mesCompativel(r.mes));
@@ -947,6 +914,108 @@
                     </div>
                 </div>`).join('')
             : '<div class="empty-state">Nenhuma receita</div>';
+    }
+
+    // ===== RENDERIZAR FIXOS COLAPSÁVEIS =====
+    function renderizarGruposFixos(fixos) {
+        const grupos = [
+            { tipo: 'casal', label: '👥 Fixos Casal' },
+            { tipo: 'dela',  label: '👩 Fixos Dela'  },
+            { tipo: 'gle',   label: '👨 Fixos Seus'  }
+        ];
+
+        document.getElementById('fixosContainer').innerHTML = grupos.map(({ tipo, label }) => {
+            const itens = fixos.filter(f => f.tipo === tipo && mesCompativel(f.mes));
+            const total = itens.filter(f => !f.pago).reduce((s, f) => s + Number(f.valor), 0);
+            const bodyId = `fixosBody-${tipo}`;
+            const iconId = `fixosIcon-${tipo}`;
+
+            const lista = itens.length
+                ? itens.map(f => `
+                    <div class="list-item ${f.pago ? 'pago' : ''}">
+                        <div class="list-item-info"><strong>${f.nome}</strong></div>
+                        <div class="list-item-actions">
+                            <span class="list-item-value">${fmt(f.valor)}</span>
+                            <button class="check-btn ${f.pago ? 'checked' : ''}" onclick="marcarFixoPago(${f.id},${f.pago})">✓</button>
+                            <button class="icon-btn edit-btn" onclick="abrirModalFixo(${f.id})">✏️</button>
+                            <button class="icon-btn" onclick="deletarFixo(${f.id})">🗑️</button>
+                        </div>
+                    </div>`).join('')
+                : '<div class="empty-state">Nenhum fixo</div>';
+
+            const totalRow = itens.length
+                ? `<div class="stat-row total-row" style="margin-top:8px;"><span class="stat-label">Total</span><span class="stat-value">${fmt(total)}</span></div>`
+                : '';
+
+            return `
+                <div class="card">
+                    <div class="card-header-toggle" onclick="toggleSection('${bodyId}','${iconId}')">
+                        <div style="font-size:14px;font-weight:700;">${label}</div>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-size:13px;font-weight:600;color:var(--text-light);">${fmt(total)}</span>
+                            <span class="toggle-icon" id="${iconId}">▾</span>
+                        </div>
+                    </div>
+                    <div class="collapsible-body" id="${bodyId}">
+                        <div style="margin-top:12px;">
+                            ${lista}
+                            ${totalRow}
+                        </div>
+                    </div>
+                </div>`;
+        }).join('');
+    }
+
+    // ===== RENDERIZAR VARIÁVEIS POR CATEGORIA =====
+    function renderizarVariaveisPorCategoria(varMes) {
+        const container = document.getElementById('variaveisList');
+        if (!varMes.length) {
+            container.innerHTML = '<div class="empty-state">Nenhuma variável</div>';
+            return;
+        }
+
+        // Agrupar por categoria
+        const grupos = {};
+        varMes.forEach(v => {
+            const cat = v.categoria || 'Outros';
+            if (!grupos[cat]) grupos[cat] = [];
+            grupos[cat].push(v);
+        });
+
+        container.innerHTML = Object.entries(grupos).map(([cat, itens]) => {
+            const subtotal = itens.reduce((s, v) => s + Number(v.valor), 0);
+            const safeId   = cat.replace(/[^a-zA-Z0-9]/g, '-');
+            const bodyId   = `varBody-${safeId}`;
+            const iconId   = `varIcon-${safeId}`;
+
+            return `
+                <div style="margin-bottom:8px;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+                    <div class="card-header-toggle" onclick="toggleSection('${bodyId}','${iconId}')"
+                         style="padding:12px 14px;background:var(--bg-alt);">
+                        <span style="font-size:13px;font-weight:700;">${cat}</span>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-size:13px;font-weight:600;color:var(--text-light);">${fmt(subtotal)}</span>
+                            <span class="toggle-icon" id="${iconId}">▾</span>
+                        </div>
+                    </div>
+                    <div class="collapsible-body" id="${bodyId}">
+                        <div style="padding:0 12px 8px;">
+                            ${itens.map(v => `
+                                <div class="list-item" style="margin-top:8px;">
+                                    <div class="list-item-info"><strong>${v.descricao}</strong></div>
+                                    <div class="list-item-actions">
+                                        <span class="list-item-value">${fmt(v.valor)}</span>
+                                        <button class="icon-btn" onclick="deletarVariavel(${v.id})">🗑️</button>
+                                    </div>
+                                </div>`).join('')}
+                            <div class="stat-row total-row" style="margin-top:8px;">
+                                <span class="stat-label">Subtotal</span>
+                                <span class="stat-value">${fmt(subtotal)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }).join('');
     }
 
     // ===== INIT =====
