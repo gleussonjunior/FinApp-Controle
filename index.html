@@ -1015,32 +1015,53 @@
     }
 
     async function salvarFixo() {
-        const nome  = document.getElementById('fixoNome').value.trim();
-        const valor = parseFloat(document.getElementById('fixoValor').value);
-        const mes   = parseInt(document.getElementById('fixoMes').value);
-        if (!nome || !valor) { mostrarAlerta('⚠️ Preencha nome e valor', 'error'); return; }
+        const nome      = (document.getElementById('fixoNome')?.value || '').trim();
+        const valor     = parseFloat(document.getElementById('fixoValor')?.value || '0');
+        const mesEl     = document.getElementById('fixoMes');
+        const mes       = mesEl ? parseInt(mesEl.value) : mesAtual;
+        const catEl     = document.getElementById('fixoCategoria');
+        const categoria = catEl?.value || 'Outros';
+
+        if (!nome)           { mostrarAlerta('⚠️ Preencha o nome', 'error');  return; }
+        if (!valor || isNaN(valor)) { mostrarAlerta('⚠️ Preencha o valor', 'error'); return; }
 
         const btn = document.getElementById('btnSalvarFixo');
-        btn.disabled = true;
+        if (btn) btn.disabled = true;
+
+        // payload unificado — sem duplicar const categoria
+        const payload = { tipo: tipoFixoAtual, nome, valor, mes: isNaN(mes) ? mesAtual : mes, categoria };
+        console.log('salvarFixo →', fixoEditandoId ? 'UPDATE' : 'INSERT', payload);
+
         try {
+            let supaError;
+
             if (fixoEditandoId) {
-                const categoria = document.getElementById('fixoCategoria').value;
-                const { error } = await db.from('fixos').update({ tipo: tipoFixoAtual, nome, valor, mes, categoria }).eq('id', fixoEditandoId);
-                if (error) throw error;
-                mostrarAlerta('✅ Fixo atualizado!');
+                const res = await db.from('fixos').update(payload).eq('id', fixoEditandoId);
+                supaError = res.error;
             } else {
-                const categoria = document.getElementById('fixoCategoria').value;
-                const { error } = await db.from('fixos').insert([{ tipo: tipoFixoAtual, nome, valor, mes, categoria, pago: false }]);
-                if (error) throw error;
-                mostrarAlerta('✅ Fixo salvo!');
+                const res = await db.from('fixos').insert([{ ...payload, pago: false }]);
+                supaError = res.error;
             }
+
+            if (supaError) {
+                const msg = supaError.message || supaError.details || JSON.stringify(supaError);
+                console.error('Supabase error:', supaError);
+                alert('Erro Supabase: ' + msg); // debug — remover depois
+                mostrarAlerta('❌ ' + msg, 'error');
+                return;
+            }
+
+            mostrarAlerta(fixoEditandoId ? '✅ Fixo atualizado!' : '✅ Fixo salvo!');
             fecharModalFixo();
             await carregarDados();
         } catch(e) {
-            console.error('salvarFixo erro completo:', e);
-            const msg = e?.message || e?.error_description || JSON.stringify(e) || 'Erro desconhecido';
+            const msg = e?.message || String(e);
+            console.error('salvarFixo exception:', e);
+            alert('Exceção: ' + msg); // debug — remover depois
             mostrarAlerta('❌ ' + msg, 'error');
-        } finally { btn.disabled = false; }
+        } finally {
+            if (btn) btn.disabled = false;
+        }
     }
 
     async function salvarReceita() {
