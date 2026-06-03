@@ -380,6 +380,22 @@
             border-radius: 4px;
         }
         .modal-close:hover { background: var(--bg-alt); }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+        .btn-danger:hover:not(:disabled) { background: #b91c1c; }
+
+        .badge-casal {
+            font-size: 10px;
+            font-weight: 700;
+            background: rgba(14,165,233,0.15);
+            color: var(--secondary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+        }
     </style>
 </head>
 <body>
@@ -417,6 +433,7 @@
                         <div class="stat-row"><span class="stat-label">Fixos Dela</span><span class="stat-value" id="fixosDelaValue">R$ 0,00</span></div>
                         <div class="stat-row"><span class="stat-label">Variáveis Casal (÷2)</span><span class="stat-value" id="varCasalValue">R$ 0,00</span></div>
                         <div class="stat-row"><span class="stat-label">Variáveis Dela</span><span class="stat-value" id="varDelaValue">R$ 0,00</span></div>
+                        <div class="stat-row"><span class="stat-label">Entradas Casal (÷2)</span><span class="stat-value" style="color:var(--success)" id="entradasCasalValue">-R$ 0,00</span></div>
                         <div class="stat-row"><span class="stat-label">Desconto Ticket (Lia)</span><span class="stat-value" style="color:var(--success)">-R$ 620,00</span></div>
                     </div>
                 </div>
@@ -433,6 +450,7 @@
                         <div class="stat-row"><span class="stat-label">Fixos Pessoais</span><span class="stat-value" id="fixosGleValue">R$ 0,00</span></div>
                         <div class="stat-row"><span class="stat-label">Fixos Casal (÷2)</span><span class="stat-value" id="fixosCasalGleValue">R$ 0,00</span></div>
                         <div class="stat-row"><span class="stat-label">Variáveis Casal (÷2)</span><span class="stat-value" id="varCasalGleValue">R$ 0,00</span></div>
+                        <div class="stat-row"><span class="stat-label">Entradas Casal (÷2)</span><span class="stat-value" style="color:var(--success)" id="entradasCasalGleValue">-R$ 0,00</span></div>
                         <div class="stat-row total-row"><span class="stat-label">TOTAL</span><span class="stat-value" id="totalGleValue">R$ 0,00</span></div>
                     </div>
                 </div>
@@ -442,7 +460,8 @@
         <!-- FIXOS -->
         <div class="screen" id="screenFixos">
             <div id="fixosContainer"></div>
-            <button class="btn" id="btnAbrirModalFixo">+ Adicionar Fixo</button>
+            <button class="btn" id="btnAbrirModalFixo" style="margin-bottom:10px;">+ Adicionar Fixo</button>
+            <button class="btn btn-danger" id="btnFecharMes">🔒 Fechar Mês e Criar Próximo</button>
         </div>
 
         <!-- VARIÁVEIS -->
@@ -556,6 +575,13 @@
             <input type="text" id="receitaOutroDescricao" placeholder="Digite o tipo">
         </div>
         <div class="form-group">
+            <label>Esta receita é do casal?</label>
+            <div style="display:flex;gap:8px;">
+                <div class="category-pill" id="receitaCasalNao" style="flex:1">👤 Só minha</div>
+                <div class="category-pill" id="receitaCasalSim" style="flex:1">👥 Do casal</div>
+            </div>
+        </div>
+        <div class="form-group">
             <label>Valor (R$)</label>
             <input type="number" id="receitaValor" placeholder="0,00" step="0.01" min="0">
         </div>
@@ -583,6 +609,7 @@
     let tipoFixoAtual  = 'casal';
     let fixoEditandoId   = null;
     let receitaEditandoId = null;
+    let receitaCasal      = false;
 
     // ===== HELPERS =====
     const fmt = n => `R$ ${Number(n || 0).toFixed(2).replace('.', ',')}`;
@@ -697,6 +724,12 @@
     }
 
     // ===== MODAL RECEITA =====
+    function setReceitaCasal(val) {
+        receitaCasal = val;
+        document.getElementById('receitaCasalSim').classList.toggle('selected',  val);
+        document.getElementById('receitaCasalNao').classList.toggle('selected', !val);
+    }
+
     function abrirModalReceita(id = null) {
         receitaEditandoId = id;
         document.getElementById('modalReceitaTitle').textContent = id ? 'Editar Receita' : 'Adicionar Receita';
@@ -707,6 +740,7 @@
                 if (error) { mostrarAlerta('❌ Erro ao carregar receita', 'error'); return; }
                 document.getElementById('receitaTipo').value  = data.tipo  || 'Salário';
                 document.getElementById('receitaValor').value = data.valor || '';
+                setReceitaCasal(!!data.casal);
                 if (!['Salário','Lia','Débora','Diego Netflix','Andre Netflix','Porão Redes Sociais','Restituição IR'].includes(data.tipo)) {
                     document.getElementById('receitaTipo').value = 'Outro';
                     document.getElementById('receitaOutroDescricao').value = data.tipo;
@@ -716,6 +750,7 @@
         } else {
             document.getElementById('receitaTipo').value  = 'Salário';
             document.getElementById('receitaValor').value = '';
+            setReceitaCasal(false);
         }
         document.getElementById('modalReceita').classList.add('active');
     }
@@ -785,11 +820,11 @@
         btn.disabled = true;
         try {
             if (receitaEditandoId) {
-                const { error } = await db.from('receitas').update({ tipo, valor }).eq('id', receitaEditandoId);
+                const { error } = await db.from('receitas').update({ tipo, valor, casal: receitaCasal }).eq('id', receitaEditandoId);
                 if (error) throw error;
                 mostrarAlerta('✅ Receita atualizada!');
             } else {
-                const { error } = await db.from('receitas').insert([{ tipo, valor, mes: mesAtual }]);
+                const { error } = await db.from('receitas').insert([{ tipo, valor, mes: mesAtual, casal: receitaCasal }]);
                 if (error) throw error;
                 mostrarAlerta('✅ Receita salva!');
             }
@@ -844,7 +879,7 @@
             if (r2.error) console.error('variaveis:', r2.error.message);
             if (r3.error) console.error('receitas:', r3.error.message);
 
-            calcularRepasse(r1.data || [], r2.data || []);
+            calcularRepasse(r1.data || [], r2.data || [], r3.data || []);
             renderizar(r1.data || [], r2.data || [], r3.data || []);
         } catch(e) {
             console.error('carregarDados:', e);
@@ -852,7 +887,7 @@
     }
 
     // ===== CÁLCULOS =====
-    function calcularRepasse(fixos, variaveis) {
+    function calcularRepasse(fixos, variaveis, receitas) {
         let fixosCasal = 0, fixosDela = 0, fixosGle = 0;
         let varCasal   = 0, varDela   = 0, varGle   = 0;
 
@@ -872,21 +907,28 @@
             }
         });
 
-        const repasse    = (fixosCasal/2) + fixosDela + (varCasal/2) + varDela - 620;
-        const totalGasto = fixosCasal + fixosDela + varCasal + varDela;
-        const totalGle   = fixosGle + varGle + fixosCasal/2 + varCasal/2;
+        let entradasCasal = 0;
+        (receitas || []).forEach(r => {
+            if (r.casal && mesCompativel(r.mes)) entradasCasal += Number(r.valor);
+        });
 
-        document.getElementById('repasseValue').textContent       = fmt(repasse);
-        document.getElementById('totalGastos').textContent        = fmt(totalGasto);
-        document.getElementById('fixosCasalValue').textContent    = fmt(fixosCasal / 2);
-        document.getElementById('fixosDelaValue').textContent     = fmt(fixosDela);
-        document.getElementById('varCasalValue').textContent      = fmt(varCasal / 2);
-        document.getElementById('varDelaValue').textContent       = fmt(varDela);
-        document.getElementById('varGleValue').textContent        = fmt(varGle);
-        document.getElementById('fixosGleValue').textContent      = fmt(fixosGle);
-        document.getElementById('fixosCasalGleValue').textContent = fmt(fixosCasal / 2);
-        document.getElementById('varCasalGleValue').textContent   = fmt(varCasal / 2);
-        document.getElementById('totalGleValue').textContent      = fmt(totalGle);
+        const repasse    = (fixosCasal/2) + fixosDela + (varCasal/2) + varDela - 620 - (entradasCasal/2);
+        const totalGasto = fixosCasal + fixosDela + varCasal + varDela;
+        const totalGle   = fixosGle + varGle + fixosCasal/2 + varCasal/2 - entradasCasal/2;
+
+        document.getElementById('repasseValue').textContent          = fmt(repasse);
+        document.getElementById('totalGastos').textContent           = fmt(totalGasto);
+        document.getElementById('fixosCasalValue').textContent       = fmt(fixosCasal / 2);
+        document.getElementById('fixosDelaValue').textContent        = fmt(fixosDela);
+        document.getElementById('varCasalValue').textContent         = fmt(varCasal / 2);
+        document.getElementById('varDelaValue').textContent          = fmt(varDela);
+        document.getElementById('entradasCasalValue').textContent    = entradasCasal > 0 ? `-${fmt(entradasCasal/2)}` : '-R$ 0,00';
+        document.getElementById('varGleValue').textContent           = fmt(varGle);
+        document.getElementById('fixosGleValue').textContent         = fmt(fixosGle);
+        document.getElementById('fixosCasalGleValue').textContent    = fmt(fixosCasal / 2);
+        document.getElementById('varCasalGleValue').textContent      = fmt(varCasal / 2);
+        document.getElementById('entradasCasalGleValue').textContent = entradasCasal > 0 ? `-${fmt(entradasCasal/2)}` : '-R$ 0,00';
+        document.getElementById('totalGleValue').textContent         = fmt(totalGle);
     }
 
     // ===== RENDERIZAR =====
@@ -906,7 +948,9 @@
         document.getElementById('receitasList').innerHTML = recMes.length
             ? recMes.map(r => `
                 <div class="list-item receita-item">
-                    <div class="list-item-info"><strong>${r.tipo}</strong></div>
+                    <div class="list-item-info">
+                        <strong>${r.tipo}${r.casal ? '<span class="badge-casal">casal</span>' : ''}</strong>
+                    </div>
                     <div class="list-item-actions">
                         <span class="list-item-value">${fmt(r.valor)}</span>
                         <button class="icon-btn edit-btn" onclick="abrirModalReceita(${r.id})">✏️</button>
@@ -937,7 +981,7 @@
                         <div class="list-item-actions">
                             <span class="list-item-value">${fmt(f.valor)}</span>
                             <button class="check-btn ${f.pago ? 'checked' : ''}" onclick="marcarFixoPago(${f.id},${f.pago})">✓</button>
-                            <button class="icon-btn edit-btn" onclick="abrirModalFixo(${f.id})">✏️</button>
+                            ${!f.pago ? `<button class="icon-btn edit-btn" onclick="abrirModalFixo(${f.id})">✏️</button>` : ''}
                             <button class="icon-btn" onclick="deletarFixo(${f.id})">🗑️</button>
                         </div>
                     </div>`).join('')
@@ -1018,6 +1062,37 @@
         }).join('');
     }
 
+    // ===== FECHAR MÊS =====
+    async function fecharMes() {
+        const proximoMes  = (mesAtual + 1) % 12;
+        const nomeProximo = MESES[proximoMes];
+        if (!confirm(`Fechar ${MESES[mesAtual]}? Isso vai criar os fixos para ${nomeProximo}. Os registros atuais ficam salvos como histórico.`)) return;
+
+        try {
+            const { data: fixosAtivos, error } = await db.from('fixos').select('*');
+            if (error) throw error;
+
+            const doMes = fixosAtivos.filter(f => mesCompativel(f.mes));
+            if (!doMes.length) { mostrarAlerta('⚠️ Nenhum fixo para copiar', 'error'); return; }
+
+            for (const f of doMes) {
+                const { error: errIns } = await db.from('fixos').insert([{
+                    tipo:  f.tipo,
+                    nome:  f.nome,
+                    valor: f.valor,
+                    mes:   proximoMes,
+                    pago:  false
+                }]);
+                if (errIns) throw errIns;
+            }
+
+            mostrarAlerta(`✅ ${doMes.length} fixo(s) criado(s) para ${nomeProximo}!`);
+            await carregarDados();
+        } catch(e) {
+            mostrarAlerta('❌ ' + (e.message || 'Erro ao fechar mês'), 'error');
+        }
+    }
+
     // ===== INIT =====
     async function init() {
         let t = 0;
@@ -1043,6 +1118,13 @@
         // Abrir modais
         document.getElementById('btnAbrirModalFixo').addEventListener('click',    () => abrirModalFixo());
         document.getElementById('btnAbrirModalReceita').addEventListener('click', () => abrirModalReceita());
+
+        // Fechar mês
+        document.getElementById('btnFecharMes').addEventListener('click', fecharMes);
+
+        // Toggle casal receita
+        document.getElementById('receitaCasalSim').addEventListener('click', () => setReceitaCasal(true));
+        document.getElementById('receitaCasalNao').addEventListener('click', () => setReceitaCasal(false));
 
         // Fechar modais
         document.getElementById('btnFecharModalFixo').addEventListener('click',    fecharModalFixo);
