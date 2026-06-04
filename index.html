@@ -187,6 +187,31 @@
             color: var(--text);
         }
 
+        .filtro-fixos {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .filtro-btn {
+            padding: 5px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            background: var(--bg);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: all 0.2s;
+        }
+
+        .filtro-btn.active {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            color: white;
+        }
+
         .chart-wrap {
             position: relative;
             height: 280px;
@@ -735,6 +760,12 @@
 
         <div class="chart-container">
             <div class="chart-title">Contas Fixas</div>
+            <div class="filtro-fixos">
+                <button class="filtro-btn active" data-filtro="geral">Geral</button>
+                <button class="filtro-btn" data-filtro="casal">Casal</button>
+                <button class="filtro-btn" data-filtro="gle">Meu</button>
+                <button class="filtro-btn" data-filtro="dela">Dela</button>
+            </div>
             <div id="wrapChartFixos" style="position:relative;">
                 <canvas id="canvasGraficoFixos"></canvas>
             </div>
@@ -846,6 +877,7 @@
     let fixoEditandoId   = null;
     let receitaEditandoId = null;
     let mesGrafico    = new Date().getMonth();
+    let filtroFixos   = 'geral';
     let anoGrafico    = new Date().getFullYear();
     let chartVarInstance   = null;
     let chartFixosInstance = null;
@@ -1500,51 +1532,65 @@
                 });
             }
 
-            // ---- GRÁFICO 2: Fixos por categoria (barras horizontais) ----
-            const catFixosMap = {};
-            fixosMes.forEach(f => {
-                const cat = f.categoria || 'Outros';
-                catFixosMap[cat] = (catFixosMap[cat] || 0) + Number(f.valor);
-            });
-            const sortedCatFixos = Object.entries(catFixosMap).sort((a,b) => b[1]-a[1]);
-
-            const wrapFixos = document.getElementById('wrapChartFixos');
-            if (!sortedCatFixos.length) {
-                wrapFixos.innerHTML = '<div class="empty-state" style="padding:40px 0">Sem fixos neste mês</div>';
-                wrapFixos.style.height = 'auto';
-            } else {
-                wrapFixos.style.height = '300px';
-                wrapFixos.style.position = 'relative';
-                wrapFixos.innerHTML = '<canvas id="canvasGraficoFixos"></canvas>';
-                chartFixosInstance = new Chart(document.getElementById('canvasGraficoFixos').getContext('2d'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: sortedCatFixos.map(([k]) => k),
-                        datasets: [{ data: sortedCatFixos.map(([,v]) => v),
-                            backgroundColor: sortedCatFixos.map(([k]) => COR_CATEGORIA_FIXO[k] || '#9ca3af'),
-                            borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        cutout: '55%',
-                        plugins: {
-                            legend: { display: true, position: 'bottom',
-                                labels: { font: { size: 11 }, padding: 12, boxWidth: 14 }
-                            },
-                            tooltip: { callbacks: {
-                                label: c => {
-                                    const total = c.dataset.data.reduce((a,b)=>a+b,0);
-                                    const pct = ((c.raw/total)*100).toFixed(1);
-                                    return ` R$ ${Number(c.raw).toFixed(2).replace('.',',')} (${pct}%)`;
-                                }
-                            }}
-                        }
-                    }
-                });
-            }
+            // ---- GRÁFICO 2: Fixos por categoria (pizza) com filtro ----
+            // guardar fixosMes para uso nos filtros
+            window._fixosMesGrafico = fixosMes;
+            renderizarChartFixos(fixosMes);
         } catch(e) {
             console.error('carregarDadosGrafico:', e);
         }
+    }
+
+    // ===== GRÁFICO FIXOS COM FILTRO =====
+    function renderizarChartFixos(fixosMes) {
+        const filtrados = filtroFixos === 'geral'
+            ? fixosMes
+            : fixosMes.filter(f => f.tipo === filtroFixos);
+
+        const catFixosMap = {};
+        filtrados.forEach(f => {
+            const cat = f.categoria || 'Outros';
+            catFixosMap[cat] = (catFixosMap[cat] || 0) + Number(f.valor);
+        });
+        const sorted = Object.entries(catFixosMap).sort((a,b) => b[1]-a[1]);
+
+        if (chartFixosInstance) { chartFixosInstance.destroy(); chartFixosInstance = null; }
+
+        const wrapFixos = document.getElementById('wrapChartFixos');
+        if (!sorted.length) {
+            wrapFixos.innerHTML = '<div class="empty-state" style="padding:40px 0">Sem fixos neste filtro</div>';
+            wrapFixos.style.height = 'auto';
+            return;
+        }
+
+        wrapFixos.style.height = '300px';
+        wrapFixos.style.position = 'relative';
+        wrapFixos.innerHTML = '<canvas id="canvasGraficoFixos"></canvas>';
+        chartFixosInstance = new Chart(document.getElementById('canvasGraficoFixos').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: sorted.map(([k]) => k),
+                datasets: [{ data: sorted.map(([,v]) => v),
+                    backgroundColor: sorted.map(([k]) => COR_CATEGORIA_FIXO[k] || '#9ca3af'),
+                    borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                cutout: '55%',
+                plugins: {
+                    legend: { display: true, position: 'bottom',
+                        labels: { font: { size: 11 }, padding: 12, boxWidth: 14 }
+                    },
+                    tooltip: { callbacks: {
+                        label: c => {
+                            const total = c.dataset.data.reduce((a,b)=>a+b,0);
+                            const pct = ((c.raw/total)*100).toFixed(1);
+                            return ` R$ ${Number(c.raw).toFixed(2).replace('.',',')} (${pct}%)`;
+                        }
+                    }}
+                }
+            }
+        });
     }
 
     // ===== FECHAR MÊS =====
@@ -1621,6 +1667,16 @@
         document.getElementById('btnFecharGraficos').addEventListener('click', fecharGraficos);
         document.getElementById('btnMesAnterior').addEventListener('click', () => navegarMesGrafico(-1));
         document.getElementById('btnMesProximo').addEventListener('click',  () => navegarMesGrafico(1));
+
+        // Filtros do gráfico de fixos
+        document.querySelectorAll('.filtro-btn[data-filtro]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                filtroFixos = btn.dataset.filtro;
+                document.querySelectorAll('.filtro-btn[data-filtro]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                if (window._fixosMesGrafico) renderizarChartFixos(window._fixosMesGrafico);
+            });
+        });
 
         // Fechar modais
         document.getElementById('btnFecharModalFixo').addEventListener('click',    fecharModalFixo);
