@@ -700,6 +700,12 @@
                 <!-- Success inline -->
                 <div class="var-success-inline" id="varSuccessInline">✅ Variável salva!</div>
             </div>
+            <!-- Overview por tipo -->
+            <div class="card" id="cardOverview">
+                <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Resumo por Grupo</div>
+                <div id="overviewList"></div>
+            </div>
+
             <div class="card">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                     <div style="font-size:14px;font-weight:700;">Variáveis Lançadas</div>
@@ -806,6 +812,37 @@
     </div>
 </div>
 
+<!-- MODAL EDITAR VARIÁVEL -->
+<div class="modal" id="modalEditarVar">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span>Editar Variável</span>
+            <button class="modal-close" id="btnFecharModalEditarVar">✕</button>
+        </div>
+        <div class="form-group">
+            <label>Tipo</label>
+            <div class="category-select" id="tipoEditarVarSelect">
+                <div class="category-pill" data-tipo="casal">👥 Casal</div>
+                <div class="category-pill" data-tipo="dela">👩 Dela</div>
+                <div class="category-pill" data-tipo="gle">👨 Você</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Categoria</label>
+            <div class="category-select" id="categoriaEditarVarSelect"></div>
+        </div>
+        <div class="form-group">
+            <label>Valor (R$)</label>
+            <input type="number" id="editarVarValor" placeholder="0,00" step="0.01" min="0">
+        </div>
+        <div class="form-group">
+            <label>Descrição</label>
+            <input type="text" id="editarVarDescricao" placeholder="Ex: Supermercado">
+        </div>
+        <button class="btn" id="btnSalvarEditarVar">💾 Salvar</button>
+    </div>
+</div>
+
 <!-- MODAL FIXO -->
 <div class="modal" id="modalFixo">
     <div class="modal-content">
@@ -909,6 +946,8 @@
     let tipoFixoAtual  = 'casal';
     let fixoEditandoId   = null;
     let receitaEditandoId = null;
+    let varEditandoId     = null;
+    let tipoEditarVar     = 'casal';
     let mesGrafico    = new Date().getMonth();
     let filtroFixos   = 'geral';
     let anoGrafico    = new Date().getFullYear();
@@ -1164,6 +1203,87 @@
         }
     }
 
+    function abrirModalEditarVar(id, tipo, categoria, valor, descricao) {
+        varEditandoId = id;
+        tipoEditarVar = tipo;
+
+        // Setar tipo
+        document.querySelectorAll('#tipoEditarVarSelect .category-pill').forEach(p => {
+            p.classList.toggle('selected', p.dataset.tipo === tipo);
+        });
+
+        // Preencher categorias do tipo
+        const catContainer = document.getElementById('categoriaEditarVarSelect');
+        catContainer.innerHTML = '';
+        CATEGORIAS[tipo].forEach(cat => {
+            const div = document.createElement('div');
+            div.className = 'category-pill' + (cat === categoria ? ' selected' : '');
+            div.textContent = cat;
+            catContainer.appendChild(div);
+        });
+        catContainer.addEventListener('click', e => {
+            const p = e.target.closest('.category-pill');
+            if (!p) return;
+            catContainer.querySelectorAll('.category-pill').forEach(x => x.classList.remove('selected'));
+            p.classList.add('selected');
+        });
+
+        // Quando tipo muda, recria categorias
+        document.querySelectorAll('#tipoEditarVarSelect .category-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                tipoEditarVar = pill.dataset.tipo;
+                const cc = document.getElementById('categoriaEditarVarSelect');
+                cc.innerHTML = '';
+                CATEGORIAS[tipoEditarVar].forEach(cat => {
+                    const div = document.createElement('div');
+                    div.className = 'category-pill';
+                    div.textContent = cat;
+                    cc.appendChild(div);
+                });
+                cc.addEventListener('click', e2 => {
+                    const p2 = e2.target.closest('.category-pill');
+                    if (!p2) return;
+                    cc.querySelectorAll('.category-pill').forEach(x => x.classList.remove('selected'));
+                    p2.classList.add('selected');
+                });
+            });
+        });
+
+        document.getElementById('editarVarValor').value      = valor;
+        document.getElementById('editarVarDescricao').value  = descricao;
+        document.getElementById('modalEditarVar').classList.add('active');
+    }
+
+    function fecharModalEditarVar() {
+        document.getElementById('modalEditarVar').classList.remove('active');
+        varEditandoId = null;
+    }
+
+    async function salvarEdicaoVar() {
+        const catSelecionada = document.querySelector('#categoriaEditarVarSelect .category-pill.selected');
+        const categoria      = catSelecionada ? catSelecionada.textContent : '';
+        const valor          = parseFloat(document.getElementById('editarVarValor').value);
+        const descricao      = document.getElementById('editarVarDescricao').value.trim();
+
+        if (!categoria) { mostrarAlerta('⚠️ Selecione a categoria', 'error'); return; }
+        if (!valor)     { mostrarAlerta('⚠️ Preencha o valor', 'error');      return; }
+        if (!descricao) { mostrarAlerta('⚠️ Preencha a descrição', 'error');  return; }
+
+        const btn = document.getElementById('btnSalvarEditarVar');
+        btn.disabled = true;
+        try {
+            const { error } = await db.from('variaveis').update({
+                tipo: tipoEditarVar, categoria, valor, descricao
+            }).eq('id', varEditandoId);
+            if (error) throw error;
+            mostrarAlerta('✅ Variável atualizada!');
+            fecharModalEditarVar();
+            await carregarDados();
+        } catch(e) {
+            mostrarAlerta('❌ ' + (e.message || 'Erro'), 'error');
+        } finally { btn.disabled = false; }
+    }
+
     async function salvarReceita() {
         let tipo = document.getElementById('receitaTipo').value;
         if (tipo === 'Outro') {
@@ -1295,6 +1415,8 @@
 
     // ===== RENDERIZAR =====
     function renderizar(fixos, variaveis, receitas) {
+        // Overview por tipo
+        renderizarOverviewVariaveis(variaveis.filter(v => mesCompativel(v.mes)));
         // Variáveis — agrupadas por categoria
         const varMes = variaveis.filter(v => mesCompativel(v.mes));
         renderizarVariaveisPorCategoria(varMes);
@@ -1397,6 +1519,47 @@
     }
 
     // ===== RENDERIZAR VARIÁVEIS POR CATEGORIA =====
+    function renderizarOverviewVariaveis(varMes) {
+        const grupos = [
+            { tipo: 'casal', label: '👥 Casal',   id: 'ovCasal' },
+            { tipo: 'gle',   label: '👨 Meu',      id: 'ovGle'   },
+            { tipo: 'dela',  label: '👩 Dela',     id: 'ovDela'  },
+        ];
+
+        document.getElementById('overviewList').innerHTML = grupos.map(({ tipo, label, id }) => {
+            const itens = varMes.filter(v => v.tipo === tipo);
+            if (!itens.length) return '';
+
+            const total = itens.reduce((s, v) => s + Number(v.valor), 0);
+            const cats  = {};
+            itens.forEach(v => { const c = v.categoria||'Outros'; cats[c] = (cats[c]||0)+Number(v.valor); });
+            const sortedCats = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+            const bodyId = `ovBody-${id}`;
+            const iconId = `ovIcon-${id}`;
+
+            return `
+                <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px;">
+                    <div class="card-header-toggle" onclick="toggleSection('${bodyId}','${iconId}')"
+                         style="padding:12px 14px;background:var(--bg-alt);display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-size:13px;font-weight:700;">${label}</span>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-size:13px;font-weight:700;color:var(--secondary);">${fmt(total)}</span>
+                            <span class="toggle-icon collapsed" id="${iconId}">▾</span>
+                        </div>
+                    </div>
+                    <div class="collapsible-body collapsed" id="${bodyId}">
+                        <div style="padding:8px 14px;">
+                            ${sortedCats.map(([cat, val]) => `
+                                <div class="stat-row">
+                                    <span class="stat-label">${cat}</span>
+                                    <span class="stat-value">${fmt(val)}</span>
+                                </div>`).join('')}
+                        </div>
+                    </div>
+                </div>`;
+        }).join('');
+    }
+
     function renderizarVariaveisPorCategoria(varMes) {
         const container = document.getElementById('variaveisList');
         if (!varMes.length) {
@@ -1448,6 +1611,7 @@
                                     </div>
                                     <div class="list-item-actions">
                                         <span class="list-item-value">${fmt(v.valor)}</span>
+                                        <button class="icon-btn edit-btn" onclick="abrirModalEditarVar(${v.id},'${v.tipo}','${v.categoria||'Outros'}',${v.valor},'${v.descricao.replace(/'/g,"\'")}')">✏️</button>
                                         <button class="icon-btn" onclick="deletarVariavel(${v.id})">🗑️</button>
                                     </div>
                                 </div>`).join('')}
@@ -1738,12 +1902,23 @@
 
         // Fechar modais
         document.getElementById('btnFecharModalFixo').addEventListener('click',    fecharModalFixo);
+        document.getElementById('btnFecharModalEditarVar').addEventListener('click', fecharModalEditarVar);
+        document.getElementById('btnSalvarEditarVar').addEventListener('click',      salvarEdicaoVar);
         document.getElementById('btnFecharModalReceita').addEventListener('click', fecharModalReceita);
 
         // Salvar
         document.getElementById('btnSalvarVariavel').addEventListener('click', salvarVariavel);
         document.getElementById('btnSalvarFixo').addEventListener('click',     salvarFixo);
         document.getElementById('btnSalvarReceita').addEventListener('click',  salvarReceita);
+
+        // Tipo Editar Var (listener inicial — muda categorias ao trocar tipo)
+        document.getElementById('tipoEditarVarSelect').addEventListener('click', e => {
+            const p = e.target.closest('.category-pill');
+            if (!p) return;
+            document.querySelectorAll('#tipoEditarVarSelect .category-pill').forEach(x => x.classList.remove('selected'));
+            p.classList.add('selected');
+            tipoEditarVar = p.dataset.tipo;
+        });
 
         // Tipo Fixo
         document.getElementById('tipoFixoSelect').addEventListener('click', e => {
