@@ -1088,7 +1088,10 @@
     async function salvarVariavel() {
         const valor     = parseFloat(document.getElementById('varValor').value);
         const descricao = document.getElementById('varDescricao').value.trim();
-        if (!valor || !descricao) { mostrarAlerta('⚠️ Preencha valor e descrição', 'error'); return; }
+        if (!tipoAtual)      { mostrarAlerta('⚠️ Selecione o tipo', 'error');      return; }
+        if (!categoriaAtual) { mostrarAlerta('⚠️ Selecione a categoria', 'error'); return; }
+        if (!valor)          { mostrarAlerta('⚠️ Preencha o valor', 'error');       return; }
+        if (!descricao)      { mostrarAlerta('⚠️ Preencha a descrição', 'error');   return; }
 
         const btn = document.getElementById('btnSalvarVariavel');
         btn.disabled = true;
@@ -1097,9 +1100,13 @@
                 tipo: tipoAtual, categoria: categoriaAtual, valor, descricao, mes: mesAtual
             }]);
             if (error) throw error;
-            mostrarAlerta('✅ Variável salva!');
-            document.getElementById('varValor').value     = '';
-            document.getElementById('varDescricao').value = '';
+
+            // Reset form + sucesso inline
+            resetFormVariavel();
+            const el = document.getElementById('varSuccessInline');
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 2500);
+
             await carregarDados();
         } catch(e) {
             mostrarAlerta('❌ ' + (e.message || 'Erro'), 'error');
