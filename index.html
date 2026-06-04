@@ -897,7 +897,7 @@
     const CATEGORIAS = {
         casal: ['Uber', 'Mercado', 'Saídas', 'Extra', 'Pets', 'Outros'],
         dela:  ['Pessoais Lia', 'Outros'],
-        gle:   ['Pessoais Gle', 'Outros']
+        gle:   ['Saúde','Transporte','Estética','Educação','Assinaturas','Compras','Bebidas','Conveniências','Outros']
     };
     const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -1101,8 +1101,9 @@
             }]);
             if (error) throw error;
 
-            // Reset form + sucesso inline
+            // Reset form + sucesso inline + scroll pro topo
             resetFormVariavel();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             const el = document.getElementById('varSuccessInline');
             el.style.display = 'block';
             setTimeout(() => { el.style.display = 'none'; }, 2500);
@@ -1413,9 +1414,9 @@
         });
 
         // Separar Pessoais Gle dos demais
-        const CAT_PESSOAL = 'Pessoais Gle';
-        const gruposGerais  = Object.entries(grupos).filter(([cat]) => cat !== CAT_PESSOAL);
-        const itensPessoais = grupos[CAT_PESSOAL] || [];
+        const CAT_PESSOAL = null; // sem separação especial
+        const gruposGerais  = CAT_PESSOAL ? Object.entries(grupos).filter(([cat]) => cat !== CAT_PESSOAL) : Object.entries(grupos);
+        const itensPessoais = CAT_PESSOAL ? (grupos[CAT_PESSOAL] || []) : [];
 
         // Total geral (excluindo Pessoais Gle)
         const totalGeral = gruposGerais.reduce((s, [, itens]) =>
