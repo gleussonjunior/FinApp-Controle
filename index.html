@@ -658,9 +658,19 @@
                 <div class="total-receitas" id="totalReceitasValue">R$ 0,00</div>
             </div>
             <div class="card">
-                <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Receitas</div>
-                <div id="receitasList"></div>
-                <button class="btn" id="btnAbrirModalReceita" style="margin-top:12px;">+ Adicionar Receita</button>
+                <div class="card-header-toggle" id="toggleReceitas">
+                    <div style="font-size:14px;font-weight:700;">Receitas</div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span id="totalReceitasCollapsed" style="font-size:13px;font-weight:600;color:var(--text-light);"></span>
+                        <span class="toggle-icon collapsed" id="iconReceitas">▾</span>
+                    </div>
+                </div>
+                <div class="collapsible-body collapsed" id="bodyReceitas">
+                    <div style="margin-top:12px;">
+                        <div id="receitasList"></div>
+                        <button class="btn" id="btnAbrirModalReceita" style="margin-top:12px;">+ Adicionar Receita</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1206,6 +1216,7 @@
         const recMes = receitas.filter(r => mesCompativel(r.mes));
         const totalRec = recMes.reduce((s, r) => s + Number(r.valor), 0);
         document.getElementById('totalReceitasValue').textContent = fmt(totalRec);
+        document.getElementById('totalReceitasCollapsed').textContent = fmt(totalRec);
 
         document.getElementById('receitasList').innerHTML = recMes.length
             ? recMes.map(r => `
@@ -1591,6 +1602,8 @@
             toggleSection('bodyDetalhamento', 'iconDetalhamento'));
         document.getElementById('toggleGle').addEventListener('click', () =>
             toggleSection('bodyGle', 'iconGle'));
+        document.getElementById('toggleReceitas').addEventListener('click', () =>
+            toggleSection('bodyReceitas', 'iconReceitas'));
 
         // Abrir modais
         document.getElementById('btnAbrirModalFixo').addEventListener('click',    () => abrirModalFixo());
