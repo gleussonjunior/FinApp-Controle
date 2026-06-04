@@ -1282,10 +1282,10 @@
                         <div style="font-size:14px;font-weight:700;">${label}</div>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <span style="font-size:13px;font-weight:600;color:var(--text-light);">${fmt(total)}</span>
-                            <span class="toggle-icon" id="${iconId}">▾</span>
+                            <span class="toggle-icon collapsed" id="${iconId}">▾</span>
                         </div>
                     </div>
-                    <div class="collapsible-body" id="${bodyId}">
+                    <div class="collapsible-body collapsed" id="${bodyId}">
                         <div style="margin-top:12px;">
                             ${lista}
                             ${totalRow}
@@ -1460,23 +1460,30 @@
                 wrapVar.innerHTML = '<div class="empty-state" style="padding:40px 0">Sem variáveis neste mês</div>';
                 wrapVar.style.height = 'auto';
             } else {
-                wrapVar.style.height = '260px';
+                wrapVar.style.height = '300px';
                 wrapVar.innerHTML = '<canvas id="canvasGraficoVar"></canvas>';
                 chartVarInstance = new Chart(document.getElementById('canvasGraficoVar').getContext('2d'), {
-                    type: 'bar',
+                    type: 'doughnut',
                     data: {
                         labels: sortedVar.map(([k])=>k),
                         datasets: [{ data: sortedVar.map(([,v])=>v),
                             backgroundColor: sortedVar.map(([k])=>paletteCat[k]||'#6b7280'),
-                            borderRadius: 6, borderSkipped: false }]
+                            borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }]
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false,
-                        plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>` R$ ${Number(c.raw).toFixed(2).replace('.',',')}`}} },
-                        scales: {
-                            y: { beginAtZero:true, grid:{color:'rgba(0,0,0,0.04)'},
-                                ticks:{font:{size:11},callback:v=>`R$ ${Number(v).toLocaleString('pt-BR')}`}},
-                            x: { grid:{display:false}, ticks:{font:{size:11},maxRotation:35} }
+                        cutout: '55%',
+                        plugins: {
+                            legend: { display: true, position: 'bottom',
+                                labels: { font: { size: 11 }, padding: 12, boxWidth: 14 }
+                            },
+                            tooltip: { callbacks: {
+                                label: c => {
+                                    const total = c.dataset.data.reduce((a,b)=>a+b,0);
+                                    const pct = ((c.raw/total)*100).toFixed(1);
+                                    return ` R$ ${Number(c.raw).toFixed(2).replace('.',',')} (${pct}%)`;
+                                }
+                            }}
                         }
                     }
                 });
@@ -1495,26 +1502,31 @@
                 wrapFixos.innerHTML = '<div class="empty-state" style="padding:40px 0">Sem fixos neste mês</div>';
                 wrapFixos.style.height = 'auto';
             } else {
-                const alturaFixos = Math.max(180, sortedCatFixos.length * 44);
-                wrapFixos.style.height = alturaFixos + 'px';
+                wrapFixos.style.height = '300px';
                 wrapFixos.style.position = 'relative';
                 wrapFixos.innerHTML = '<canvas id="canvasGraficoFixos"></canvas>';
                 chartFixosInstance = new Chart(document.getElementById('canvasGraficoFixos').getContext('2d'), {
-                    type: 'bar',
+                    type: 'doughnut',
                     data: {
                         labels: sortedCatFixos.map(([k]) => k),
                         datasets: [{ data: sortedCatFixos.map(([,v]) => v),
                             backgroundColor: sortedCatFixos.map(([k]) => COR_CATEGORIA_FIXO[k] || '#9ca3af'),
-                            borderRadius: 4, borderSkipped: false }]
+                            borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }]
                     },
                     options: {
-                        indexAxis: 'y',
                         responsive: true, maintainAspectRatio: false,
-                        plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>` R$ ${Number(c.raw).toFixed(2).replace('.',',')}`}} },
-                        scales: {
-                            x: { beginAtZero:true, grid:{color:'rgba(0,0,0,0.04)'},
-                                ticks:{font:{size:11},callback:v=>`R$ ${Number(v).toLocaleString('pt-BR')}`}},
-                            y: { grid:{display:false}, ticks:{font:{size:11}} }
+                        cutout: '55%',
+                        plugins: {
+                            legend: { display: true, position: 'bottom',
+                                labels: { font: { size: 11 }, padding: 12, boxWidth: 14 }
+                            },
+                            tooltip: { callbacks: {
+                                label: c => {
+                                    const total = c.dataset.data.reduce((a,b)=>a+b,0);
+                                    const pct = ((c.raw/total)*100).toFixed(1);
+                                    return ` R$ ${Number(c.raw).toFixed(2).replace('.',',')} (${pct}%)`;
+                                }
+                            }}
                         }
                     }
                 });
