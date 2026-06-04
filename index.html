@@ -455,6 +455,27 @@
 
         .receita-item { background: rgba(16,185,129,0.05); border-left: 4px solid var(--success); }
         .empty-state { text-align: center; padding: 32px 16px; color: var(--text-light); }
+
+        .step-section {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.35s ease, opacity 0.3s ease;
+        }
+        .step-section.visible {
+            max-height: 999px;
+            opacity: 1;
+        }
+
+        .var-success-inline {
+            display: none;
+            text-align: center;
+            padding: 24px 16px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--success);
+            letter-spacing: -0.3px;
+        }
         .text-small { font-size: 12px; color: var(--text-light); }
 
         /* ===== NAV BOTTOM ===== */
@@ -580,7 +601,7 @@
         <div id="alertContainer"></div>
 
         <!-- INÍCIO -->
-        <div class="screen active" id="screenInicio">
+        <div class="screen" id="screenInicio">
             <div class="month-badge" id="headerDate">Junho 2026</div>
 
             <div class="card highlight">
@@ -642,30 +663,42 @@
         </div>
 
         <!-- VARIÁVEIS -->
-        <div class="screen" id="screenVariaveis">
+        <div class="screen active" id="screenVariaveis">
             <div class="card">
                 <h2 style="margin-bottom:20px;font-size:16px;">Lançar Variável</h2>
-                <div class="form-group">
+                <!-- Step 1: Tipo -->
+                <div class="form-group" id="stepTipo">
                     <label>Tipo</label>
                     <div class="category-select" id="tipoSelect">
-                        <div class="category-pill selected" data-tipo="casal">👥 Casal</div>
+                        <div class="category-pill" data-tipo="casal">👥 Casal</div>
                         <div class="category-pill" data-tipo="dela">👩 Dela</div>
                         <div class="category-pill" data-tipo="gle">👨 Você</div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Categoria</label>
-                    <div class="category-select" id="categoriaSelect"></div>
+
+                <!-- Step 2: Categoria -->
+                <div class="step-section" id="stepCategoria">
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <div class="category-select" id="categoriaSelect"></div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Valor (R$)</label>
-                    <input type="number" id="varValor" placeholder="0,00" step="0.01" min="0">
+
+                <!-- Step 3: Dados + Salvar -->
+                <div class="step-section" id="stepDados">
+                    <div class="form-group">
+                        <label>Valor (R$)</label>
+                        <input type="number" id="varValor" placeholder="0,00" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <input type="text" id="varDescricao" placeholder="Ex: Supermercado">
+                    </div>
+                    <button class="btn" id="btnSalvarVariavel">💾 Salvar</button>
                 </div>
-                <div class="form-group">
-                    <label>Descrição</label>
-                    <input type="text" id="varDescricao" placeholder="Ex: Supermercado">
-                </div>
-                <button class="btn" id="btnSalvarVariavel">💾 Salvar</button>
+
+                <!-- Success inline -->
+                <div class="var-success-inline" id="varSuccessInline">✅ Variável salva!</div>
             </div>
             <div class="card">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -701,9 +734,9 @@
     </div>
 
     <div class="nav-bottom">
-        <button class="nav-item active"      data-tela="screenInicio">📊<br>Início</button>
+        <button class="nav-item"             data-tela="screenInicio">📊<br>Painel</button>
         <button class="nav-item"             data-tela="screenFixos">⚙️<br>Fixos</button>
-        <button class="nav-item nav-destaque" data-tela="screenVariaveis">➕<br>Variáveis</button>
+        <button class="nav-item nav-destaque active" data-tela="screenVariaveis">➕<br>Variáveis</button>
         <button class="nav-item"             data-tela="screenEntradas">💰<br>Entradas</button>
     </div>
 
@@ -919,6 +952,7 @@
         document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
         const btn = document.querySelector(`.nav-item[data-tela="${telaId}"]`);
         if (btn) btn.classList.add('active');
+        if (telaId === 'screenVariaveis') resetFormVariavel();
         carregarDados();
     }
 
@@ -937,7 +971,21 @@
             pill.classList.add('selected');
             tipoAtual = pill.dataset.tipo;
             atualizarCategorias();
+            // Revelar step 2, ocultar step 3
+            document.getElementById('stepCategoria').classList.add('visible');
+            document.getElementById('stepDados').classList.remove('visible');
         });
+    }
+
+    function resetFormVariavel() {
+        document.querySelectorAll('#tipoSelect .category-pill').forEach(p => p.classList.remove('selected'));
+        document.getElementById('stepCategoria').classList.remove('visible');
+        document.getElementById('stepDados').classList.remove('visible');
+        document.getElementById('varValor').value = '';
+        document.getElementById('varDescricao').value = '';
+        tipoAtual = 'casal';
+        categoriaAtual = 'Uber';
+        atualizarCategorias();
     }
 
     function atualizarCategorias() {
@@ -945,17 +993,19 @@
         container.innerHTML = '';
         CATEGORIAS[tipoAtual].forEach((cat, i) => {
             const div = document.createElement('div');
-            div.className = 'category-pill' + (i === 0 ? ' selected' : '');
+            div.className = 'category-pill';
             div.textContent = cat;
             container.appendChild(div);
         });
-        categoriaAtual = CATEGORIAS[tipoAtual][0];
+        categoriaAtual = '';
         container.addEventListener('click', e => {
             const pill = e.target.closest('.category-pill');
             if (!pill) return;
             container.querySelectorAll('.category-pill').forEach(p => p.classList.remove('selected'));
             pill.classList.add('selected');
             categoriaAtual = pill.textContent;
+            // Revelar step 3
+            document.getElementById('stepDados').classList.add('visible');
         });
     }
 
@@ -1636,7 +1686,7 @@
         document.getElementById('headerDate').textContent = `${MESES[agora.getMonth()]} ${agora.getFullYear()}`;
 
         // Header title -> home
-        document.getElementById('btnHome').addEventListener('click', () => mudarTela('screenInicio'));
+        document.getElementById('btnHome').addEventListener('click', () => mudarTela('screenVariaveis'));
 
         // Nav
         document.querySelectorAll('.nav-item[data-tela]').forEach(btn => {
