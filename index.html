@@ -284,8 +284,8 @@
 
         .collapsible-body {
             overflow: hidden;
-            transition: max-height 0.3s ease, opacity 0.3s ease;
-            max-height: 600px;
+            transition: max-height 0.4s ease, opacity 0.3s ease;
+            max-height: 9999px;
             opacity: 1;
         }
         .collapsible-body.collapsed { max-height: 0; opacity: 0; }
@@ -1244,14 +1244,6 @@
 
     // ===== RENDERIZAR FIXOS COLAPSÁVEIS =====
     function renderizarGruposFixos(fixos) {
-        // DEBUG — remover depois
-        console.log('renderizarGruposFixos recebeu:', fixos.length, 'fixos');
-        console.log('mesAtual:', mesAtual);
-        fixos.forEach(f => {
-            const ok = f.tipo === 'gle' && mesCompativel(f.mes);
-            if (f.tipo === 'gle') console.log('gle fixo:', f.nome, '| mes:', f.mes, '| mesCompativel:', mesCompativel(f.mes), '| passa filtro:', ok);
-        });
-
         const grupos = [
             { tipo: 'casal', label: '👥 Fixos Casal' },
             { tipo: 'dela',  label: '👩 Fixos Dela'  },
