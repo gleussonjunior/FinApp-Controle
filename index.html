@@ -4,582 +4,158 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinApp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         :root {
-            --secondary: #0ea5e9;
+            --secondary: #2563eb;
             --success:   #10b981;
             --danger:    #ef4444;
             --bg:        #ffffff;
-            --bg-alt:    #f9fafb;
-            --border:    #e5e7eb;
-            --text:      #1f2937;
+            --bg-page:   #f0f3fb;
+            --bg-alt:    #eaeff8;
+            --border:    #d8e0f0;
+            --text:      #1a2340;
             --text-light:#6b7280;
-            --shadow:    0 1px 3px rgba(0,0,0,0.1);
-            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --shadow:    0 1px 6px rgba(30,55,153,0.08);
+            --shadow-lg: 0 10px 30px rgba(30,55,153,0.12);
         }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-page);
             color: var(--text);
             line-height: 1.6;
         }
+        .container { max-width: 500px; margin: 0 auto; background: var(--bg-page); min-height: 100vh; display: flex; flex-direction: column; }
 
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            background: var(--bg);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* ===== HEADER ===== */
-        .header {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            color: white;
-            padding: 8px 20px;
-            box-shadow: var(--shadow-lg);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-        }
-
-        .header-title {
-            flex: 1;
-            text-align: center;
-            font-size: 36px;
-            font-weight: 700;
-            letter-spacing: -1px;
-        }
-
+        /* HEADER */
+        .header { background: linear-gradient(135deg, #1e3799 0%, #2d52cc 100%); color: white; padding: 8px 20px; box-shadow: var(--shadow-lg); position: sticky; top: 0; z-index: 100; display: flex; align-items: center; }
+        .header-title { flex: 1; text-align: center; font-size: 34px; font-weight: 800; letter-spacing: -1.5px; }
         .header-spacer { width: 36px; flex-shrink: 0; }
-
-        .header-btn {
-            width: 36px;
-            height: 36px;
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            opacity: 0.75;
-            flex-shrink: 0;
-            transition: opacity 0.2s, background 0.2s;
-        }
+        .header-btn { width: 36px; height: 36px; background: none; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 8px; opacity: 0.75; flex-shrink: 0; transition: opacity 0.2s, background 0.2s; }
         .header-btn:hover { opacity: 1; background: rgba(255,255,255,0.1); }
 
-        /* ===== OVERLAY GRÁFICOS ===== */
-        .graficos-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: var(--bg);
-            z-index: 150;
-            flex-direction: column;
-            max-width: 500px;
-            margin: 0 auto;
-        }
+        /* OVERLAY GRAFICOS */
+        .graficos-overlay { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 150; flex-direction: column; max-width: 500px; margin: 0 auto; }
         .graficos-overlay.active { display: flex; }
-
-        .graficos-header {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            color: white;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-shrink: 0;
-        }
-
-        .graficos-header-title {
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        .mes-nav {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            padding: 16px 20px 8px;
-            flex-shrink: 0;
-        }
-
-        .mes-nav-btn {
-            width: 36px;
-            height: 36px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: var(--bg);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            color: var(--text);
-            transition: background 0.2s;
-        }
+        .graficos-header { background: linear-gradient(135deg, #1e3799 0%, #2d52cc 100%); color: white; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .graficos-header-title { font-size: 16px; font-weight: 700; }
+        .mes-nav { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 16px 20px 8px; flex-shrink: 0; }
+        .mes-nav-btn { width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text); transition: background 0.2s; }
         .mes-nav-btn:hover { background: var(--bg-alt); }
+        .mes-nav-label { font-size: 16px; font-weight: 700; min-width: 110px; text-align: center; }
+        .graficos-content { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 32px; }
+        .resumo-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .resumo-card { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 14px; box-shadow: var(--shadow); }
+        .resumo-card-label { font-size: 11px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .resumo-card-value { font-size: 18px; font-weight: 700; }
+        .chart-container { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); }
+        .chart-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
+        .filtro-fixos { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+        .filtro-btn { padding: 5px 12px; border: 1.5px solid var(--border); border-radius: 20px; background: var(--bg); font-size: 12px; font-weight: 600; cursor: pointer; color: var(--text-light); transition: all 0.2s; font-family: inherit; }
+        .filtro-btn.active { background: var(--secondary); border-color: var(--secondary); color: white; }
+        .chart-wrap { position: relative; height: 280px; }
+        .month-badge { text-align: center; font-size: 12px; font-weight: 500; color: var(--text-light); padding: 8px 0 4px; letter-spacing: 0.5px; }
 
-        .mes-nav-label {
-            font-size: 16px;
-            font-weight: 700;
-            min-width: 110px;
-            text-align: center;
-        }
-
-        .graficos-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            padding-bottom: 32px;
-        }
-
-        .resumo-cards {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .resumo-card {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px;
-            box-shadow: var(--shadow);
-        }
-
-        .resumo-card-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-light);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-        }
-
-        .resumo-card-value {
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .chart-container {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: var(--shadow);
-        }
-
-        .chart-title {
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 16px;
-            color: var(--text);
-        }
-
-        .filtro-fixos {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 14px;
-            flex-wrap: wrap;
-        }
-
-        .filtro-btn {
-            padding: 5px 12px;
-            border: 1.5px solid var(--border);
-            border-radius: 20px;
-            background: var(--bg);
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            color: var(--text-light);
-            transition: all 0.2s;
-        }
-
-        .filtro-btn.active {
-            background: var(--secondary);
-            border-color: var(--secondary);
-            color: white;
-        }
-
-        .chart-wrap {
-            position: relative;
-            height: 280px;
-        }
-
-        .month-badge {
-            text-align: center;
-            font-size: 12px;
-            color: var(--text-light);
-            padding: 8px 0 4px;
-            letter-spacing: 0.5px;
-        }
-
-        /* ===== CONTENT ===== */
-        .content {
-            flex: 1;
-            padding: 16px;
-            padding-bottom: 110px;
-            overflow-y: auto;
-        }
-
+        /* CONTENT */
+        .content { flex: 1; padding: 16px; padding-bottom: 110px; overflow-y: auto; }
         .screen { display: none; }
         .screen.active { display: block; }
 
-        /* ===== ALERTS ===== */
-        .alert {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            font-size: 14px;
-            font-weight: 600;
-        }
+        /* ALERTS */
+        .alert { padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 14px; font-weight: 600; }
         .alert.success { background: rgba(16,185,129,0.1); color: #047857; border: 1px solid var(--success); }
         .alert.error   { background: rgba(239,68,68,0.1);  color: #b91c1c; border: 1px solid var(--danger); }
 
-        /* ===== CARDS ===== */
-        .card {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow);
-        }
-
+        /* CARDS */
+        .card { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); }
         .card.highlight {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border: 2px solid #f59e0b;
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 1.5px solid #fca5a5;
         }
-
         .card.highlight-green {
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-            border: 2px solid #10b981;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 1.5px solid #93c5fd;
         }
+        .repasse-value { font-size: 32px; font-weight: 800; color: #dc2626; margin: 8px 0 4px; word-break: break-word; letter-spacing: -1px; }
+        .total-gastos { font-size: 24px; font-weight: 700; color: var(--danger); margin: 8px 0 4px; }
+        .total-receitas { font-size: 32px; font-weight: 800; color: #2563eb; margin: 8px 0 4px; word-break: break-word; letter-spacing: -1px; }
 
-        .repasse-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: #b45309;
-            margin: 8px 0 4px;
-            word-break: break-word;
-        }
-
-        .total-gastos {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--danger);
-            margin: 8px 0 4px;
-        }
-
-        .total-receitas {
-            font-size: 32px;
-            font-weight: 700;
-            color: #065f46;
-            margin: 8px 0 4px;
-            word-break: break-word;
-        }
-
-        /* ===== COLLAPSIBLE ===== */
-        .card-header-toggle {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-        }
+        /* COLLAPSIBLE */
+        .card-header-toggle { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
         .card-header-toggle:active { opacity: 0.7; }
-
-        .toggle-icon {
-            font-size: 18px;
-            color: var(--text-light);
-            transition: transform 0.25s ease;
-        }
+        .toggle-icon { width: 16px; height: 16px; color: var(--text-light); transition: transform 0.25s ease; flex-shrink: 0; }
         .toggle-icon.collapsed { transform: rotate(-90deg); }
-
-        .collapsible-body {
-            overflow: hidden;
-            transition: max-height 0.4s ease, opacity 0.3s ease;
-            max-height: 9999px;
-            opacity: 1;
-        }
+        .collapsible-body { overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease; max-height: 9999px; opacity: 1; }
         .collapsible-body.collapsed { max-height: 0; opacity: 0; }
 
-        /* ===== STAT ROWS ===== */
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 14px;
-        }
+        /* STAT ROWS */
+        .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
         .stat-row:last-child { border-bottom: none; }
         .stat-label { color: var(--text-light); }
         .stat-value { font-weight: 700; white-space: nowrap; margin-left: 8px; }
-
-        .stat-row.total-row {
-            background: rgba(0,0,0,0.04);
-            border-radius: 8px;
-            padding: 10px 12px;
-            margin-top: 4px;
-            font-weight: 700;
-            border-bottom: none;
-        }
+        .stat-row.total-row { background: rgba(0,0,0,0.04); border-radius: 8px; padding: 10px 12px; margin-top: 4px; font-weight: 700; border-bottom: none; }
         .stat-row.total-row .stat-label { color: var(--text); font-weight: 700; }
 
-        /* ===== FORM ===== */
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 16px;
-            margin-bottom: 12px;
-            font-family: inherit;
-            background: var(--bg);
-            color: var(--text);
-        }
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--secondary);
-            box-shadow: 0 0 0 3px rgba(14,165,233,0.1);
-        }
-
-        label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--text);
-        }
-
+        /* FORM */
+        input, select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 16px; margin-bottom: 12px; font-family: inherit; background: var(--bg); color: var(--text); }
+        input:focus, select:focus { outline: none; border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(14,165,233,0.1); }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
         .form-group { margin-bottom: 16px; }
-
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            background: var(--secondary);
-            color: white;
-            transition: background 0.2s ease;
-        }
+        .btn { padding: 13px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; background: var(--secondary); color: white; transition: background 0.2s ease; font-family: inherit; }
         .btn:hover:not(:disabled) { background: #0284c7; }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        /* ===== CATEGORY PILLS ===== */
-        .category-select {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        .category-pill {
-            padding: 10px;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: center;
-            font-size: 12px;
-            font-weight: 600;
-            background: var(--bg);
-            transition: all 0.15s ease;
-        }
+        /* CATEGORY PILLS */
+        .category-select { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+        .category-pill { padding: 10px; border: 2px solid var(--border); border-radius: 10px; cursor: pointer; text-align: center; font-size: 12px; font-weight: 600; background: var(--bg); transition: all 0.15s ease; font-family: inherit; }
         .category-pill:hover { border-color: var(--secondary); }
         .category-pill.selected { background: var(--secondary); color: white; border-color: var(--secondary); }
 
-        /* ===== LIST ITEMS ===== */
-        .list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            gap: 8px;
-        }
+        /* LIST ITEMS */
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; gap: 8px; }
         .list-item.pago { opacity: 0.45; text-decoration: line-through; }
-
         .list-item-info { flex: 1; min-width: 0; overflow: hidden; }
-        .list-item-info strong {
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        .list-item-info strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .list-item-value { font-weight: 700; white-space: nowrap; }
         .list-item-actions { display: flex; gap: 4px; flex-shrink: 0; align-items: center; }
-
-        .icon-btn {
-            background: none;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            color: var(--danger);
-            padding: 4px 6px;
-            border-radius: 4px;
-        }
+        .icon-btn { background: none; border: none; cursor: pointer; color: var(--danger); padding: 4px; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+        .icon-btn:hover { background: rgba(0,0,0,0.06); }
+        .icon-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
         .edit-btn { color: var(--secondary); }
-
-        .check-btn {
-            width: 24px;
-            height: 24px;
-            min-width: 24px;
-            border: 2px solid var(--border);
-            border-radius: 4px;
-            cursor: pointer;
-            background: var(--bg);
-            color: var(--success);
-            font-weight: bold;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .check-btn { width: 24px; height: 24px; min-width: 24px; border: 2px solid var(--border); border-radius: 6px; cursor: pointer; background: var(--bg); color: var(--success); display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+        .check-btn svg { width: 13px; height: 13px; }
         .check-btn.checked { background: var(--success); color: white; border-color: var(--success); }
-
         .receita-item { background: rgba(16,185,129,0.05); border-left: 4px solid var(--success); }
-        .empty-state { text-align: center; padding: 32px 16px; color: var(--text-light); }
-
-        .step-section {
-            overflow: hidden;
-            max-height: 0;
-            opacity: 0;
-            transition: max-height 0.35s ease, opacity 0.3s ease;
-        }
-        .step-section.visible {
-            max-height: 999px;
-            opacity: 1;
-        }
-
-        .var-success-inline {
-            display: none;
-            text-align: center;
-            padding: 24px 16px;
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--success);
-            letter-spacing: -0.3px;
-        }
+        .empty-state { text-align: center; padding: 32px 16px; color: var(--text-light); font-size: 14px; }
+        .step-section { overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.35s ease, opacity 0.3s ease; }
+        .step-section.visible { max-height: 999px; opacity: 1; }
+        .var-success-inline { display: none; text-align: center; padding: 24px 16px; font-size: 18px; font-weight: 700; color: var(--success); letter-spacing: -0.3px; }
         .text-small { font-size: 12px; color: var(--text-light); }
 
-        /* ===== NAV BOTTOM ===== */
-        .nav-bottom {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            max-width: 500px;
-            margin: 0 auto;
-            background: var(--bg);
-            border-top: 1px solid var(--border);
-            display: flex;
-            z-index: 90;
-            box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
-        }
+        /* NAV BOTTOM */
+        .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; max-width: 500px; margin: 0 auto; background: #1e3799; display: flex; z-index: 90; padding: 6px 4px 16px; }
+        .nav-item { flex: 1; padding: 2px 4px; border: none; background: none; color: rgba(255,255,255,0.4); font-size: 10px; font-weight: 600; cursor: pointer; transition: color 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 3px; font-family: inherit; }
+        .nav-icon-wrap { width: 52px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 20px; transition: background 0.2s; }
+        .nav-icon-wrap svg { width: 18px; height: 18px; stroke-width: 1.75; }
+        .nav-item.active { color: white; }
+        .nav-item.active .nav-icon-wrap { background: white; color: #1e3799; }
+        .nav-item.nav-destaque { color: rgba(255,255,255,0.4); background: none; }
+        .nav-item.nav-destaque.active { background: none; color: white; }
 
-        .nav-item {
-            flex: 1;
-            padding: 14px 4px;
-            border: none;
-            background: none;
-            color: var(--text-light);
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            line-height: 1.3;
-        }
-        .nav-item.active {
-            color: var(--secondary);
-            background: rgba(14,165,233,0.08);
-        }
-        .nav-item.nav-destaque {
-            color: white;
-            background: #16a34a;
-            font-size: 13px;
-        }
-        .nav-item.nav-destaque.active {
-            background: #15803d;
-            color: white;
-        }
-
-        /* ===== MODALS ===== */
-        .modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 200;
-            align-items: flex-end;
-            justify-content: center;
-        }
+        /* MODALS */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; }
         .modal.active { display: flex; }
-
-        .modal-content {
-            background: var(--bg);
-            width: 100%;
-            max-width: 500px;
-            border-radius: 20px 20px 0 0;
-            padding: 24px 20px;
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--text-light);
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-        }
+        .modal-content { background: var(--bg); width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 24px 20px; max-height: 85vh; overflow-y: auto; }
+        .modal-header { font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-close { background: none; border: none; cursor: pointer; color: var(--text-light); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: background 0.15s; }
         .modal-close:hover { background: var(--bg-alt); }
-
-        .btn-danger {
-            background: #dc2626;
-            color: white;
-        }
+        .modal-close svg { width: 18px; height: 18px; }
+        .btn-danger { background: #dc2626; color: white; }
         .btn-danger:hover:not(:disabled) { background: #b91c1c; }
-
-        .badge-casal {
-            font-size: 10px;
-            font-weight: 700;
-            background: rgba(14,165,233,0.15);
-            color: var(--secondary);
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-left: 6px;
-        }
+        .badge-casal { font-size: 10px; font-weight: 700; background: rgba(37,99,235,0.12); color: #2563eb; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
     </style>
 </head>
 <body>
@@ -590,9 +166,7 @@
         <div class="header-title" id="btnHome" style="cursor:pointer;">FinApp</div>
         <button class="header-btn" id="btnAbrirGraficos" title="Gráficos">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="18" y="3" width="4" height="18" rx="1"/>
-                <rect x="10" y="8" width="4" height="13" rx="1"/>
-                <rect x="2" y="13" width="4" height="8" rx="1"/>
+                <rect x="18" y="3" width="4" height="18" rx="1"/><rect x="10" y="8" width="4" height="13" rx="1"/><rect x="2" y="13" width="4" height="8" rx="1"/>
             </svg>
         </button>
     </div>
@@ -603,23 +177,20 @@
         <!-- INÍCIO -->
         <div class="screen" id="screenInicio">
             <div class="month-badge" id="headerDate">Junho 2026</div>
-
             <div class="card highlight">
-                <div style="font-size:13px;font-weight:600;color:#92400e;margin-bottom:4px;">Repasse para Lia</div>
+                <div style="font-size:13px;font-weight:600;color:#dc2626;margin-bottom:4px;">Repasse para Lia</div>
                 <div class="repasse-value" id="repasseValue">R$ 0,00</div>
             </div>
-
             <div class="card">
                 <div style="font-size:13px;font-weight:600;color:#666;margin-bottom:4px;">Gastos totais do mês</div>
                 <div class="total-gastos" id="totalGastos">R$ 0,00</div>
             </div>
-
             <div class="card">
                 <div class="card-header-toggle" id="toggleDetalhamento">
                     <div style="font-size:14px;font-weight:700;">Detalhamento</div>
                     <div style="display:flex;align-items:center;gap:8px;">
                         <span id="totalDetalhamentoCollapsed" style="font-size:13px;font-weight:600;color:var(--text-light);"></span>
-                        <span class="toggle-icon collapsed" id="iconDetalhamento">▾</span>
+                        <i data-lucide="chevron-down" class="toggle-icon collapsed" id="iconDetalhamento"></i>
                     </div>
                 </div>
                 <div class="collapsible-body collapsed" id="bodyDetalhamento">
@@ -633,13 +204,12 @@
                     </div>
                 </div>
             </div>
-
             <div class="card">
                 <div class="card-header-toggle" id="toggleGle">
                     <div style="font-size:14px;font-weight:700;">Seus Gastos (Gle)</div>
                     <div style="display:flex;align-items:center;gap:8px;">
                         <span id="totalGleCollapsed" style="font-size:13px;font-weight:600;color:var(--text-light);"></span>
-                        <span class="toggle-icon collapsed" id="iconGle">▾</span>
+                        <i data-lucide="chevron-down" class="toggle-icon collapsed" id="iconGle"></i>
                     </div>
                 </div>
                 <div class="collapsible-body collapsed" id="bodyGle">
@@ -658,33 +228,28 @@
         <!-- FIXOS -->
         <div class="screen" id="screenFixos">
             <div id="fixosContainer"></div>
-            <button class="btn" id="btnAbrirModalFixo" style="margin-bottom:10px;">+ Adicionar Fixo</button>
-            <button class="btn btn-danger" id="btnFecharMes">🔒 Fechar Mês e Criar Próximo</button>
+            <button class="btn" id="btnAbrirModalFixo" style="margin-bottom:10px;">Adicionar Fixo</button>
+            <button class="btn btn-danger" id="btnFecharMes">Fechar Mês</button>
         </div>
 
         <!-- VARIÁVEIS -->
         <div class="screen active" id="screenVariaveis">
             <div class="card">
-                <h2 style="margin-bottom:20px;font-size:16px;">Lançar Variável</h2>
-                <!-- Step 1: Tipo -->
+                <h2 style="margin-bottom:20px;font-size:16px;font-weight:700;">Lançar Variável</h2>
                 <div class="form-group" id="stepTipo">
                     <label>Tipo</label>
                     <div class="category-select" id="tipoSelect">
-                        <div class="category-pill" data-tipo="casal">👥 Casal</div>
-                        <div class="category-pill" data-tipo="dela">👩 Dela</div>
-                        <div class="category-pill" data-tipo="gle">👨 Você</div>
+                        <div class="category-pill" data-tipo="casal">Casal</div>
+                        <div class="category-pill" data-tipo="dela">Dela</div>
+                        <div class="category-pill" data-tipo="gle">Você</div>
                     </div>
                 </div>
-
-                <!-- Step 2: Categoria -->
                 <div class="step-section" id="stepCategoria">
                     <div class="form-group">
                         <label>Categoria</label>
                         <div class="category-select" id="categoriaSelect"></div>
                     </div>
                 </div>
-
-                <!-- Step 3: Dados + Salvar -->
                 <div class="step-section" id="stepDados">
                     <div class="form-group">
                         <label>Valor (R$)</label>
@@ -694,18 +259,14 @@
                         <label>Descrição</label>
                         <input type="text" id="varDescricao" placeholder="Ex: Supermercado">
                     </div>
-                    <button class="btn" id="btnSalvarVariavel">💾 Salvar</button>
+                    <button class="btn" id="btnSalvarVariavel">Salvar</button>
                 </div>
-
-                <!-- Success inline -->
                 <div class="var-success-inline" id="varSuccessInline">✅ Variável salva!</div>
             </div>
-            <!-- Overview por tipo -->
             <div class="card" id="cardOverview">
                 <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Resumo por Grupo</div>
                 <div id="overviewList"></div>
             </div>
-
             <div class="card">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                     <div style="font-size:14px;font-weight:700;">Variáveis Lançadas</div>
@@ -718,7 +279,7 @@
         <!-- ENTRADAS -->
         <div class="screen" id="screenEntradas">
             <div class="card highlight-green">
-                <div style="font-size:13px;font-weight:600;color:#065f46;margin-bottom:4px;">Total de Receitas</div>
+                <div style="font-size:13px;font-weight:600;color:#2563eb;margin-bottom:4px;">Total de Receitas</div>
                 <div class="total-receitas" id="totalReceitasValue">R$ 0,00</div>
             </div>
             <div class="card">
@@ -726,13 +287,13 @@
                     <div style="font-size:14px;font-weight:700;">Receitas</div>
                     <div style="display:flex;align-items:center;gap:8px;">
                         <span id="totalReceitasCollapsed" style="font-size:13px;font-weight:600;color:var(--text-light);"></span>
-                        <span class="toggle-icon collapsed" id="iconReceitas">▾</span>
+                        <i data-lucide="chevron-down" class="toggle-icon collapsed" id="iconReceitas"></i>
                     </div>
                 </div>
                 <div class="collapsible-body collapsed" id="bodyReceitas">
                     <div style="margin-top:12px;">
                         <div id="receitasList"></div>
-                        <button class="btn" id="btnAbrirModalReceita" style="margin-top:12px;">+ Adicionar Receita</button>
+                        <button class="btn" id="btnAbrirModalReceita" style="margin-top:12px;">Adicionar Receita</button>
                     </div>
                 </div>
             </div>
@@ -740,12 +301,23 @@
     </div>
 
     <div class="nav-bottom">
-        <button class="nav-item"             data-tela="screenInicio">📊<br>Painel</button>
-        <button class="nav-item"             data-tela="screenFixos">⚙️<br>Fixos</button>
-        <button class="nav-item nav-destaque active" data-tela="screenVariaveis">➕<br>Variáveis</button>
-        <button class="nav-item"             data-tela="screenEntradas">💰<br>Entradas</button>
+        <button class="nav-item" data-tela="screenInicio">
+            <span class="nav-icon-wrap"><i data-lucide="bar-chart-2"></i></span>
+            <span>Painel</span>
+        </button>
+        <button class="nav-item" data-tela="screenFixos">
+            <span class="nav-icon-wrap"><i data-lucide="sliders-horizontal"></i></span>
+            <span>Fixos</span>
+        </button>
+        <button class="nav-item nav-destaque active" data-tela="screenVariaveis">
+            <span class="nav-icon-wrap"><i data-lucide="plus-circle"></i></span>
+            <span>Variáveis</span>
+        </button>
+        <button class="nav-item" data-tela="screenEntradas">
+            <span class="nav-icon-wrap"><i data-lucide="wallet"></i></span>
+            <span>Entradas</span>
+        </button>
     </div>
-
 </div>
 
 <!-- OVERLAY GRÁFICOS -->
@@ -753,50 +325,28 @@
     <div class="graficos-header">
         <span class="graficos-header-title">Análise de Gastos</span>
         <button class="header-btn" id="btnFecharGraficos">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
     </div>
-
     <div class="mes-nav">
         <button class="mes-nav-btn" id="btnMesAnterior">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 18 9 12 15 6"/>
-            </svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <span class="mes-nav-label" id="mesGraficoLabel">Junho 2026</span>
         <button class="mes-nav-btn" id="btnMesProximo">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="9 18 15 12 9 6"/>
-            </svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
     </div>
-
     <div class="graficos-content">
         <div class="resumo-cards">
-            <div class="resumo-card">
-                <div class="resumo-card-label">Entradas</div>
-                <div class="resumo-card-value" id="graficoTotalReceitas" style="color:var(--success)">R$ 0,00</div>
-            </div>
-            <div class="resumo-card">
-                <div class="resumo-card-label">Saídas</div>
-                <div class="resumo-card-value" id="graficoTotalGastos" style="color:var(--danger)">R$ 0,00</div>
-            </div>
-            <div class="resumo-card" style="grid-column:1/-1;">
-                <div class="resumo-card-label">Saldo</div>
-                <div class="resumo-card-value" id="graficoSaldo">R$ 0,00</div>
-            </div>
+            <div class="resumo-card"><div class="resumo-card-label">Entradas</div><div class="resumo-card-value" id="graficoTotalReceitas" style="color:var(--success)">R$ 0,00</div></div>
+            <div class="resumo-card"><div class="resumo-card-label">Saídas</div><div class="resumo-card-value" id="graficoTotalGastos" style="color:var(--danger)">R$ 0,00</div></div>
+            <div class="resumo-card" style="grid-column:1/-1;"><div class="resumo-card-label">Saldo</div><div class="resumo-card-value" id="graficoSaldo">R$ 0,00</div></div>
         </div>
-
         <div class="chart-container" style="margin-bottom:16px;">
             <div class="chart-title">Gastos Variáveis por Categoria</div>
-            <div id="wrapChartVar" class="chart-wrap">
-                <canvas id="canvasGraficoVar"></canvas>
-            </div>
+            <div id="wrapChartVar" class="chart-wrap"><canvas id="canvasGraficoVar"></canvas></div>
         </div>
-
         <div class="chart-container">
             <div class="chart-title">Contas Fixas</div>
             <div class="filtro-fixos">
@@ -805,9 +355,7 @@
                 <button class="filtro-btn" data-filtro="gle">Meu</button>
                 <button class="filtro-btn" data-filtro="dela">Dela</button>
             </div>
-            <div id="wrapChartFixos" style="position:relative;">
-                <canvas id="canvasGraficoFixos"></canvas>
-            </div>
+            <div id="wrapChartFixos" style="position:relative;"><canvas id="canvasGraficoFixos"></canvas></div>
         </div>
     </div>
 </div>
@@ -817,29 +365,20 @@
     <div class="modal-content">
         <div class="modal-header">
             <span>Editar Variável</span>
-            <button class="modal-close" id="btnFecharModalEditarVar">✕</button>
+            <button class="modal-close" id="btnFecharModalEditarVar"><i data-lucide="x"></i></button>
         </div>
         <div class="form-group">
             <label>Tipo</label>
             <div class="category-select" id="tipoEditarVarSelect">
-                <div class="category-pill" data-tipo="casal">👥 Casal</div>
-                <div class="category-pill" data-tipo="dela">👩 Dela</div>
-                <div class="category-pill" data-tipo="gle">👨 Você</div>
+                <div class="category-pill" data-tipo="casal">Casal</div>
+                <div class="category-pill" data-tipo="dela">Dela</div>
+                <div class="category-pill" data-tipo="gle">Você</div>
             </div>
         </div>
-        <div class="form-group">
-            <label>Categoria</label>
-            <div class="category-select" id="categoriaEditarVarSelect"></div>
-        </div>
-        <div class="form-group">
-            <label>Valor (R$)</label>
-            <input type="number" id="editarVarValor" placeholder="0,00" step="0.01" min="0">
-        </div>
-        <div class="form-group">
-            <label>Descrição</label>
-            <input type="text" id="editarVarDescricao" placeholder="Ex: Supermercado">
-        </div>
-        <button class="btn" id="btnSalvarEditarVar">💾 Salvar</button>
+        <div class="form-group"><label>Categoria</label><div class="category-select" id="categoriaEditarVarSelect"></div></div>
+        <div class="form-group"><label>Valor (R$)</label><input type="number" id="editarVarValor" placeholder="0,00" step="0.01" min="0"></div>
+        <div class="form-group"><label>Descrição</label><input type="text" id="editarVarDescricao" placeholder="Ex: Supermercado"></div>
+        <button class="btn" id="btnSalvarEditarVar">Salvar</button>
     </div>
 </div>
 
@@ -848,33 +387,21 @@
     <div class="modal-content">
         <div class="modal-header">
             <span id="modalFixoTitle">Adicionar Fixo</span>
-            <button class="modal-close" id="btnFecharModalFixo">✕</button>
+            <button class="modal-close" id="btnFecharModalFixo"><i data-lucide="x"></i></button>
         </div>
         <div class="form-group">
             <label>Tipo</label>
             <div class="category-select" id="tipoFixoSelect">
-                <div class="category-pill selected" data-tipo="casal">👥 Casal</div>
-                <div class="category-pill" data-tipo="dela">👩 Dela</div>
-                <div class="category-pill" data-tipo="gle">👨 Você</div>
+                <div class="category-pill selected" data-tipo="casal">Casal</div>
+                <div class="category-pill" data-tipo="dela">Dela</div>
+                <div class="category-pill" data-tipo="gle">Você</div>
             </div>
         </div>
-        <div class="form-group">
-            <label>Nome</label>
-            <input type="text" id="fixoNome" placeholder="Ex: Aluguel">
-        </div>
-        <div class="form-group">
-            <label>Valor (R$)</label>
-            <input type="number" id="fixoValor" placeholder="0,00" step="0.01" min="0">
-        </div>
-        <div class="form-group">
-            <label>Categoria</label>
-            <select id="fixoCategoria"></select>
-        </div>
-        <div class="form-group">
-            <label>Mês</label>
-            <select id="fixoMes"></select>
-        </div>
-        <button class="btn" id="btnSalvarFixo">💾 Salvar</button>
+        <div class="form-group"><label>Nome</label><input type="text" id="fixoNome" placeholder="Ex: Aluguel"></div>
+        <div class="form-group"><label>Valor (R$)</label><input type="number" id="fixoValor" placeholder="0,00" step="0.01" min="0"></div>
+        <div class="form-group"><label>Categoria</label><select id="fixoCategoria"></select></div>
+        <div class="form-group"><label>Mês</label><select id="fixoMes"></select></div>
+        <button class="btn" id="btnSalvarFixo">Salvar</button>
     </div>
 </div>
 
@@ -883,7 +410,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <span id="modalReceitaTitle">Adicionar Receita</span>
-            <button class="modal-close" id="btnFecharModalReceita">✕</button>
+            <button class="modal-close" id="btnFecharModalReceita"><i data-lucide="x"></i></button>
         </div>
         <div class="form-group">
             <label>Tipo</label>
@@ -905,18 +432,16 @@
         <div class="form-group">
             <label>Esta receita é do casal?</label>
             <div style="display:flex;gap:8px;">
-                <div class="category-pill" id="receitaCasalNao" style="flex:1">👤 Só minha</div>
-                <div class="category-pill" id="receitaCasalSim" style="flex:1">👥 Do casal</div>
+                <div class="category-pill" id="receitaCasalNao" style="flex:1">Só minha</div>
+                <div class="category-pill" id="receitaCasalSim" style="flex:1">Do casal</div>
             </div>
         </div>
-        <div class="form-group">
-            <label>Valor (R$)</label>
-            <input type="number" id="receitaValor" placeholder="0,00" step="0.01" min="0">
-        </div>
-        <button class="btn" id="btnSalvarReceita">💾 Salvar</button>
+        <div class="form-group"><label>Valor (R$)</label><input type="number" id="receitaValor" placeholder="0,00" step="0.01" min="0"></div>
+        <button class="btn" id="btnSalvarReceita">Salvar</button>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -924,13 +449,11 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zdWF3dHhhaGJzaXZ2aGd4cWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NDQxNTcsImV4cCI6MjA5NjAyMDE1N30.y0mEk8Iee5xXpVr7wUgrqYIDKNLUDSZfxdetsDYbNnE';
 
     const CATEGORIAS_FIXOS = ['Parcelas','Educação','Saúde','Assinaturas','Storage','Telefonia','Moradia','Outros'];
-
     const COR_CATEGORIA_FIXO = {
         'Parcelas':'#f59e0b','Educação':'#3b82f6','Saúde':'#10b981',
         'Assinaturas':'#8b5cf6','Storage':'#06b6d4','Telefonia':'#6366f1',
         'Moradia':'#b45309','Outros':'#9ca3af'
     };
-
     const CATEGORIAS = {
         casal: ['Transporte', 'Mercado', 'Saídas', 'Extra', 'Pets', 'Outros'],
         dela:  ['Pessoais Lia', 'Outros'],
@@ -939,23 +462,22 @@
     const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-    let db             = null;
-    let mesAtual       = new Date().getMonth();
-    let tipoAtual      = 'casal';
-    let categoriaAtual = 'Uber';
-    let tipoFixoAtual  = 'casal';
-    let fixoEditandoId   = null;
+    let db = null;
+    let mesAtual = new Date().getMonth();
+    let tipoAtual = 'casal';
+    let categoriaAtual = '';
+    let tipoFixoAtual = 'casal';
+    let fixoEditandoId = null;
     let receitaEditandoId = null;
-    let varEditandoId     = null;
-    let tipoEditarVar     = 'casal';
-    let mesGrafico    = new Date().getMonth();
-    let filtroFixos   = 'geral';
-    let anoGrafico    = new Date().getFullYear();
-    let chartVarInstance   = null;
+    let varEditandoId = null;
+    let tipoEditarVar = 'casal';
+    let mesGrafico = new Date().getMonth();
+    let filtroFixos = 'geral';
+    let anoGrafico = new Date().getFullYear();
+    let chartVarInstance = null;
     let chartFixosInstance = null;
-    let receitaCasal      = false;
+    let receitaCasal = false;
 
-    // ===== HELPERS =====
     const fmt = n => `R$ ${Number(n || 0).toFixed(2).replace('.', ',')}`;
 
     function mesCompativel(campoMes) {
@@ -977,14 +499,11 @@
         sel.innerHTML = '';
         MESES.forEach((m, i) => {
             const opt = document.createElement('option');
-            opt.value = i;
-            opt.textContent = m;
-            opt.selected = (i === mesAtual);
+            opt.value = i; opt.textContent = m; opt.selected = (i === mesAtual);
             sel.appendChild(opt);
         });
     }
 
-    // ===== NAVEGAÇÃO =====
     function mudarTela(telaId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(telaId).classList.add('active');
@@ -995,13 +514,11 @@
         carregarDados();
     }
 
-    // ===== COLLAPSIBLE =====
     function toggleSection(bodyId, iconId) {
         document.getElementById(bodyId).classList.toggle('collapsed');
         document.getElementById(iconId).classList.toggle('collapsed');
     }
 
-    // ===== TIPO/CATEGORIA =====
     function inicializarTipoSelect() {
         document.getElementById('tipoSelect').addEventListener('click', e => {
             const pill = e.target.closest('.category-pill');
@@ -1010,7 +527,6 @@
             pill.classList.add('selected');
             tipoAtual = pill.dataset.tipo;
             atualizarCategorias();
-            // Revelar step 2, ocultar step 3
             document.getElementById('stepCategoria').classList.add('visible');
             document.getElementById('stepDados').classList.remove('visible');
         });
@@ -1022,15 +538,14 @@
         document.getElementById('stepDados').classList.remove('visible');
         document.getElementById('varValor').value = '';
         document.getElementById('varDescricao').value = '';
-        tipoAtual = 'casal';
-        categoriaAtual = 'Uber';
+        tipoAtual = 'casal'; categoriaAtual = '';
         atualizarCategorias();
     }
 
     function atualizarCategorias() {
         const container = document.getElementById('categoriaSelect');
         container.innerHTML = '';
-        CATEGORIAS[tipoAtual].forEach((cat, i) => {
+        CATEGORIAS[tipoAtual].forEach(cat => {
             const div = document.createElement('div');
             div.className = 'category-pill';
             div.textContent = cat;
@@ -1043,24 +558,20 @@
             container.querySelectorAll('.category-pill').forEach(p => p.classList.remove('selected'));
             pill.classList.add('selected');
             categoriaAtual = pill.textContent;
-            // Revelar step 3
             document.getElementById('stepDados').classList.add('visible');
         });
     }
 
-    // ===== MODAL FIXO =====
     function abrirModalFixo(id = null) {
         fixoEditandoId = id;
         preencherMeses('fixoMes');
         document.getElementById('modalFixoTitle').textContent = id ? 'Editar Fixo' : 'Adicionar Fixo';
-
         if (id) {
             db.from('fixos').select('*').eq('id', id).single().then(({ data, error }) => {
                 if (error) { mostrarAlerta('❌ Erro ao carregar fixo', 'error'); return; }
                 document.getElementById('fixoNome').value  = data.nome  || '';
                 document.getElementById('fixoValor').value = data.valor || '';
-                const mes = (data.mes === null || data.mes === undefined || data.mes === 'atual')
-                    ? mesAtual : Number(data.mes);
+                const mes = (data.mes === null || data.mes === undefined || data.mes === 'atual') ? mesAtual : Number(data.mes);
                 document.getElementById('fixoMes').value = mes;
                 preencherCategoriaFixo(data.categoria || 'Outros');
                 tipoFixoAtual = data.tipo || 'casal';
@@ -1086,7 +597,6 @@
         fixoEditandoId = null;
     }
 
-    // ===== MODAL RECEITA =====
     function setReceitaCasal(val) {
         receitaCasal = val;
         document.getElementById('receitaCasalSim').classList.toggle('selected',  val);
@@ -1097,7 +607,6 @@
         receitaEditandoId = id;
         document.getElementById('modalReceitaTitle').textContent = id ? 'Editar Receita' : 'Adicionar Receita';
         document.getElementById('receitaOutroGroup').style.display = 'none';
-
         if (id) {
             db.from('receitas').select('*').eq('id', id).single().then(({ data, error }) => {
                 if (error) { mostrarAlerta('❌ Erro ao carregar receita', 'error'); return; }
@@ -1123,7 +632,6 @@
         receitaEditandoId = null;
     }
 
-    // ===== SALVAR =====
     async function salvarVariavel() {
         const valor     = parseFloat(document.getElementById('varValor').value);
         const descricao = document.getElementById('varDescricao').value.trim();
@@ -1131,22 +639,16 @@
         if (!categoriaAtual) { mostrarAlerta('⚠️ Selecione a categoria', 'error'); return; }
         if (!valor)          { mostrarAlerta('⚠️ Preencha o valor', 'error');       return; }
         if (!descricao)      { mostrarAlerta('⚠️ Preencha a descrição', 'error');   return; }
-
         const btn = document.getElementById('btnSalvarVariavel');
         btn.disabled = true;
         try {
-            const { error } = await db.from('variaveis').insert([{
-                tipo: tipoAtual, categoria: categoriaAtual, valor, descricao, mes: mesAtual
-            }]);
+            const { error } = await db.from('variaveis').insert([{ tipo: tipoAtual, categoria: categoriaAtual, valor, descricao, mes: mesAtual }]);
             if (error) throw error;
-
-            // Reset form + sucesso inline + scroll pro topo
             resetFormVariavel();
             window.scrollTo({ top: 0, behavior: 'smooth' });
             const el = document.getElementById('varSuccessInline');
             el.style.display = 'block';
             setTimeout(() => { el.style.display = 'none'; }, 2500);
-
             await carregarDados();
         } catch(e) {
             mostrarAlerta('❌ ' + (e.message || 'Erro'), 'error');
@@ -1160,20 +662,13 @@
         const mes       = mesEl ? parseInt(mesEl.value) : mesAtual;
         const catEl     = document.getElementById('fixoCategoria');
         const categoria = catEl?.value || 'Outros';
-
-        if (!nome)           { mostrarAlerta('⚠️ Preencha o nome', 'error');  return; }
+        if (!nome)                { mostrarAlerta('⚠️ Preencha o nome', 'error');  return; }
         if (!valor || isNaN(valor)) { mostrarAlerta('⚠️ Preencha o valor', 'error'); return; }
-
         const btn = document.getElementById('btnSalvarFixo');
         if (btn) btn.disabled = true;
-
-        // payload unificado — sem duplicar const categoria
         const payload = { tipo: tipoFixoAtual, nome, valor, mes: isNaN(mes) ? mesAtual : mes, categoria };
-        console.log('salvarFixo →', fixoEditandoId ? 'UPDATE' : 'INSERT', payload);
-
         try {
             let supaError;
-
             if (fixoEditandoId) {
                 const res = await db.from('fixos').update(payload).eq('id', fixoEditandoId);
                 supaError = res.error;
@@ -1181,38 +676,21 @@
                 const res = await db.from('fixos').insert([payload]);
                 supaError = res.error;
             }
-
-            if (supaError) {
-                const msg = supaError.message || supaError.details || JSON.stringify(supaError);
-                console.error('Supabase error:', supaError);
-
-                mostrarAlerta('❌ ' + msg, 'error');
-                return;
-            }
-
+            if (supaError) { mostrarAlerta('❌ ' + (supaError.message || JSON.stringify(supaError)), 'error'); return; }
             mostrarAlerta(fixoEditandoId ? '✅ Fixo atualizado!' : '✅ Fixo salvo!');
             fecharModalFixo();
             await carregarDados();
         } catch(e) {
-            const msg = e?.message || String(e);
-            console.error('salvarFixo exception:', e);
-
-            mostrarAlerta('❌ ' + msg, 'error');
-        } finally {
-            if (btn) btn.disabled = false;
-        }
+            mostrarAlerta('❌ ' + (e?.message || String(e)), 'error');
+        } finally { if (btn) btn.disabled = false; }
     }
 
     function abrirModalEditarVar(id, tipo, categoria, valor, descricao) {
         varEditandoId = id;
         tipoEditarVar = tipo;
-
-        // Setar tipo
         document.querySelectorAll('#tipoEditarVarSelect .category-pill').forEach(p => {
             p.classList.toggle('selected', p.dataset.tipo === tipo);
         });
-
-        // Preencher categorias do tipo
         const catContainer = document.getElementById('categoriaEditarVarSelect');
         catContainer.innerHTML = '';
         CATEGORIAS[tipo].forEach(cat => {
@@ -1227,8 +705,6 @@
             catContainer.querySelectorAll('.category-pill').forEach(x => x.classList.remove('selected'));
             p.classList.add('selected');
         });
-
-        // Quando tipo muda, recria categorias
         document.querySelectorAll('#tipoEditarVarSelect .category-pill').forEach(pill => {
             pill.addEventListener('click', () => {
                 tipoEditarVar = pill.dataset.tipo;
@@ -1248,9 +724,8 @@
                 });
             });
         });
-
-        document.getElementById('editarVarValor').value      = valor;
-        document.getElementById('editarVarDescricao').value  = descricao;
+        document.getElementById('editarVarValor').value     = valor;
+        document.getElementById('editarVarDescricao').value = descricao;
         document.getElementById('modalEditarVar').classList.add('active');
     }
 
@@ -1261,20 +736,16 @@
 
     async function salvarEdicaoVar() {
         const catSelecionada = document.querySelector('#categoriaEditarVarSelect .category-pill.selected');
-        const categoria      = catSelecionada ? catSelecionada.textContent : '';
-        const valor          = parseFloat(document.getElementById('editarVarValor').value);
-        const descricao      = document.getElementById('editarVarDescricao').value.trim();
-
+        const categoria = catSelecionada ? catSelecionada.textContent : '';
+        const valor     = parseFloat(document.getElementById('editarVarValor').value);
+        const descricao = document.getElementById('editarVarDescricao').value.trim();
         if (!categoria) { mostrarAlerta('⚠️ Selecione a categoria', 'error'); return; }
         if (!valor)     { mostrarAlerta('⚠️ Preencha o valor', 'error');      return; }
         if (!descricao) { mostrarAlerta('⚠️ Preencha a descrição', 'error');  return; }
-
         const btn = document.getElementById('btnSalvarEditarVar');
         btn.disabled = true;
         try {
-            const { error } = await db.from('variaveis').update({
-                tipo: tipoEditarVar, categoria, valor, descricao
-            }).eq('id', varEditandoId);
+            const { error } = await db.from('variaveis').update({ tipo: tipoEditarVar, categoria, valor, descricao }).eq('id', varEditandoId);
             if (error) throw error;
             mostrarAlerta('✅ Variável atualizada!');
             fecharModalEditarVar();
@@ -1292,7 +763,6 @@
         }
         const valor = parseFloat(document.getElementById('receitaValor').value);
         if (!valor) { mostrarAlerta('⚠️ Preencha o valor', 'error'); return; }
-
         const btn = document.getElementById('btnSalvarReceita');
         btn.disabled = true;
         try {
@@ -1312,7 +782,6 @@
         } finally { btn.disabled = false; }
     }
 
-    // ===== AÇÕES =====
     async function marcarFixoPago(id, pago) {
         const { error } = await db.from('fixos').update({ pago: !pago }).eq('id', id);
         if (error) { mostrarAlerta('❌ Erro', 'error'); return; }
@@ -1343,7 +812,6 @@
         await carregarDados();
     }
 
-    // ===== CARREGAR =====
     async function carregarDados() {
         if (!db) return;
         try {
@@ -1355,19 +823,14 @@
             if (r1.error) console.error('fixos:', r1.error.message);
             if (r2.error) console.error('variaveis:', r2.error.message);
             if (r3.error) console.error('receitas:', r3.error.message);
-
             calcularRepasse(r1.data || [], r2.data || [], r3.data || []);
             renderizar(r1.data || [], r2.data || [], r3.data || []);
-        } catch(e) {
-            console.error('carregarDados:', e);
-        }
+        } catch(e) { console.error('carregarDados:', e); }
     }
 
-    // ===== CÁLCULOS =====
     function calcularRepasse(fixos, variaveis, receitas) {
         let fixosCasal = 0, fixosDela = 0, fixosGle = 0;
-        let varCasal   = 0, varDela   = 0, varGle   = 0;
-
+        let varCasal = 0, varDela = 0, varGle = 0;
         fixos.forEach(f => {
             if (mesCompativel(f.mes) && !f.pago) {
                 if      (f.tipo === 'casal') fixosCasal += Number(f.valor);
@@ -1375,7 +838,6 @@
                 else if (f.tipo === 'gle')   fixosGle   += Number(f.valor);
             }
         });
-
         variaveis.forEach(v => {
             if (mesCompativel(v.mes)) {
                 if      (v.tipo === 'casal') varCasal += Number(v.valor);
@@ -1383,11 +845,8 @@
                 else if (v.tipo === 'gle')   varGle   += Number(v.valor);
             }
         });
-
         let entradasCasal = 0;
-        (receitas || []).forEach(r => {
-            if (r.casal && mesCompativel(r.mes)) entradasCasal += Number(r.valor);
-        });
+        (receitas || []).forEach(r => { if (r.casal && mesCompativel(r.mes)) entradasCasal += Number(r.valor); });
 
         const repasse    = (fixosCasal/2) + fixosDela + (varCasal/2) + varDela - 620 - (entradasCasal/2);
         const totalGasto = fixosCasal + fixosDela + varCasal + varDela;
@@ -1406,28 +865,18 @@
         document.getElementById('varCasalGleValue').textContent      = fmt(varCasal / 2);
         document.getElementById('entradasCasalGleValue').textContent = entradasCasal > 0 ? `-${fmt(entradasCasal/2)}` : '-R$ 0,00';
         document.getElementById('totalGleValue').textContent         = fmt(totalGle);
-
-        // Totais visíveis quando collapsed
-        const repasseSemDesconto = (fixosCasal/2) + fixosDela + (varCasal/2) + varDela;
-        document.getElementById('totalDetalhamentoCollapsed').textContent = fmt(repasseSemDesconto);
+        document.getElementById('totalDetalhamentoCollapsed').textContent = fmt((fixosCasal/2) + fixosDela + (varCasal/2) + varDela);
         document.getElementById('totalGleCollapsed').textContent          = fmt(totalGle);
     }
 
-    // ===== RENDERIZAR =====
     function renderizar(fixos, variaveis, receitas) {
-        // Overview por tipo
         renderizarOverviewVariaveis(variaveis.filter(v => mesCompativel(v.mes)));
-        // Variáveis — agrupadas por categoria
-        const varMes = variaveis.filter(v => mesCompativel(v.mes));
-        renderizarVariaveisPorCategoria(varMes);
-
-        // Fixos — grupos colapsáveis com total
+        renderizarVariaveisPorCategoria(variaveis.filter(v => mesCompativel(v.mes)));
         renderizarGruposFixos(fixos);
 
-        // Receitas
         const recMes = receitas.filter(r => mesCompativel(r.mes));
         const totalRec = recMes.reduce((s, r) => s + Number(r.valor), 0);
-        document.getElementById('totalReceitasValue').textContent = fmt(totalRec);
+        document.getElementById('totalReceitasValue').textContent     = fmt(totalRec);
         document.getElementById('totalReceitasCollapsed').textContent = fmt(totalRec);
 
         document.getElementById('receitasList').innerHTML = recMes.length
@@ -1438,14 +887,15 @@
                     </div>
                     <div class="list-item-actions">
                         <span class="list-item-value">${fmt(r.valor)}</span>
-                        <button class="icon-btn edit-btn" onclick="abrirModalReceita(${r.id})">✏️</button>
-                        <button class="icon-btn" onclick="deletarReceita(${r.id})">🗑️</button>
+                        <button class="icon-btn edit-btn" onclick="abrirModalReceita(${r.id})"><i data-lucide="pencil" style="width:15px;height:15px;"></i></button>
+                        <button class="icon-btn" onclick="deletarReceita(${r.id})"><i data-lucide="trash-2" style="width:15px;height:15px;"></i></button>
                     </div>
                 </div>`).join('')
             : '<div class="empty-state">Nenhuma receita</div>';
+
+        if (window.lucide) lucide.createIcons();
     }
 
-    // ===== HELPER DATA/HORA =====
     function preencherCategoriaFixo(selecionada = 'Outros') {
         const sel = document.getElementById('fixoCategoria');
         sel.innerHTML = CATEGORIAS_FIXOS.map(c =>
@@ -1457,29 +907,22 @@
         if (!str) return '';
         try {
             const d = new Date(str);
-            const dia  = String(d.getDate()).padStart(2, '0');
-            const mes  = String(d.getMonth() + 1).padStart(2, '0');
-            const hora = String(d.getHours()).padStart(2, '0');
-            const min  = String(d.getMinutes()).padStart(2, '0');
-            return `${dia}/${mes} · ${hora}:${min}`;
+            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} · ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
         } catch { return ''; }
     }
 
-    // ===== RENDERIZAR FIXOS COLAPSÁVEIS =====
     function renderizarGruposFixos(fixos) {
         const grupos = [
-            { tipo: 'casal', label: '👥 Fixos Casal' },
-            { tipo: 'dela',  label: '👩 Fixos Dela'  },
-            { tipo: 'gle',   label: '👨 Fixos Seus'  }
+            { tipo: 'casal', label: 'Fixos Casal' },
+            { tipo: 'dela',  label: 'Fixos Dela'  },
+            { tipo: 'gle',   label: 'Fixos Seus'  }
         ];
-
         document.getElementById('fixosContainer').innerHTML = grupos.map(({ tipo, label }) => {
-            const itens = fixos.filter(f => f.tipo === tipo && mesCompativel(f.mes));
-            const total = itens.filter(f => !f.pago).reduce((s, f) => s + Number(f.valor), 0);
+            const itens  = fixos.filter(f => f.tipo === tipo && mesCompativel(f.mes));
+            const total  = itens.filter(f => !f.pago).reduce((s, f) => s + Number(f.valor), 0);
             const bodyId = `fixosBody-${tipo}`;
             const iconId = `fixosIcon-${tipo}`;
-
-            const lista = itens.length
+            const lista  = itens.length
                 ? itens.map(f => `
                     <div class="list-item ${f.pago ? 'pago' : ''}">
                         <div class="list-item-info">
@@ -1488,55 +931,46 @@
                         </div>
                         <div class="list-item-actions">
                             <span class="list-item-value">${fmt(f.valor)}</span>
-                            <button class="check-btn ${f.pago ? 'checked' : ''}" onclick="marcarFixoPago(${f.id},${f.pago})">✓</button>
-                            ${!f.pago ? `<button class="icon-btn edit-btn" onclick="abrirModalFixo(${f.id})">✏️</button>` : ''}
-                            <button class="icon-btn" onclick="deletarFixo(${f.id})">🗑️</button>
+                            <button class="check-btn ${f.pago ? 'checked' : ''}" onclick="marcarFixoPago(${f.id},${f.pago})"><i data-lucide="check" style="width:13px;height:13px;"></i></button>
+                            ${!f.pago ? `<button class="icon-btn edit-btn" onclick="abrirModalFixo(${f.id})"><i data-lucide="pencil" style="width:15px;height:15px;"></i></button>` : ''}
+                            <button class="icon-btn" onclick="deletarFixo(${f.id})"><i data-lucide="trash-2" style="width:15px;height:15px;"></i></button>
                         </div>
                     </div>`).join('')
                 : '<div class="empty-state">Nenhum fixo</div>';
-
             const totalRow = itens.length
                 ? `<div class="stat-row total-row" style="margin-top:8px;"><span class="stat-label">Total</span><span class="stat-value">${fmt(total)}</span></div>`
                 : '';
-
             return `
                 <div class="card">
                     <div class="card-header-toggle" onclick="toggleSection('${bodyId}','${iconId}')">
                         <div style="font-size:14px;font-weight:700;">${label}</div>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <span style="font-size:13px;font-weight:600;color:var(--text-light);">${fmt(total)}</span>
-                            <span class="toggle-icon collapsed" id="${iconId}">▾</span>
+                            <i data-lucide="chevron-down" class="toggle-icon collapsed" id="${iconId}" style="width:16px;height:16px;"></i>
                         </div>
                     </div>
                     <div class="collapsible-body collapsed" id="${bodyId}">
-                        <div style="margin-top:12px;">
-                            ${lista}
-                            ${totalRow}
-                        </div>
+                        <div style="margin-top:12px;">${lista}${totalRow}</div>
                     </div>
                 </div>`;
         }).join('');
     }
 
-    // ===== RENDERIZAR VARIÁVEIS POR CATEGORIA =====
     function renderizarOverviewVariaveis(varMes) {
         const grupos = [
-            { tipo: 'casal', label: '👥 Casal',   id: 'ovCasal' },
-            { tipo: 'gle',   label: '👨 Meu',      id: 'ovGle'   },
-            { tipo: 'dela',  label: '👩 Dela',     id: 'ovDela'  },
+            { tipo: 'casal', label: 'Casal', id: 'ovCasal' },
+            { tipo: 'gle',   label: 'Meu',   id: 'ovGle'   },
+            { tipo: 'dela',  label: 'Dela',  id: 'ovDela'  },
         ];
-
         document.getElementById('overviewList').innerHTML = grupos.map(({ tipo, label, id }) => {
             const itens = varMes.filter(v => v.tipo === tipo);
             if (!itens.length) return '';
-
             const total = itens.reduce((s, v) => s + Number(v.valor), 0);
             const cats  = {};
             itens.forEach(v => { const c = v.categoria||'Outros'; cats[c] = (cats[c]||0)+Number(v.valor); });
             const sortedCats = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
             const bodyId = `ovBody-${id}`;
             const iconId = `ovIcon-${id}`;
-
             return `
                 <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px;">
                     <div class="card-header-toggle" onclick="toggleSection('${bodyId}','${iconId}')"
@@ -1544,7 +978,7 @@
                         <span style="font-size:13px;font-weight:700;">${label}</span>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <span style="font-size:13px;font-weight:700;color:var(--secondary);">${fmt(total)}</span>
-                            <span class="toggle-icon collapsed" id="${iconId}">▾</span>
+                            <i data-lucide="chevron-down" class="toggle-icon collapsed" id="${iconId}" style="width:16px;height:16px;"></i>
                         </div>
                     </div>
                     <div class="collapsible-body collapsed" id="${bodyId}">
@@ -1567,23 +1001,14 @@
             document.getElementById('varTotalGeral').textContent = fmt(0);
             return;
         }
-
-        // Agrupar por categoria
         const grupos = {};
         varMes.forEach(v => {
             const cat = v.categoria || 'Outros';
             if (!grupos[cat]) grupos[cat] = [];
             grupos[cat].push(v);
         });
-
-        // Separar Pessoais Gle dos demais
-        const CAT_PESSOAL = null; // sem separação especial
-        const gruposGerais  = CAT_PESSOAL ? Object.entries(grupos).filter(([cat]) => cat !== CAT_PESSOAL) : Object.entries(grupos);
-        const itensPessoais = CAT_PESSOAL ? (grupos[CAT_PESSOAL] || []) : [];
-
-        // Total geral (excluindo Pessoais Gle)
-        const totalGeral = gruposGerais.reduce((s, [, itens]) =>
-            s + itens.reduce((ss, v) => ss + Number(v.valor), 0), 0);
+        const gruposGerais = Object.entries(grupos);
+        const totalGeral = gruposGerais.reduce((s, [, itens]) => s + itens.reduce((ss, v) => ss + Number(v.valor), 0), 0);
         document.getElementById('varTotalGeral').textContent = fmt(totalGeral);
 
         function renderGrupo(cat, itens) {
@@ -1598,7 +1023,7 @@
                         <span style="font-size:13px;font-weight:700;">${cat}</span>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <span style="font-size:13px;font-weight:600;color:var(--text-light);">${fmt(subtotal)}</span>
-                            <span class="toggle-icon collapsed" id="${iconId}">▾</span>
+                            <i data-lucide="chevron-down" class="toggle-icon collapsed" id="${iconId}" style="width:16px;height:16px;"></i>
                         </div>
                     </div>
                     <div class="collapsible-body collapsed" id="${bodyId}">
@@ -1611,8 +1036,8 @@
                                     </div>
                                     <div class="list-item-actions">
                                         <span class="list-item-value">${fmt(v.valor)}</span>
-                                        <button class="icon-btn edit-btn" onclick="abrirModalEditarVar(${v.id},'${v.tipo}','${v.categoria||'Outros'}',${v.valor},'${v.descricao.replace(/'/g,"\'")}')">✏️</button>
-                                        <button class="icon-btn" onclick="deletarVariavel(${v.id})">🗑️</button>
+                                        <button class="icon-btn edit-btn" onclick="abrirModalEditarVar(${v.id},'${v.tipo}','${v.categoria||'Outros'}',${v.valor},'${v.descricao.replace(/'/g,"\\'")}')"><i data-lucide="pencil" style="width:15px;height:15px;"></i></button>
+                                        <button class="icon-btn" onclick="deletarVariavel(${v.id})"><i data-lucide="trash-2" style="width:15px;height:15px;"></i></button>
                                     </div>
                                 </div>`).join('')}
                             <div class="stat-row total-row" style="margin-top:8px;">
@@ -1623,27 +1048,9 @@
                     </div>
                 </div>`;
         }
-
-        // Renderizar grupos gerais
-        let html = gruposGerais.map(([cat, itens]) => renderGrupo(cat, itens)).join('');
-
-        // Renderizar Pessoais Gle separado com divisor
-        if (itensPessoais.length) {
-            const totalPessoal = itensPessoais.reduce((s, v) => s + Number(v.valor), 0);
-            html += `
-                <div style="margin-top:16px;padding-top:12px;border-top:2px dashed var(--border);">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        <span style="font-size:12px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;">Pessoais</span>
-                        <span style="font-size:13px;font-weight:700;color:var(--text-light);">${fmt(totalPessoal)}</span>
-                    </div>
-                    ${renderGrupo(CAT_PESSOAL, itensPessoais)}
-                </div>`;
-        }
-
-        container.innerHTML = html;
+        container.innerHTML = gruposGerais.map(([cat, itens]) => renderGrupo(cat, itens)).join('');
     }
 
-    // ===== GRÁFICOS =====
     function abrirGraficos() {
         mesGrafico = new Date().getMonth();
         anoGrafico = new Date().getFullYear();
@@ -1678,48 +1085,33 @@
                 db.from('variaveis').select('*'),
                 db.from('receitas').select('*')
             ]);
-
-            const fixos     = r1.data || [];
-            const variaveis = r2.data || [];
-            const receitas  = r3.data || [];
-
-            // Filtro por mês do gráfico (sem usar mesCompativel global)
+            const fixos = r1.data || [], variaveis = r2.data || [], receitas = r3.data || [];
             const ehMesGrafico = (campo) => {
                 if (campo === null || campo === undefined) return mesGrafico === new Date().getMonth();
                 if (campo === 'atual') return mesGrafico === new Date().getMonth();
                 return Number(campo) === mesGrafico;
             };
-
             const fixosMes = fixos.filter(f => ehMesGrafico(f.mes) && !f.pago);
             const varMes   = variaveis.filter(v => ehMesGrafico(v.mes));
             const recMes   = receitas.filter(r => ehMesGrafico(r.mes));
-
-            // Totais dos cards
             const totalReceitas = recMes.reduce((s, r) => s + Number(r.valor), 0);
             const totalFixos    = fixosMes.reduce((s, f) => s + Number(f.valor), 0);
             const totalVar      = varMes.reduce((s, v) => s + Number(v.valor), 0);
             const totalGastos   = totalFixos + totalVar;
             const saldo         = totalReceitas - totalGastos;
-
             document.getElementById('graficoTotalReceitas').textContent = fmt(totalReceitas);
             document.getElementById('graficoTotalGastos').textContent   = fmt(totalGastos);
             const elSaldo = document.getElementById('graficoSaldo');
             elSaldo.textContent = fmt(saldo);
             elSaldo.style.color = saldo >= 0 ? 'var(--success)' : 'var(--danger)';
 
-            // ---- GRÁFICO 1: Variáveis por categoria ----
             if (chartVarInstance)   { chartVarInstance.destroy();   chartVarInstance   = null; }
             if (chartFixosInstance) { chartFixosInstance.destroy(); chartFixosInstance = null; }
 
-            const paletteCat = {
-                'Mercado':'#3b82f6','Uber':'#8b5cf6','Saídas':'#ec4899',
-                'Extra':'#f59e0b','Pets':'#10b981','Pessoais Gle':'#06b6d4',
-                'Pessoais Lia':'#f97316','Outros':'#9ca3af'
-            };
+            const paletteCat = { 'Mercado':'#3b82f6','Uber':'#8b5cf6','Saídas':'#ec4899','Extra':'#f59e0b','Pets':'#10b981','Pessoais Gle':'#06b6d4','Pessoais Lia':'#f97316','Outros':'#9ca3af' };
             const cats = {};
             varMes.forEach(v => { const c = v.categoria||'Outros'; cats[c]=(cats[c]||0)+Number(v.valor); });
             const sortedVar = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
-
             const wrapVar = document.getElementById('wrapChartVar');
             if (!sortedVar.length) {
                 wrapVar.innerHTML = '<div class="empty-state" style="padding:40px 0">Sem variáveis neste mês</div>';
@@ -1729,168 +1121,85 @@
                 wrapVar.innerHTML = '<canvas id="canvasGraficoVar"></canvas>';
                 chartVarInstance = new Chart(document.getElementById('canvasGraficoVar').getContext('2d'), {
                     type: 'doughnut',
-                    data: {
-                        labels: sortedVar.map(([k])=>k),
-                        datasets: [{ data: sortedVar.map(([,v])=>v),
-                            backgroundColor: sortedVar.map(([k])=>paletteCat[k]||'#6b7280'),
-                            borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        cutout: '55%',
-                        plugins: {
-                            legend: { display: true, position: 'bottom',
-                                labels: { font: { size: 11 }, padding: 12, boxWidth: 14 }
-                            },
-                            tooltip: { callbacks: {
-                                label: c => {
-                                    const total = c.dataset.data.reduce((a,b)=>a+b,0);
-                                    const pct = ((c.raw/total)*100).toFixed(1);
-                                    return ` R$ ${Number(c.raw).toFixed(2).replace('.',',')} (${pct}%)`;
-                                }
-                            }}
-                        }
-                    }
+                    data: { labels: sortedVar.map(([k])=>k), datasets: [{ data: sortedVar.map(([,v])=>v), backgroundColor: sortedVar.map(([k])=>paletteCat[k]||'#6b7280'), borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }] },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11 }, padding: 12, boxWidth: 14 } }, tooltip: { callbacks: { label: c => { const total = c.dataset.data.reduce((a,b)=>a+b,0); return ` R$ ${Number(c.raw).toFixed(2).replace('.',',')} (${((c.raw/total)*100).toFixed(1)}%)`; } } } } }
                 });
             }
-
-            // ---- GRÁFICO 2: Fixos por categoria (pizza) com filtro ----
-            // guardar fixosMes para uso nos filtros
             window._fixosMesGrafico = fixosMes;
             renderizarChartFixos(fixosMes);
-        } catch(e) {
-            console.error('carregarDadosGrafico:', e);
-        }
+        } catch(e) { console.error('carregarDadosGrafico:', e); }
     }
 
-    // ===== GRÁFICO FIXOS COM FILTRO =====
     function renderizarChartFixos(fixosMes) {
-        const filtrados = filtroFixos === 'geral'
-            ? fixosMes
-            : fixosMes.filter(f => f.tipo === filtroFixos);
-
+        const filtrados = filtroFixos === 'geral' ? fixosMes : fixosMes.filter(f => f.tipo === filtroFixos);
         const catFixosMap = {};
-        filtrados.forEach(f => {
-            const cat = f.categoria || 'Outros';
-            catFixosMap[cat] = (catFixosMap[cat] || 0) + Number(f.valor);
-        });
+        filtrados.forEach(f => { const cat = f.categoria || 'Outros'; catFixosMap[cat] = (catFixosMap[cat] || 0) + Number(f.valor); });
         const sorted = Object.entries(catFixosMap).sort((a,b) => b[1]-a[1]);
-
         if (chartFixosInstance) { chartFixosInstance.destroy(); chartFixosInstance = null; }
-
         const wrapFixos = document.getElementById('wrapChartFixos');
         if (!sorted.length) {
             wrapFixos.innerHTML = '<div class="empty-state" style="padding:40px 0">Sem fixos neste filtro</div>';
             wrapFixos.style.height = 'auto';
             return;
         }
-
         wrapFixos.style.height = '300px';
         wrapFixos.style.position = 'relative';
         wrapFixos.innerHTML = '<canvas id="canvasGraficoFixos"></canvas>';
         chartFixosInstance = new Chart(document.getElementById('canvasGraficoFixos').getContext('2d'), {
             type: 'doughnut',
-            data: {
-                labels: sorted.map(([k]) => k),
-                datasets: [{ data: sorted.map(([,v]) => v),
-                    backgroundColor: sorted.map(([k]) => COR_CATEGORIA_FIXO[k] || '#9ca3af'),
-                    borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                cutout: '55%',
-                plugins: {
-                    legend: { display: true, position: 'bottom',
-                        labels: { font: { size: 11 }, padding: 12, boxWidth: 14 }
-                    },
-                    tooltip: { callbacks: {
-                        label: c => {
-                            const total = c.dataset.data.reduce((a,b)=>a+b,0);
-                            const pct = ((c.raw/total)*100).toFixed(1);
-                            return ` R$ ${Number(c.raw).toFixed(2).replace('.',',')} (${pct}%)`;
-                        }
-                    }}
-                }
-            }
+            data: { labels: sorted.map(([k]) => k), datasets: [{ data: sorted.map(([,v]) => v), backgroundColor: sorted.map(([k]) => COR_CATEGORIA_FIXO[k] || '#9ca3af'), borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }] },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11 }, padding: 12, boxWidth: 14 } }, tooltip: { callbacks: { label: c => { const total = c.dataset.data.reduce((a,b)=>a+b,0); return ` R$ ${Number(c.raw).toFixed(2).replace('.',',')} (${((c.raw/total)*100).toFixed(1)}%)`; } } } } }
         });
     }
 
-    // ===== FECHAR MÊS =====
     async function fecharMes() {
         const proximoMes  = (mesAtual + 1) % 12;
         const nomeProximo = MESES[proximoMes];
-        if (!confirm(`Fechar ${MESES[mesAtual]}? Isso vai criar os fixos para ${nomeProximo}. Os registros atuais ficam salvos como histórico.`)) return;
-
+        if (!confirm(`Fechar ${MESES[mesAtual]}? Isso vai criar os fixos para ${nomeProximo}.`)) return;
         try {
             const { data: fixosAtivos, error } = await db.from('fixos').select('*');
             if (error) throw error;
-
             const doMes = fixosAtivos.filter(f => mesCompativel(f.mes));
             if (!doMes.length) { mostrarAlerta('⚠️ Nenhum fixo para copiar', 'error'); return; }
-
             for (const f of doMes) {
-                const { error: errIns } = await db.from('fixos').insert([{
-                    tipo:  f.tipo,
-                    nome:  f.nome,
-                    valor: f.valor,
-                    mes:   proximoMes,
-                    pago:  false
-                }]);
+                const { error: errIns } = await db.from('fixos').insert([{ tipo: f.tipo, nome: f.nome, valor: f.valor, mes: proximoMes, pago: false }]);
                 if (errIns) throw errIns;
             }
-
             mostrarAlerta(`✅ ${doMes.length} fixo(s) criado(s) para ${nomeProximo}!`);
             await carregarDados();
-        } catch(e) {
-            mostrarAlerta('❌ ' + (e.message || 'Erro ao fechar mês'), 'error');
-        }
+        } catch(e) { mostrarAlerta('❌ ' + (e.message || 'Erro ao fechar mês'), 'error'); }
     }
 
-    // ===== INIT =====
     async function init() {
         let t = 0;
         while (!window.supabase && t++ < 50) await new Promise(r => setTimeout(r, 100));
         if (!window.supabase) { mostrarAlerta('❌ Falha ao carregar Supabase', 'error'); return; }
-
         db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const agora = new Date();
         document.getElementById('headerDate').textContent = `${MESES[agora.getMonth()]} ${agora.getFullYear()}`;
 
-        // Header title -> home
         document.getElementById('btnHome').addEventListener('click', () => mudarTela('screenVariaveis'));
-
-        // Nav
         document.querySelectorAll('.nav-item[data-tela]').forEach(btn => {
             btn.addEventListener('click', () => mudarTela(btn.dataset.tela));
         });
 
-        // Collapsible
-        document.getElementById('toggleDetalhamento').addEventListener('click', () =>
-            toggleSection('bodyDetalhamento', 'iconDetalhamento'));
-        document.getElementById('toggleGle').addEventListener('click', () =>
-            toggleSection('bodyGle', 'iconGle'));
-        document.getElementById('toggleReceitas').addEventListener('click', () =>
-            toggleSection('bodyReceitas', 'iconReceitas'));
+        document.getElementById('toggleDetalhamento').addEventListener('click', () => toggleSection('bodyDetalhamento', 'iconDetalhamento'));
+        document.getElementById('toggleGle').addEventListener('click', () => toggleSection('bodyGle', 'iconGle'));
+        document.getElementById('toggleReceitas').addEventListener('click', () => toggleSection('bodyReceitas', 'iconReceitas'));
 
-        // Abrir modais
         document.getElementById('btnAbrirModalFixo').addEventListener('click',    () => abrirModalFixo());
         document.getElementById('btnAbrirModalReceita').addEventListener('click', () => abrirModalReceita());
-
-        // Fechar mês
         document.getElementById('btnFecharMes').addEventListener('click', fecharMes);
 
-        // Toggle casal receita
         document.getElementById('receitaCasalSim').addEventListener('click', () => setReceitaCasal(true));
         document.getElementById('receitaCasalNao').addEventListener('click', () => setReceitaCasal(false));
 
-        // Gráficos
         document.getElementById('btnAbrirGraficos').addEventListener('click', abrirGraficos);
         document.getElementById('btnFecharGraficos').addEventListener('click', fecharGraficos);
         document.getElementById('btnMesAnterior').addEventListener('click', () => navegarMesGrafico(-1));
         document.getElementById('btnMesProximo').addEventListener('click',  () => navegarMesGrafico(1));
 
-        // Filtros do gráfico de fixos
         document.querySelectorAll('.filtro-btn[data-filtro]').forEach(btn => {
             btn.addEventListener('click', () => {
                 filtroFixos = btn.dataset.filtro;
@@ -1900,18 +1209,14 @@
             });
         });
 
-        // Fechar modais
-        document.getElementById('btnFecharModalFixo').addEventListener('click',    fecharModalFixo);
-        document.getElementById('btnFecharModalEditarVar').addEventListener('click', fecharModalEditarVar);
-        document.getElementById('btnSalvarEditarVar').addEventListener('click',      salvarEdicaoVar);
-        document.getElementById('btnFecharModalReceita').addEventListener('click', fecharModalReceita);
-
-        // Salvar
+        document.getElementById('btnFecharModalFixo').addEventListener('click',      fecharModalFixo);
+        document.getElementById('btnFecharModalEditarVar').addEventListener('click',  fecharModalEditarVar);
+        document.getElementById('btnSalvarEditarVar').addEventListener('click',       salvarEdicaoVar);
+        document.getElementById('btnFecharModalReceita').addEventListener('click',    fecharModalReceita);
         document.getElementById('btnSalvarVariavel').addEventListener('click', salvarVariavel);
         document.getElementById('btnSalvarFixo').addEventListener('click',     salvarFixo);
         document.getElementById('btnSalvarReceita').addEventListener('click',  salvarReceita);
 
-        // Tipo Editar Var (listener inicial — muda categorias ao trocar tipo)
         document.getElementById('tipoEditarVarSelect').addEventListener('click', e => {
             const p = e.target.closest('.category-pill');
             if (!p) return;
@@ -1920,7 +1225,6 @@
             tipoEditarVar = p.dataset.tipo;
         });
 
-        // Tipo Fixo
         document.getElementById('tipoFixoSelect').addEventListener('click', e => {
             const p = e.target.closest('.category-pill');
             if (!p) return;
@@ -1929,16 +1233,16 @@
             tipoFixoAtual = p.dataset.tipo;
         });
 
-        // Receita "Outro"
         document.getElementById('receitaTipo').addEventListener('change', e => {
-            document.getElementById('receitaOutroGroup').style.display =
-                e.target.value === 'Outro' ? 'block' : 'none';
+            document.getElementById('receitaOutroGroup').style.display = e.target.value === 'Outro' ? 'block' : 'none';
         });
 
         inicializarTipoSelect();
         atualizarCategorias();
         carregarDados();
         setInterval(carregarDados, 30000);
+
+        if (window.lucide) lucide.createIcons();
     }
 
     init();
