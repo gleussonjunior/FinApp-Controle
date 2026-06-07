@@ -401,6 +401,7 @@
         <div class="form-group"><label>Valor (R$)</label><input type="number" id="fixoValor" placeholder="0,00" step="0.01" min="0"></div>
         <div class="form-group"><label>Categoria</label><select id="fixoCategoria"></select></div>
         <div class="form-group"><label>Mês</label><select id="fixoMes"></select></div>
+        <div class="form-group"><label>Observação</label><input type="text" id="fixoObs" placeholder="Ex: Nubank · débito dia 10"></div>
         <button class="btn" id="btnSalvarFixo">Salvar</button>
     </div>
 </div>
@@ -571,6 +572,7 @@
                 if (error) { mostrarAlerta('❌ Erro ao carregar fixo', 'error'); return; }
                 document.getElementById('fixoNome').value  = data.nome  || '';
                 document.getElementById('fixoValor').value = data.valor || '';
+                document.getElementById('fixoObs').value   = data.obs   || '';
                 const mes = (data.mes === null || data.mes === undefined || data.mes === 'atual') ? mesAtual : Number(data.mes);
                 document.getElementById('fixoMes').value = mes;
                 preencherCategoriaFixo(data.categoria || 'Outros');
@@ -582,6 +584,7 @@
         } else {
             document.getElementById('fixoNome').value  = '';
             document.getElementById('fixoValor').value = '';
+            document.getElementById('fixoObs').value   = '';
             document.getElementById('fixoMes').value   = mesAtual;
             preencherCategoriaFixo('Outros');
             tipoFixoAtual = 'casal';
@@ -662,11 +665,12 @@
         const mes       = mesEl ? parseInt(mesEl.value) : mesAtual;
         const catEl     = document.getElementById('fixoCategoria');
         const categoria = catEl?.value || 'Outros';
+        const obs       = (document.getElementById('fixoObs')?.value || '').trim();
         if (!nome)                { mostrarAlerta('⚠️ Preencha o nome', 'error');  return; }
         if (!valor || isNaN(valor)) { mostrarAlerta('⚠️ Preencha o valor', 'error'); return; }
         const btn = document.getElementById('btnSalvarFixo');
         if (btn) btn.disabled = true;
-        const payload = { tipo: tipoFixoAtual, nome, valor, mes: isNaN(mes) ? mesAtual : mes, categoria };
+        const payload = { tipo: tipoFixoAtual, nome, valor, mes: isNaN(mes) ? mesAtual : mes, categoria, obs };
         try {
             let supaError;
             if (fixoEditandoId) {
@@ -927,7 +931,10 @@
                     <div class="list-item ${f.pago ? 'pago' : ''}">
                         <div class="list-item-info">
                             <strong>${f.nome}</strong>
-                            ${f.categoria ? `<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:6px;background:${COR_CATEGORIA_FIXO[f.categoria]||'#9ca3af'}22;color:${COR_CATEGORIA_FIXO[f.categoria]||'#9ca3af'}">${f.categoria}</span>` : ''}
+                            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;align-items:center;">
+                                ${f.categoria ? `<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:${COR_CATEGORIA_FIXO[f.categoria]||'#9ca3af'}22;color:${COR_CATEGORIA_FIXO[f.categoria]||'#9ca3af'}">${f.categoria}</span>` : ''}
+                                ${f.obs ? `<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;">📋 ${f.obs}</span>` : ''}
+                            </div>
                         </div>
                         <div class="list-item-actions">
                             <span class="list-item-value">${fmt(f.valor)}</span>
