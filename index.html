@@ -227,6 +227,12 @@
 
         <!-- FIXOS -->
         <div class="screen" id="screenFixos">
+            <div class="filtro-fixos" id="filtroGrupoFixosEl" style="margin-bottom:4px;">
+                <button class="filtro-btn active" data-grupo-fixo="geral">Geral</button>
+                <button class="filtro-btn" data-grupo-fixo="casal">Casal</button>
+                <button class="filtro-btn" data-grupo-fixo="gle">Meu</button>
+                <button class="filtro-btn" data-grupo-fixo="dela">Dela</button>
+            </div>
             <div id="fixosContainer"></div>
             <button class="btn" id="btnAbrirModalFixo" style="margin-bottom:10px;">Adicionar Fixo</button>
             <button class="btn btn-danger" id="btnFecharMes">Fechar Mês</button>
@@ -263,9 +269,11 @@
                 </div>
                 <div class="var-success-inline" id="varSuccessInline">✅ Variável salva!</div>
             </div>
-            <div class="card" id="cardOverview">
-                <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Resumo por Grupo</div>
-                <div id="overviewList"></div>
+            <div class="filtro-fixos" id="filtroGrupoVarEl" style="margin-bottom:4px;">
+                <button class="filtro-btn active" data-grupo-var="geral">Geral</button>
+                <button class="filtro-btn" data-grupo-var="casal">Casal</button>
+                <button class="filtro-btn" data-grupo-var="gle">Meu</button>
+                <button class="filtro-btn" data-grupo-var="dela">Dela</button>
             </div>
             <div class="card">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -874,7 +882,6 @@
     }
 
     function renderizar(fixos, variaveis, receitas) {
-        renderizarOverviewVariaveis(variaveis.filter(v => mesCompativel(v.mes)));
         renderizarVariaveisPorCategoria(variaveis.filter(v => mesCompativel(v.mes)));
         renderizarGruposFixos(fixos);
 
@@ -916,9 +923,11 @@
     }
 
     function renderizarGruposFixos(fixos) {
-        const itensMes = fixos.filter(f => mesCompativel(f.mes));
+        const itensMes = fixos.filter(f =>
+            mesCompativel(f.mes) &&
+            (filtroFixosGrupo === 'geral' || f.tipo === filtroFixosGrupo)
+        );
 
-        // ── Resumo por Categoria ──
         const catMap = {};
         itensMes.forEach(f => {
             const cat = f.categoria || 'Outros';
@@ -927,15 +936,16 @@
             catMap[cat].itens.push(f);
         });
         const sortedCats = Object.entries(catMap).sort((a, b) => b[1].total - a[1].total);
+        const totalGeral = sortedCats.reduce((s,[,{total}]) => s + total, 0);
 
         const resumoHtml = sortedCats.length ? `
             <div class="card" style="margin-bottom:16px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                     <div style="font-size:14px;font-weight:700;">Resumo por Categoria</div>
-                    <span style="font-size:14px;font-weight:800;color:var(--text);">${fmt(sortedCats.reduce((s,[,{total}]) => s + total, 0))}</span>
+                    <span style="font-size:14px;font-weight:800;color:var(--text);">${fmt(totalGeral)}</span>
                 </div>
                 ${sortedCats.map(([cat, { total, itens }]) => {
-                    const cor = COR_CATEGORIA_FIXO[cat] || '#9ca3af';
+                    const cor    = COR_CATEGORIA_FIXO[cat] || '#9ca3af';
                     const safeId = cat.replace(/[^a-zA-Z0-9]/g, '-');
                     const bodyId = `catBody-${safeId}`;
                     const iconId = `catIcon-${safeId}`;
@@ -953,67 +963,30 @@
                                 </div>
                             </div>
                             <div class="collapsible-body collapsed" id="${bodyId}">
-                                <div style="padding:8px 14px;">
+                                <div style="padding:8px 12px;">
                                     ${itens.map(f => `
-                                        <div class="stat-row">
-                                            <span class="stat-label">${f.nome}${f.obs ? ` <span style="font-size:10px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;padding:1px 6px;border-radius:4px;margin-left:4px;">${f.obs}</span>` : ''}</span>
-                                            <span class="stat-value">${fmt(f.valor)}</span>
+                                        <div class="list-item ${f.pago ? 'pago' : ''}" style="margin-top:8px;">
+                                            <div class="list-item-info">
+                                                <strong>${f.nome}</strong>
+                                                ${f.obs ? `<div style="margin-top:3px;"><span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;">${f.obs}</span></div>` : ''}
+                                            </div>
+                                            <div class="list-item-actions">
+                                                <span class="list-item-value">${fmt(f.valor)}</span>
+                                                <button class="check-btn ${f.pago ? 'checked' : ''}" onclick="marcarFixoPago(${f.id},${f.pago})"><i data-lucide="check" style="width:13px;height:13px;"></i></button>
+                                                ${!f.pago ? `<button class="icon-btn edit-btn" onclick="abrirModalFixo(${f.id})"><i data-lucide="pencil" style="width:15px;height:15px;"></i></button>` : ''}
+                                                <button class="icon-btn" onclick="deletarFixo(${f.id})"><i data-lucide="trash-2" style="width:15px;height:15px;"></i></button>
+                                            </div>
                                         </div>`).join('')}
                                 </div>
                             </div>
                         </div>`;
                 }).join('')}
-            </div>` : '';
+            </div>` : '<div class="empty-state">Nenhum fixo</div>';
 
-        // ── Grupos por Tipo ──
-        const grupos = [
-            { tipo: 'casal', label: 'Fixos Casal' },
-            { tipo: 'dela',  label: 'Fixos Dela'  },
-            { tipo: 'gle',   label: 'Fixos Seus'  }
-        ];
-        document.getElementById('fixosContainer').innerHTML = resumoHtml + grupos.map(({ tipo, label }) => {
-            const itens  = fixos.filter(f => f.tipo === tipo && mesCompativel(f.mes));
-            const total  = itens.filter(f => !f.pago).reduce((s, f) => s + Number(f.valor), 0);
-            const bodyId = `fixosBody-${tipo}`;
-            const iconId = `fixosIcon-${tipo}`;
-            const lista  = itens.length
-                ? itens.map(f => `
-                    <div class="list-item ${f.pago ? 'pago' : ''}">
-                        <div class="list-item-info">
-                            <strong>${f.nome}</strong>
-                            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;align-items:center;">
-                                ${f.categoria ? `<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:${COR_CATEGORIA_FIXO[f.categoria]||'#9ca3af'}22;color:${COR_CATEGORIA_FIXO[f.categoria]||'#9ca3af'}">${f.categoria}</span>` : ''}
-                                ${f.obs ? `<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;">${f.obs}</span>` : ''}
-                            </div>
-                        </div>
-                        <div class="list-item-actions">
-                            <span class="list-item-value">${fmt(f.valor)}</span>
-                            <button class="check-btn ${f.pago ? 'checked' : ''}" onclick="marcarFixoPago(${f.id},${f.pago})"><i data-lucide="check" style="width:13px;height:13px;"></i></button>
-                            ${!f.pago ? `<button class="icon-btn edit-btn" onclick="abrirModalFixo(${f.id})"><i data-lucide="pencil" style="width:15px;height:15px;"></i></button>` : ''}
-                            <button class="icon-btn" onclick="deletarFixo(${f.id})"><i data-lucide="trash-2" style="width:15px;height:15px;"></i></button>
-                        </div>
-                    </div>`).join('')
-                : '<div class="empty-state">Nenhum fixo</div>';
-            const totalRow = itens.length
-                ? `<div class="stat-row total-row" style="margin-top:8px;"><span class="stat-label">Total</span><span class="stat-value">${fmt(total)}</span></div>`
-                : '';
-            return `
-                <div class="card">
-                    <div class="card-header-toggle" onclick="toggleSection('${bodyId}','${iconId}')">
-                        <div style="font-size:14px;font-weight:700;">${label}</div>
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <span style="font-size:13px;font-weight:600;color:var(--text-light);">${fmt(total)}</span>
-                            <i data-lucide="chevron-down" class="toggle-icon collapsed" id="${iconId}" style="width:16px;height:16px;"></i>
-                        </div>
-                    </div>
-                    <div class="collapsible-body collapsed" id="${bodyId}">
-                        <div style="margin-top:12px;">${lista}${totalRow}</div>
-                    </div>
-                </div>`;
-        }).join('');
+        document.getElementById('fixosContainer').innerHTML = resumoHtml;
     }
 
-    function renderizarOverviewVariaveis(varMes) {
+        function renderizarOverviewVariaveis(varMes) {
         const grupos = [
             { tipo: 'casal', label: 'Casal', id: 'ovCasal' },
             { tipo: 'gle',   label: 'Meu',   id: 'ovGle'   },
@@ -1053,19 +1026,22 @@
 
     function renderizarVariaveisPorCategoria(varMes) {
         const container = document.getElementById('variaveisList');
-        if (!varMes.length) {
+        const varFiltrado = filtroVarGrupo === 'geral' ? varMes : varMes.filter(v => v.tipo === filtroVarGrupo);
+        if (!varFiltrado.length) {
             container.innerHTML = '<div class="empty-state">Nenhuma variável</div>';
             document.getElementById('varTotalGeral').textContent = fmt(0);
             return;
         }
         const grupos = {};
-        varMes.forEach(v => {
+        varFiltrado.forEach(v => {
             const cat = v.categoria || 'Outros';
             if (!grupos[cat]) grupos[cat] = [];
             grupos[cat].push(v);
         });
         const gruposGerais = Object.entries(grupos);
         const totalGeral = gruposGerais.reduce((s, [, itens]) => s + itens.reduce((ss, v) => ss + Number(v.valor), 0), 0);
+        const labelFiltro = filtroVarGrupo === 'geral' ? 'Variáveis Lançadas' : {casal:'Casal',gle:'Meu',dela:'Dela'}[filtroVarGrupo];
+        document.querySelector('#variaveisList').closest('.card').querySelector('div').firstElementChild.textContent = labelFiltro;
         document.getElementById('varTotalGeral').textContent = fmt(totalGeral);
 
         function renderGrupo(cat, itens) {
@@ -1292,6 +1268,26 @@
 
         document.getElementById('receitaTipo').addEventListener('change', e => {
             document.getElementById('receitaOutroGroup').style.display = e.target.value === 'Outro' ? 'block' : 'none';
+        });
+
+        // Filtro grupo fixos
+        document.querySelectorAll('[data-grupo-fixo]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                filtroFixosGrupo = btn.dataset.grupoFixo;
+                document.querySelectorAll('[data-grupo-fixo]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                carregarDados();
+            });
+        });
+
+        // Filtro grupo variáveis
+        document.querySelectorAll('[data-grupo-var]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                filtroVarGrupo = btn.dataset.grupoVar;
+                document.querySelectorAll('[data-grupo-var]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                carregarDados();
+            });
         });
 
         inicializarTipoSelect();
