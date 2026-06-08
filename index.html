@@ -930,7 +930,10 @@
 
         const resumoHtml = sortedCats.length ? `
             <div class="card" style="margin-bottom:16px;">
-                <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Resumo por Categoria</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <div style="font-size:14px;font-weight:700;">Resumo por Categoria</div>
+                    <span style="font-size:14px;font-weight:800;color:var(--text);">${fmt(sortedCats.reduce((s,[,{total}]) => s + total, 0))}</span>
+                </div>
                 ${sortedCats.map(([cat, { total, itens }]) => {
                     const cor = COR_CATEGORIA_FIXO[cat] || '#9ca3af';
                     const safeId = cat.replace(/[^a-zA-Z0-9]/g, '-');
