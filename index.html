@@ -986,45 +986,7 @@
         document.getElementById('fixosContainer').innerHTML = resumoHtml;
     }
 
-        function renderizarOverviewVariaveis(varMes) {
-        const grupos = [
-            { tipo: 'casal', label: 'Casal', id: 'ovCasal' },
-            { tipo: 'gle',   label: 'Meu',   id: 'ovGle'   },
-            { tipo: 'dela',  label: 'Dela',  id: 'ovDela'  },
-        ];
-        document.getElementById('overviewList').innerHTML = grupos.map(({ tipo, label, id }) => {
-            const itens = varMes.filter(v => v.tipo === tipo);
-            if (!itens.length) return '';
-            const total = itens.reduce((s, v) => s + Number(v.valor), 0);
-            const cats  = {};
-            itens.forEach(v => { const c = v.categoria||'Outros'; cats[c] = (cats[c]||0)+Number(v.valor); });
-            const sortedCats = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
-            const bodyId = `ovBody-${id}`;
-            const iconId = `ovIcon-${id}`;
-            return `
-                <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px;">
-                    <div class="card-header-toggle" onclick="toggleSection('${bodyId}','${iconId}')"
-                         style="padding:12px 14px;background:var(--bg-alt);display:flex;justify-content:space-between;align-items:center;">
-                        <span style="font-size:13px;font-weight:700;">${label}</span>
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <span style="font-size:13px;font-weight:700;color:var(--secondary);">${fmt(total)}</span>
-                            <i data-lucide="chevron-down" class="toggle-icon collapsed" id="${iconId}" style="width:16px;height:16px;"></i>
-                        </div>
-                    </div>
-                    <div class="collapsible-body collapsed" id="${bodyId}">
-                        <div style="padding:8px 14px;">
-                            ${sortedCats.map(([cat, val]) => `
-                                <div class="stat-row">
-                                    <span class="stat-label">${cat}</span>
-                                    <span class="stat-value">${fmt(val)}</span>
-                                </div>`).join('')}
-                        </div>
-                    </div>
-                </div>`;
-        }).join('');
-    }
-
-    function renderizarVariaveisPorCategoria(varMes) {
+        function renderizarVariaveisPorCategoria(varMes) {
         const container = document.getElementById('variaveisList');
         const varFiltrado = filtroVarGrupo === 'geral' ? varMes : varMes.filter(v => v.tipo === filtroVarGrupo);
         if (!varFiltrado.length) {
@@ -1040,8 +1002,6 @@
         });
         const gruposGerais = Object.entries(grupos);
         const totalGeral = gruposGerais.reduce((s, [, itens]) => s + itens.reduce((ss, v) => ss + Number(v.valor), 0), 0);
-        const labelFiltro = filtroVarGrupo === 'geral' ? 'Variáveis Lançadas' : {casal:'Casal',gle:'Meu',dela:'Dela'}[filtroVarGrupo];
-        document.querySelector('#variaveisList').closest('.card').querySelector('div').firstElementChild.textContent = labelFiltro;
         document.getElementById('varTotalGeral').textContent = fmt(totalGeral);
 
         function renderGrupo(cat, itens) {
