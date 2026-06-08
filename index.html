@@ -920,7 +920,7 @@
 
         // ── Resumo por Categoria ──
         const catMap = {};
-        itensMes.filter(f => !f.pago).forEach(f => {
+        itensMes.forEach(f => {
             const cat = f.categoria || 'Outros';
             if (!catMap[cat]) catMap[cat] = { total: 0, itens: [] };
             catMap[cat].total += Number(f.valor);
