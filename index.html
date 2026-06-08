@@ -916,12 +916,59 @@
     }
 
     function renderizarGruposFixos(fixos) {
+        const itensMes = fixos.filter(f => mesCompativel(f.mes));
+
+        // ── Resumo por Categoria ──
+        const catMap = {};
+        itensMes.filter(f => !f.pago).forEach(f => {
+            const cat = f.categoria || 'Outros';
+            if (!catMap[cat]) catMap[cat] = { total: 0, itens: [] };
+            catMap[cat].total += Number(f.valor);
+            catMap[cat].itens.push(f);
+        });
+        const sortedCats = Object.entries(catMap).sort((a, b) => b[1].total - a[1].total);
+
+        const resumoHtml = sortedCats.length ? `
+            <div class="card" style="margin-bottom:16px;">
+                <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Resumo por Categoria</div>
+                ${sortedCats.map(([cat, { total, itens }]) => {
+                    const cor = COR_CATEGORIA_FIXO[cat] || '#9ca3af';
+                    const safeId = cat.replace(/[^a-zA-Z0-9]/g, '-');
+                    const bodyId = `catBody-${safeId}`;
+                    const iconId = `catIcon-${safeId}`;
+                    return `
+                        <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px;">
+                            <div class="card-header-toggle" onclick="toggleSection('${bodyId}','${iconId}')"
+                                 style="padding:12px 14px;background:var(--bg-alt);display:flex;justify-content:space-between;align-items:center;">
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <span style="width:10px;height:10px;border-radius:50%;background:${cor};display:inline-block;flex-shrink:0;"></span>
+                                    <span style="font-size:13px;font-weight:700;">${cat}</span>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <span style="font-size:13px;font-weight:700;color:var(--secondary);">${fmt(total)}</span>
+                                    <i data-lucide="chevron-down" class="toggle-icon collapsed" id="${iconId}" style="width:16px;height:16px;"></i>
+                                </div>
+                            </div>
+                            <div class="collapsible-body collapsed" id="${bodyId}">
+                                <div style="padding:8px 14px;">
+                                    ${itens.map(f => `
+                                        <div class="stat-row">
+                                            <span class="stat-label">${f.nome}${f.obs ? ` <span style="font-size:10px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;padding:1px 6px;border-radius:4px;margin-left:4px;">${f.obs}</span>` : ''}</span>
+                                            <span class="stat-value">${fmt(f.valor)}</span>
+                                        </div>`).join('')}
+                                </div>
+                            </div>
+                        </div>`;
+                }).join('')}
+            </div>` : '';
+
+        // ── Grupos por Tipo ──
         const grupos = [
             { tipo: 'casal', label: 'Fixos Casal' },
             { tipo: 'dela',  label: 'Fixos Dela'  },
             { tipo: 'gle',   label: 'Fixos Seus'  }
         ];
-        document.getElementById('fixosContainer').innerHTML = grupos.map(({ tipo, label }) => {
+        document.getElementById('fixosContainer').innerHTML = resumoHtml + grupos.map(({ tipo, label }) => {
             const itens  = fixos.filter(f => f.tipo === tipo && mesCompativel(f.mes));
             const total  = itens.filter(f => !f.pago).reduce((s, f) => s + Number(f.valor), 0);
             const bodyId = `fixosBody-${tipo}`;
