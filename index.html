@@ -919,7 +919,9 @@
     function formatarDataHora(str) {
         if (!str) return '';
         try {
-            const d = new Date(str);
+            // Força parse UTC — Supabase retorna sem 'Z', JS interpreta como local e exibe errado
+            const utcStr = (str.endsWith('Z') || str.includes('+')) ? str : str + 'Z';
+            const d = new Date(utcStr);
             return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} · ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
         } catch { return ''; }
     }
