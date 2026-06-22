@@ -927,17 +927,22 @@
     }
 
     function renderizarGruposFixos(fixos) {
-        const itensMes = fixos.filter(f =>
-            mesCompativel(f.mes) &&
-            (filtroFixosGrupo === 'geral' || f.tipo === filtroFixosGrupo)
-        );
+        const filtroOk = f => (filtroFixosGrupo === 'geral' || f.tipo === filtroFixosGrupo);
+        const itensTodos = fixos.filter(filtroOk);
 
         const catMap = {};
-        itensMes.forEach(f => {
+        itensTodos.forEach(f => {
             const cat = f.categoria || 'Outros';
             if (!catMap[cat]) catMap[cat] = { total: 0, itens: [] };
-            catMap[cat].total += Number(f.valor);
+            if (mesCompativel(f.mes)) catMap[cat].total += Number(f.valor);
             catMap[cat].itens.push(f);
+        });
+        Object.values(catMap).forEach(c => {
+            c.itens.sort((a, b) => {
+                const ma = (a.mes === null || a.mes === undefined || a.mes === 'atual') ? mesAtual : Number(a.mes);
+                const mb = (b.mes === null || b.mes === undefined || b.mes === 'atual') ? mesAtual : Number(b.mes);
+                return ma - mb;
+            });
         });
         const sortedCats = Object.entries(catMap).sort((a, b) => b[1].total - a[1].total);
         const totalGeral = sortedCats.reduce((s,[,{total}]) => s + total, 0);
@@ -968,11 +973,16 @@
                             </div>
                             <div class="collapsible-body collapsed" id="${bodyId}">
                                 <div style="padding:8px 12px;">
-                                    ${itens.map(f => `
+                                    ${itens.map(f => {
+                                        const itemMes = (f.mes === null || f.mes === undefined || f.mes === 'atual') ? mesAtual : Number(f.mes);
+                                        const tagMes = itemMes !== mesAtual
+                                            ? `<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;">${MESES[itemMes]}</span>`
+                                            : '';
+                                        return `
                                         <div class="list-item ${f.pago ? 'pago' : ''}" style="margin-top:8px;">
                                             <div class="list-item-info">
                                                 <strong>${f.nome}</strong>
-                                                ${f.obs ? `<div style="margin-top:3px;"><span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;">${f.obs}</span></div>` : ''}
+                                                ${(f.obs || tagMes) ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:3px;">${tagMes}${f.obs ? `<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;">${f.obs}</span>` : ''}</div>` : ''}
                                             </div>
                                             <div class="list-item-actions">
                                                 <span class="list-item-value">${fmt(f.valor)}</span>
@@ -980,7 +990,8 @@
                                                 ${!f.pago ? `<button class="icon-btn edit-btn" onclick="abrirModalFixo(${f.id})"><i data-lucide="pencil" style="width:15px;height:15px;"></i></button>` : ''}
                                                 <button class="icon-btn" onclick="deletarFixo(${f.id})"><i data-lucide="trash-2" style="width:15px;height:15px;"></i></button>
                                             </div>
-                                        </div>`).join('')}
+                                        </div>`;
+                                    }).join('')}
                                 </div>
                             </div>
                         </div>`;
