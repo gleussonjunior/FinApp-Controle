@@ -59,6 +59,32 @@
         .chart-wrap { position: relative; height: 280px; }
         .month-badge { text-align: center; font-size: 12px; font-weight: 500; color: var(--text-light); padding: 8px 0 4px; letter-spacing: 0.5px; }
 
+        .mes-switcher {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            padding: 10px 16px;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+        }
+        .mes-switcher-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            transition: background 0.2s;
+        }
+        .mes-switcher-btn:hover { background: var(--bg-alt); }
+        .mes-switcher-btn svg { width: 15px; height: 15px; }
+        .mes-switcher-label { font-size: 14px; font-weight: 700; min-width: 120px; text-align: center; }
+
         /* CONTENT */
         .content { flex: 1; padding: 16px; padding-bottom: 110px; overflow-y: auto; }
         .screen { display: none; }
@@ -171,12 +197,21 @@
         </button>
     </div>
 
+    <div class="mes-switcher">
+        <button class="mes-switcher-btn" id="btnMesAtualAnterior">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span class="mes-switcher-label" id="mesAtualLabel">Junho 2026</span>
+        <button class="mes-switcher-btn" id="btnMesAtualProximo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+    </div>
+
     <div class="content">
         <div id="alertContainer"></div>
 
         <!-- INÍCIO -->
         <div class="screen" id="screenInicio">
-            <div class="month-badge" id="headerDate">Junho 2026</div>
             <div class="card highlight">
                 <div style="font-size:13px;font-weight:600;color:#dc2626;margin-bottom:4px;">Repasse para Lia</div>
                 <div class="repasse-value" id="repasseValue">R$ 0,00</div>
@@ -264,6 +299,10 @@
                     <div class="form-group">
                         <label>Descrição</label>
                         <input type="text" id="varDescricao" placeholder="Ex: Supermercado">
+                    </div>
+                    <div class="form-group">
+                        <label>Mês</label>
+                        <select id="varMes"></select>
                     </div>
                     <button class="btn" id="btnSalvarVariavel">Salvar</button>
                 </div>
@@ -386,6 +425,7 @@
         <div class="form-group"><label>Categoria</label><div class="category-select" id="categoriaEditarVarSelect"></div></div>
         <div class="form-group"><label>Valor (R$)</label><input type="number" id="editarVarValor" placeholder="0,00" step="0.01" min="0"></div>
         <div class="form-group"><label>Descrição</label><input type="text" id="editarVarDescricao" placeholder="Ex: Supermercado"></div>
+        <div class="form-group"><label>Mês</label><select id="editarVarMes"></select></div>
         <button class="btn" id="btnSalvarEditarVar">Salvar</button>
     </div>
 </div>
@@ -446,6 +486,7 @@
             </div>
         </div>
         <div class="form-group"><label>Valor (R$)</label><input type="number" id="receitaValor" placeholder="0,00" step="0.01" min="0"></div>
+        <div class="form-group"><label>Mês</label><select id="receitaMes"></select></div>
         <button class="btn" id="btnSalvarReceita">Salvar</button>
     </div>
 </div>
@@ -473,6 +514,7 @@
 
     let db = null;
     let mesAtual = new Date().getMonth();
+    let anoAtual = new Date().getFullYear();
     let tipoAtual = 'casal';
     let categoriaAtual = '';
     let tipoFixoAtual = 'casal';
@@ -530,6 +572,19 @@
         document.getElementById(iconId).classList.toggle('collapsed');
     }
 
+    function atualizarMesAtualLabel() {
+        const el = document.getElementById('mesAtualLabel');
+        if (el) el.textContent = `${MESES[mesAtual]} ${anoAtual}`;
+    }
+
+    function navegarMesAtual(delta) {
+        mesAtual += delta;
+        if (mesAtual > 11) { mesAtual = 0;  anoAtual++; }
+        if (mesAtual < 0)  { mesAtual = 11; anoAtual--; }
+        atualizarMesAtualLabel();
+        carregarDados();
+    }
+
     function inicializarTipoSelect() {
         document.getElementById('tipoSelect').addEventListener('click', e => {
             const pill = e.target.closest('.category-pill');
@@ -549,6 +604,7 @@
         document.getElementById('stepDados').classList.remove('visible');
         document.getElementById('varValor').value = '';
         document.getElementById('varDescricao').value = '';
+        preencherMeses('varMes');
         tipoAtual = 'casal'; categoriaAtual = '';
         atualizarCategorias();
     }
@@ -620,12 +676,15 @@
         receitaEditandoId = id;
         document.getElementById('modalReceitaTitle').textContent = id ? 'Editar Receita' : 'Adicionar Receita';
         document.getElementById('receitaOutroGroup').style.display = 'none';
+        preencherMeses('receitaMes');
         if (id) {
             db.from('receitas').select('*').eq('id', id).single().then(({ data, error }) => {
                 if (error) { mostrarAlerta('❌ Erro ao carregar receita', 'error'); return; }
                 document.getElementById('receitaTipo').value  = data.tipo  || 'Salário';
                 document.getElementById('receitaValor').value = data.valor || '';
                 setReceitaCasal(!!data.casal);
+                const mesNum = (data.mes === null || data.mes === undefined || data.mes === 'atual') ? mesAtual : Number(data.mes);
+                document.getElementById('receitaMes').value = mesNum;
                 if (!['Salário','Lia','Débora','Diego Netflix','Andre Netflix','Porão Redes Sociais','Restituição IR'].includes(data.tipo)) {
                     document.getElementById('receitaTipo').value = 'Outro';
                     document.getElementById('receitaOutroDescricao').value = data.tipo;
@@ -635,6 +694,7 @@
         } else {
             document.getElementById('receitaTipo').value  = 'Salário';
             document.getElementById('receitaValor').value = '';
+            document.getElementById('receitaMes').value   = mesAtual;
             setReceitaCasal(false);
         }
         document.getElementById('modalReceita').classList.add('active');
@@ -648,6 +708,8 @@
     async function salvarVariavel() {
         const valor     = parseFloat(document.getElementById('varValor').value);
         const descricao = document.getElementById('varDescricao').value.trim();
+        const mesEl     = document.getElementById('varMes');
+        const mesEscolhido = mesEl ? parseInt(mesEl.value) : mesAtual;
         if (!tipoAtual)      { mostrarAlerta('⚠️ Selecione o tipo', 'error');      return; }
         if (!categoriaAtual) { mostrarAlerta('⚠️ Selecione a categoria', 'error'); return; }
         if (!valor)          { mostrarAlerta('⚠️ Preencha o valor', 'error');       return; }
@@ -655,7 +717,7 @@
         const btn = document.getElementById('btnSalvarVariavel');
         btn.disabled = true;
         try {
-            const { error } = await db.from('variaveis').insert([{ tipo: tipoAtual, categoria: categoriaAtual, valor, descricao, mes: mesAtual }]);
+            const { error } = await db.from('variaveis').insert([{ tipo: tipoAtual, categoria: categoriaAtual, valor, descricao, mes: isNaN(mesEscolhido) ? mesAtual : mesEscolhido }]);
             if (error) throw error;
             resetFormVariavel();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -699,7 +761,7 @@
         } finally { if (btn) btn.disabled = false; }
     }
 
-    function abrirModalEditarVar(id, tipo, categoria, valor, descricao) {
+    function abrirModalEditarVar(id, tipo, categoria, valor, descricao, mes) {
         varEditandoId = id;
         tipoEditarVar = tipo;
         document.querySelectorAll('#tipoEditarVarSelect .category-pill').forEach(p => {
@@ -740,6 +802,9 @@
         });
         document.getElementById('editarVarValor').value     = valor;
         document.getElementById('editarVarDescricao').value = descricao;
+        preencherMeses('editarVarMes');
+        const mesNum = (mes === null || mes === undefined || mes === 'atual') ? mesAtual : Number(mes);
+        document.getElementById('editarVarMes').value = mesNum;
         document.getElementById('modalEditarVar').classList.add('active');
     }
 
@@ -753,13 +818,15 @@
         const categoria = catSelecionada ? catSelecionada.textContent : '';
         const valor     = parseFloat(document.getElementById('editarVarValor').value);
         const descricao = document.getElementById('editarVarDescricao').value.trim();
+        const mesEl     = document.getElementById('editarVarMes');
+        const mesEscolhido = mesEl ? parseInt(mesEl.value) : mesAtual;
         if (!categoria) { mostrarAlerta('⚠️ Selecione a categoria', 'error'); return; }
         if (!valor)     { mostrarAlerta('⚠️ Preencha o valor', 'error');      return; }
         if (!descricao) { mostrarAlerta('⚠️ Preencha a descrição', 'error');  return; }
         const btn = document.getElementById('btnSalvarEditarVar');
         btn.disabled = true;
         try {
-            const { error } = await db.from('variaveis').update({ tipo: tipoEditarVar, categoria, valor, descricao }).eq('id', varEditandoId);
+            const { error } = await db.from('variaveis').update({ tipo: tipoEditarVar, categoria, valor, descricao, mes: isNaN(mesEscolhido) ? mesAtual : mesEscolhido }).eq('id', varEditandoId);
             if (error) throw error;
             mostrarAlerta('✅ Variável atualizada!');
             fecharModalEditarVar();
@@ -777,15 +844,17 @@
         }
         const valor = parseFloat(document.getElementById('receitaValor').value);
         if (!valor) { mostrarAlerta('⚠️ Preencha o valor', 'error'); return; }
+        const mesEl = document.getElementById('receitaMes');
+        const mesEscolhido = mesEl ? parseInt(mesEl.value) : mesAtual;
         const btn = document.getElementById('btnSalvarReceita');
         btn.disabled = true;
         try {
             if (receitaEditandoId) {
-                const { error } = await db.from('receitas').update({ tipo, valor, casal: receitaCasal }).eq('id', receitaEditandoId);
+                const { error } = await db.from('receitas').update({ tipo, valor, casal: receitaCasal, mes: isNaN(mesEscolhido) ? mesAtual : mesEscolhido }).eq('id', receitaEditandoId);
                 if (error) throw error;
                 mostrarAlerta('✅ Receita atualizada!');
             } else {
-                const { error } = await db.from('receitas').insert([{ tipo, valor, mes: mesAtual, casal: receitaCasal }]);
+                const { error } = await db.from('receitas').insert([{ tipo, valor, mes: isNaN(mesEscolhido) ? mesAtual : mesEscolhido, casal: receitaCasal }]);
                 if (error) throw error;
                 mostrarAlerta('✅ Receita salva!');
             }
@@ -1044,7 +1113,7 @@
                                     </div>
                                     <div class="list-item-actions">
                                         <span class="list-item-value">${fmt(v.valor)}</span>
-                                        <button class="icon-btn edit-btn" onclick="abrirModalEditarVar(${v.id},'${v.tipo}','${v.categoria||'Outros'}',${v.valor},'${v.descricao.replace(/'/g,"\\'")}')"><i data-lucide="pencil" style="width:15px;height:15px;"></i></button>
+                                        <button class="icon-btn edit-btn" onclick="abrirModalEditarVar(${v.id},'${v.tipo}','${v.categoria||'Outros'}',${v.valor},'${v.descricao.replace(/'/g,"\\'")}',${v.mes === null || v.mes === undefined ? 'null' : (v.mes === 'atual' ? "'atual'" : v.mes)})"><i data-lucide="pencil" style="width:15px;height:15px;"></i></button>
                                         <button class="icon-btn" onclick="deletarVariavel(${v.id})"><i data-lucide="trash-2" style="width:15px;height:15px;"></i></button>
                                     </div>
                                 </div>`).join('')}
@@ -1185,7 +1254,9 @@
         db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const agora = new Date();
-        document.getElementById('headerDate').textContent = `${MESES[agora.getMonth()]} ${agora.getFullYear()}`;
+        atualizarMesAtualLabel();
+        document.getElementById('btnMesAtualAnterior').addEventListener('click', () => navegarMesAtual(-1));
+        document.getElementById('btnMesAtualProximo').addEventListener('click',  () => navegarMesAtual(1));
 
         document.getElementById('btnHome').addEventListener('click', () => mudarTela('screenVariaveis'));
         document.querySelectorAll('.nav-item[data-tela]').forEach(btn => {
