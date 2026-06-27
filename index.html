@@ -1239,7 +1239,7 @@
             const doMes = fixosAtivos.filter(f => mesCompativel(f.mes));
             if (!doMes.length) { mostrarAlerta('⚠️ Nenhum fixo para copiar', 'error'); return; }
             for (const f of doMes) {
-                const { error: errIns } = await db.from('fixos').insert([{ tipo: f.tipo, nome: f.nome, valor: f.valor, mes: proximoMes, pago: false }]);
+                const { error: errIns } = await db.from('fixos').insert([{ tipo: f.tipo, nome: f.nome, valor: f.valor, mes: proximoMes, pago: false, categoria: f.categoria, obs: f.obs }]);
                 if (errIns) throw errIns;
             }
             mostrarAlerta(`✅ ${doMes.length} fixo(s) criado(s) para ${nomeProximo}!`);
