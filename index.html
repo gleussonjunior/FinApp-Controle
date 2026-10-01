@@ -235,7 +235,6 @@
                         <div class="stat-row"><span class="stat-label">Variáveis Casal (÷2)</span><span class="stat-value" id="varCasalValue">R$ 0,00</span></div>
                         <div class="stat-row"><span class="stat-label">Variáveis Dela</span><span class="stat-value" id="varDelaValue">R$ 0,00</span></div>
                         <div class="stat-row"><span class="stat-label">Entradas Casal (÷2)</span><span class="stat-value" style="color:var(--success)" id="entradasCasalValue">-R$ 0,00</span></div>
-                        <div class="stat-row"><span class="stat-label">Desconto Ticket (Lia)</span><span class="stat-value" style="color:var(--success)">-R$ 620,00</span></div>
                     </div>
                 </div>
             </div>
@@ -931,7 +930,7 @@
         let entradasCasal = 0;
         (receitas || []).forEach(r => { if (r.casal && mesCompativel(r.mes)) entradasCasal += Number(r.valor); });
 
-        const repasse    = (fixosCasal/2) + fixosDela + (varCasal/2) + varDela - 620 - (entradasCasal/2);
+        const repasse    = (fixosCasal/2) + fixosDela + (varCasal/2) + varDela - (entradasCasal/2);
         const totalGasto = fixosCasal + fixosDela + varCasal + varDela;
         const totalGle   = fixosGle + varGle + fixosCasal/2 + varCasal/2 - entradasCasal/2;
 
