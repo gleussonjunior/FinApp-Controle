@@ -306,6 +306,45 @@
         .btn-sec { background: rgba(15,27,61,0.06); color: var(--text); box-shadow: none; }
         .btn-perigo { background: linear-gradient(180deg, #e04449, var(--danger)); box-shadow: 0 8px 20px rgba(214,52,58,0.28), inset 0 1px 0 rgba(255,255,255,0.3); }
 
+
+        /* LANÇAMENTO RÁPIDO */
+        .card-lancar { overflow: hidden; }
+        .lancar-rotulo { font-size: 12px; font-weight: 600; color: var(--text-light); margin-bottom: 8px; }
+        .faixa { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -18px 14px; padding: 0 18px 2px; }
+        .faixa::-webkit-scrollbar { display: none; }
+        .atalho {
+            flex-shrink: 0; display: flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: rgba(255,255,255,0.65);
+            border-radius: 999px; padding: 7px 12px 7px 9px; font: 600 13px inherit; font-family: inherit; color: var(--text); cursor: pointer; white-space: nowrap;
+        }
+        .atalho:active { transform: scale(0.96); }
+        .atalho svg { width: 14px; height: 14px; color: var(--secondary); }
+        .atalho small { font-weight: 500; color: var(--text-light); font-size: 13px; }
+        .valor-grande { display: flex; align-items: baseline; justify-content: center; gap: 6px; padding: 4px 0 14px; margin: 0; cursor: text; }
+        .valor-grande span { font-size: 22px; font-weight: 600; color: var(--text-faint); }
+        #varValor {
+            width: 7.5ch; border: 0; background: transparent; box-shadow: none; padding: 0; margin: 0; border-radius: 0;
+            font-size: 48px; font-weight: 800; letter-spacing: -0.04em; color: var(--text); font-variant-numeric: tabular-nums; caret-color: var(--secondary);
+        }
+        .valor-grande.zero #varValor { color: var(--text-faint); }
+        .seg-tipo { display: grid; grid-template-columns: repeat(3, 1fr); padding: 4px; border-radius: 999px; background: rgba(15,27,61,0.05); margin-bottom: 14px; }
+        .seg-tipo button { border: 0; background: transparent; border-radius: 999px; padding: 8px 0; font: 600 14px inherit; font-family: inherit; color: var(--text-light); cursor: pointer; transition: background .2s, color .2s, box-shadow .2s; }
+        .seg-tipo button[aria-pressed="true"] { background: #fff; color: var(--text); box-shadow: 0 2px 10px rgba(26,58,158,0.14); }
+        .cat-chip { flex-shrink: 0; border: 1px solid var(--border); background: rgba(255,255,255,0.65); border-radius: 14px; padding: 10px 14px; font: 600 14px inherit; font-family: inherit; color: var(--text); cursor: pointer; transition: all .15s; }
+        .cat-chip[aria-pressed="true"] { background: var(--secondary); border-color: var(--secondary); color: #fff; box-shadow: 0 6px 16px rgba(37,84,214,0.28); }
+        .desc-wrap { margin-bottom: 14px; }
+        .desc-wrap input { margin: 0; }
+        .sugs { display: none; margin-top: 6px; border-radius: 16px; background: var(--glass-strong); border: 1px solid var(--glass-edge); box-shadow: var(--shadow); overflow: hidden; }
+        .sugs.on { display: block; }
+        .sug { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 11px 14px; border: 0; border-top: 1px solid var(--border); background: transparent; font: 600 15px inherit; font-family: inherit; color: var(--text); cursor: pointer; text-align: left; }
+        .sug:first-child { border-top: 0; }
+        .sug small { font-size: 12px; font-weight: 500; color: var(--text-faint); white-space: nowrap; }
+        .rodape-var { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; }
+        .mes-mini { position: relative; }
+        .mes-mini select { width: auto; margin: 0; border: 0; background: rgba(15,27,61,0.05); border-radius: 999px; padding: 14px 32px 14px 14px; font-size: 14px; font-weight: 600; color: var(--text-light); background-position: right 12px center; }
+        .toast-acao { border: 0; border-radius: 999px; padding: 7px 12px; margin: -4px -8px -4px 2px; background: rgba(37,84,214,0.1); color: var(--secondary); font: 700 13px inherit; font-family: inherit; cursor: pointer; }
+        .toast { max-width: calc(100vw - 32px); }
+        .toast > span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
         button:focus-visible, .category-pill:focus-visible { outline: 2px solid var(--secondary); outline-offset: 2px; }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
     </style>
@@ -400,39 +439,33 @@
 
         <!-- VARIÁVEIS -->
         <div class="screen active" id="screenVariaveis">
-            <div class="card">
-                <h2 style="margin-bottom:20px;font-size:16px;font-weight:700;">Lançar Variável</h2>
-                <div class="form-group" id="stepTipo">
-                    <label>Tipo</label>
-                    <div class="category-select" id="tipoSelect">
-                        <div class="category-pill" data-tipo="casal">Casal</div>
-                        <div class="category-pill" data-tipo="dela">Dela</div>
-                        <div class="category-pill" data-tipo="gle">Você</div>
-                    </div>
+            <form class="card card-lancar" id="formVar" autocomplete="off" novalidate>
+                <div class="lancar-rotulo" id="atalhosRotulo">Repetir</div>
+                <div class="faixa" id="atalhosVar"></div>
+
+                <label class="valor-grande zero" id="valorBox" for="varValor">
+                    <span>R$</span><input id="varValor" inputmode="numeric" value="0,00" aria-label="Valor" enterkeyhint="done">
+                </label>
+
+                <div class="seg-tipo" id="tipoSelect" role="group" aria-label="Tipo">
+                    <button type="button" data-tipo="casal">Casal</button>
+                    <button type="button" data-tipo="dela">Dela</button>
+                    <button type="button" data-tipo="gle">Você</button>
                 </div>
-                <div class="step-section" id="stepCategoria">
-                    <div class="form-group">
-                        <label>Categoria</label>
-                        <div class="category-select" id="categoriaSelect"></div>
-                    </div>
+
+                <div class="faixa" id="categoriaSelect"></div>
+
+                <div class="desc-wrap">
+                    <input id="varDescricao" placeholder="Descrição (opcional)" enterkeyhint="done">
+                    <div class="sugs" id="sugsVar"></div>
                 </div>
-                <div class="step-section" id="stepDados">
-                    <div class="form-group">
-                        <label>Valor (R$)</label>
-                        <input type="number" id="varValor" placeholder="0,00" step="0.01" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Descrição</label>
-                        <input type="text" id="varDescricao" placeholder="Ex: Supermercado">
-                    </div>
-                    <div class="form-group">
-                        <label>Mês</label>
-                        <select id="varMes"></select>
-                    </div>
-                    <button class="btn" id="btnSalvarVariavel">Salvar</button>
+
+                <div class="rodape-var">
+                    <div class="mes-mini"><select id="varMes" aria-label="Mês"></select></div>
+                    <button class="btn" id="btnSalvarVariavel" type="submit">Salvar</button>
                 </div>
-                <div class="var-success-inline" id="varSuccessInline">✅ Variável salva!</div>
-            </div>
+                <div class="var-success-inline" id="varSuccessInline"></div>
+            </form>
             <div class="filtro-fixos" id="filtroGrupoVarEl" style="margin-bottom:4px;">
                 <button class="filtro-btn active" data-grupo-var="geral">Geral</button>
                 <button class="filtro-btn" data-grupo-var="casal">Casal</button>
@@ -698,18 +731,24 @@
     const ICONE_OK  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
     const ICONE_ERR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 7v6M12 17h.01"/></svg>';
 
-    function mostrarAlerta(msg, tipo = 'success') {
+    function mostrarAlerta(msg, tipo = 'success', acao = null) {
         const texto = String(msg).replace(/^[\p{Extended_Pictographic}️\s]+/u, '').replace(/!$/, '');
         const area = document.getElementById('toastArea');
         const el = document.createElement('div');
         el.className = `toast ${tipo === 'error' ? 'error' : 'success'}`;
         el.setAttribute('role', tipo === 'error' ? 'alert' : 'status');
         el.innerHTML = `<span class="toast-ic">${tipo === 'error' ? ICONE_ERR : ICONE_OK}</span><span></span>`;
-        el.lastChild.textContent = texto;
+        el.children[1].textContent = texto;
+        if (acao) {
+            const b = document.createElement('button');
+            b.className = 'toast-acao'; b.type = 'button'; b.textContent = acao.label;
+            b.onclick = () => { el.remove(); acao.fn(); };
+            el.appendChild(b);
+        }
         while (area.children.length >= 2) area.firstChild.remove();
         area.appendChild(el);
         if (navigator.vibrate) { try { navigator.vibrate(tipo === 'error' ? [30, 40, 30] : 15); } catch {} }
-        const tempo = tipo === 'error' ? 3800 : 2200;
+        const tempo = acao ? 5000 : (tipo === 'error' ? 3800 : 2200);
         setTimeout(() => { el.classList.add('sai'); setTimeout(() => el.remove(), 260); }, tempo);
     }
 
@@ -759,7 +798,7 @@
         document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
         const btn = document.querySelector(`.nav-item[data-tela="${telaId}"]`);
         if (btn) btn.classList.add('active');
-        if (telaId === 'screenVariaveis') resetFormVariavel();
+        if (telaId === 'screenVariaveis') { resetFormVariavel(); document.getElementById('varValor').focus({ preventScroll: true }); }
         window.scrollTo({ top: 0 });
         if (Date.now() - ultimaCarga > 15000) carregarDados();
     }
@@ -782,40 +821,125 @@
         renderDoCache();
     }
 
-    function inicializarTipoSelect() {
-        document.getElementById('tipoSelect').addEventListener('click', e => {
-            const pill = e.target.closest('.category-pill');
-            if (!pill) return;
-            document.querySelectorAll('#tipoSelect .category-pill').forEach(p => p.classList.remove('selected'));
-            pill.classList.add('selected');
-            tipoAtual = pill.dataset.tipo;
-            atualizarCategorias();
-            document.getElementById('stepCategoria').classList.add('visible');
-            document.getElementById('stepDados').classList.remove('visible');
-        });
+    // ===== LANÇAMENTO RÁPIDO =====
+    let centavosVar = 0;
+    let sugestoesVar = [], atalhosVar = [];
+    try { tipoAtual = localStorage.getItem('finapp-tipo') || 'casal'; } catch {}
+    const ICONE_REPETIR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3M20 4v5h-5M20 12a8 8 0 0 1-14 5.3M4 20v-5h5"/></svg>';
+
+    function mostrarValorVar() {
+        const inp = document.getElementById('varValor');
+        inp.value = (centavosVar / 100).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        document.getElementById('valorBox').classList.toggle('zero', !centavosVar);
     }
 
-    function resetFormVariavel() {
-        document.querySelectorAll('#tipoSelect .category-pill').forEach(p => p.classList.remove('selected'));
-        document.getElementById('stepCategoria').classList.remove('visible');
-        document.getElementById('stepDados').classList.remove('visible');
-        document.getElementById('varValor').value = '';
-        document.getElementById('varDescricao').value = '';
-        preencherMeses('varMes');
-        tipoAtual = 'casal'; categoriaAtual = '';
+    function marcarTipoVar(t) {
+        tipoAtual = t;
+        document.querySelectorAll('#tipoSelect button').forEach(b => b.setAttribute('aria-pressed', b.dataset.tipo === t));
+        try { localStorage.setItem('finapp-tipo', t); } catch {}
+        if (!CATEGORIAS[t].includes(categoriaAtual)) categoriaAtual = '';
         atualizarCategorias();
     }
 
+    // Categorias do tipo, mais usadas primeiro
     function atualizarCategorias() {
-        const container = document.getElementById('categoriaSelect');
-        container.innerHTML = '';
-        CATEGORIAS[tipoAtual].forEach(cat => {
-            const div = document.createElement('div');
-            div.className = 'category-pill';
-            div.textContent = cat;
-            container.appendChild(div);
+        const uso = {};
+        cacheVariaveis.filter(v => v.tipo === tipoAtual).forEach(v => uso[v.categoria] = (uso[v.categoria] || 0) + 1);
+        const lista = [...CATEGORIAS[tipoAtual]].sort((a, b) => (uso[b] || 0) - (uso[a] || 0));
+        document.getElementById('categoriaSelect').innerHTML = lista.map(c =>
+            `<button type="button" class="cat-chip" aria-pressed="${c === categoriaAtual}">${esc(c)}</button>`).join('');
+    }
+
+    // Atalhos "Repetir": combinações mais frequentes (sem valor)
+    function desenharAtalhosVar() {
+        const cont = new Map();
+        cacheVariaveis.forEach(v => {
+            if (!v.descricao || v.id < 0) return;
+            const k = `${v.descricao.trim().toLowerCase()}|${v.tipo}|${v.categoria}`;
+            const x = cont.get(k) || { d: v.descricao.trim(), t: v.tipo, c: v.categoria, n: 0 };
+            x.n++; cont.set(k, x);
         });
+        atalhosVar = [...cont.values()].filter(x => x.n >= 2).sort((a, b) => b.n - a.n).slice(0, 5);
+        document.getElementById('atalhosRotulo').hidden = !atalhosVar.length;
+        const el = document.getElementById('atalhosVar');
+        el.hidden = !atalhosVar.length;
+        el.innerHTML = atalhosVar.map((h, i) =>
+            `<button type="button" class="atalho" data-i="${i}">${ICONE_REPETIR}${esc(h.d)} <small>· ${esc(h.c)}</small></button>`).join('');
+    }
+
+    function mostrarSugestoesVar() {
+        const t = document.getElementById('varDescricao').value.trim().toLowerCase();
+        const box = document.getElementById('sugsVar');
+        sugestoesVar = [];
+        if (t) {
+            const vistos = new Map();
+            [...cacheVariaveis].sort((a, b) => String(b.criado || '').localeCompare(String(a.criado || ''))).forEach(v => {
+                const d = (v.descricao || '').trim();
+                if (d && d.toLowerCase().includes(t) && d.toLowerCase() !== t && !vistos.has(d.toLowerCase())) vistos.set(d.toLowerCase(), { d, c: v.categoria, t: v.tipo });
+            });
+            sugestoesVar = [...vistos.values()].slice(0, 4);
+        }
+        box.innerHTML = sugestoesVar.map((h, i) =>
+            `<button type="button" class="sug" data-i="${i}"><span>${esc(h.d)}</span><small>${esc(h.c)} · ${TIPO_LABEL[h.t] || ''}</small></button>`).join('');
+        box.classList.toggle('on', sugestoesVar.length > 0);
+    }
+
+    function inicializarTipoSelect() {
+        const inp = document.getElementById('varValor');
+        // Cada dígito entra no fim, não importa onde o cursor esteja ("2304" vira 23,04)
+        inp.addEventListener('beforeinput', e => {
+            if (e.inputType === 'insertText' || e.inputType === 'insertReplacementText') {
+                e.preventDefault();
+                const d = (e.data || '').replace(/\D/g, '');
+                if (d) { centavosVar = Number((String(centavosVar) + d).slice(0, 8)); mostrarValorVar(); }
+            } else if (e.inputType && e.inputType.startsWith('delete')) {
+                e.preventDefault();
+                centavosVar = Math.floor(centavosVar / 10); mostrarValorVar();
+            }
+        });
+        inp.addEventListener('input', () => {   // reserva para navegadores sem beforeinput
+            centavosVar = Number(inp.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 8) || 0);
+            mostrarValorVar();
+        });
+        inp.addEventListener('focus', () => requestAnimationFrame(() => { try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch {} }));
+
+        document.getElementById('tipoSelect').addEventListener('click', e => {
+            const b = e.target.closest('button[data-tipo]'); if (b) marcarTipoVar(b.dataset.tipo);
+        });
+        document.getElementById('categoriaSelect').addEventListener('click', e => {
+            const b = e.target.closest('.cat-chip'); if (!b) return;
+            categoriaAtual = b.textContent; atualizarCategorias();
+        });
+        document.getElementById('atalhosVar').addEventListener('click', e => {
+            const b = e.target.closest('.atalho'); if (!b) return;
+            const h = atalhosVar[b.dataset.i];
+            document.getElementById('varDescricao').value = h.d;
+            categoriaAtual = h.c; marcarTipoVar(h.t);
+            centavosVar = 0; mostrarValorVar();
+            inp.focus();
+        });
+        const desc = document.getElementById('varDescricao');
+        desc.addEventListener('input', mostrarSugestoesVar);
+        document.getElementById('sugsVar').addEventListener('click', e => {
+            const b = e.target.closest('.sug'); if (!b) return;
+            const h = sugestoesVar[b.dataset.i];
+            desc.value = h.d; categoriaAtual = h.c; marcarTipoVar(h.t);
+            document.getElementById('sugsVar').classList.remove('on');
+            if (!centavosVar) inp.focus();
+        });
+        document.addEventListener('click', e => { if (!e.target.closest('.desc-wrap')) document.getElementById('sugsVar').classList.remove('on'); });
+        document.getElementById('formVar').addEventListener('submit', e => { e.preventDefault(); salvarVariavel(); });
+        marcarTipoVar(tipoAtual);
+        mostrarValorVar();
+    }
+
+    function resetFormVariavel() {
+        centavosVar = 0; mostrarValorVar();
+        document.getElementById('varDescricao').value = '';
+        document.getElementById('sugsVar').classList.remove('on');
+        preencherMeses('varMes');
         categoriaAtual = '';
+        atualizarCategorias();   // o tipo continua o último usado
     }
 
     function abrirModalFixo(id = null) {
@@ -895,25 +1019,35 @@
     }
 
     async function salvarVariavel() {
-        const valor     = parseFloat(document.getElementById('varValor').value);
-        const descricao = document.getElementById('varDescricao').value.trim();
+        const valor     = centavosVar / 100;
         const mesEl     = document.getElementById('varMes');
         const mesEscolhido = mesEl ? parseInt(mesEl.value) : mesAtual;
-        if (!tipoAtual)      { mostrarAlerta('Selecione o tipo', 'error');      return; }
-        if (!categoriaAtual) { mostrarAlerta('Selecione a categoria', 'error'); return; }
-        if (!valor)          { mostrarAlerta('Preencha o valor', 'error');      return; }
-        if (!descricao)      { mostrarAlerta('Preencha a descrição', 'error');  return; }
+        if (!valor)          { mostrarAlerta('Digite o valor', 'error'); document.getElementById('varValor').focus(); return; }
+        if (!categoriaAtual) { mostrarAlerta('Escolha a categoria', 'error'); return; }
+        const descricao = document.getElementById('varDescricao').value.trim() || categoriaAtual;
 
         const linha = comAno({ tipo: tipoAtual, categoria: categoriaAtual, valor, descricao, mes: isNaN(mesEscolhido) ? mesAtual : mesEscolhido }, anoAtual);
         // Mostra na hora; confirma com o banco por trás
         const temp = { ...linha, ano: anoAtual, id: -Date.now(), criado: new Date().toISOString() };
         if (dadosCache) { dadosCache.variaveis.push(temp); cacheVariaveis = dadosCache.variaveis; renderDoCache(); }
         resetFormVariavel();
+        document.getElementById('varValor').focus({ preventScroll: true });   // pronto para o próximo
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        mostrarAlerta('Variável salva');
+        let idReal = null, desfeito = false;
+        mostrarAlerta(`${descricao} · ${fmt(valor)}`, 'success', {
+            label: 'Desfazer',
+            fn: async () => {
+                desfeito = true;
+                if (dadosCache) { dadosCache.variaveis = dadosCache.variaveis.filter(v => v !== temp && v.id !== idReal); cacheVariaveis = dadosCache.variaveis; renderDoCache(); }
+                if (idReal) await db.from('variaveis').delete().eq('id', idReal);
+                mostrarAlerta('Lançamento desfeito');
+            }
+        });
         try {
-            const { error } = await db.from('variaveis').insert([linha]);
+            const { data, error } = await db.from('variaveis').insert([linha]).select();
             if (error) throw error;
+            idReal = data && data[0] ? data[0].id : null;
+            if (desfeito && idReal) await db.from('variaveis').delete().eq('id', idReal);
             await carregarDados();
         } catch(e) {
             if (dadosCache) { dadosCache.variaveis = dadosCache.variaveis.filter(v => v !== temp); cacheVariaveis = dadosCache.variaveis; renderDoCache(); }
@@ -1143,6 +1277,8 @@
     }
 
     function renderizar(fixos, variaveis, receitas) {
+        desenharAtalhosVar();
+        atualizarCategorias();
         renderizarVariaveisPorCategoria(filtroVarGrupo === 'hoje' ? variaveis.filter(lancadoHoje) : variaveis.filter(v => doPeriodo(v)));
         renderizarGruposFixos(fixos);
 
@@ -1504,7 +1640,6 @@
         document.getElementById('btnFecharModalEditarVar').addEventListener('click',  fecharModalEditarVar);
         document.getElementById('btnSalvarEditarVar').addEventListener('click',       salvarEdicaoVar);
         document.getElementById('btnFecharModalReceita').addEventListener('click',    fecharModalReceita);
-        document.getElementById('btnSalvarVariavel').addEventListener('click', salvarVariavel);
         document.getElementById('btnSalvarFixo').addEventListener('click',     salvarFixo);
         document.getElementById('btnSalvarReceita').addEventListener('click',  salvarReceita);
 
@@ -1522,15 +1657,6 @@
             if (!p) return;
             e.currentTarget.querySelectorAll('.category-pill').forEach(x => x.classList.remove('selected'));
             p.classList.add('selected');
-        });
-
-        document.getElementById('categoriaSelect').addEventListener('click', e => {
-            const pill = e.target.closest('.category-pill');
-            if (!pill) return;
-            e.currentTarget.querySelectorAll('.category-pill').forEach(p => p.classList.remove('selected'));
-            pill.classList.add('selected');
-            categoriaAtual = pill.textContent;
-            document.getElementById('stepDados').classList.add('visible');
         });
 
         document.getElementById('tipoFixoSelect').addEventListener('click', e => {
@@ -1566,7 +1692,6 @@
         });
 
         inicializarTipoSelect();
-        atualizarCategorias();
         preencherMeses('varMes');
         carregarDados();
         setInterval(() => { if (!document.hidden) carregarDados(); }, 30000);
