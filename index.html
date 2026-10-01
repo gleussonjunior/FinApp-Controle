@@ -529,14 +529,26 @@
     let chartVarInstance = null;
     let chartFixosInstance = null;
     let receitaCasal = false;
+    let suportaAno = false;          // vira true se as tabelas tiverem a coluna "ano"
+    let cacheVariaveis = [];
+    const ANO_LEGADO = 2026;         // registros antigos (sem ano) contam como 2026
+    const TIPO_LABEL = { casal: 'Casal', gle: 'Meu', dela: 'Dela' };
+    const CORES_GRAFICO = ['#3b82f6','#ec4899','#f59e0b','#10b981','#8b5cf6','#06b6d4','#f97316','#6366f1','#84cc16','#ef4444','#14b8a6','#a855f7'];
 
     const fmt = n => `R$ ${Number(n || 0).toFixed(2).replace('.', ',')}`;
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-    function mesCompativel(campoMes) {
-        if (campoMes === null || campoMes === undefined) return true;
-        if (campoMes === 'atual') return true;
-        return Number(campoMes) === mesAtual;
+    const ehLegado = m => m === null || m === undefined || m === 'atual';
+    const anoDe = item => item.ano ? Number(item.ano) : ANO_LEGADO;
+
+    // Item pertence ao mês/ano exibido no app
+    function doPeriodo(item) {
+        if (ehLegado(item.mes)) return true;
+        return Number(item.mes) === mesAtual && anoDe(item) === anoAtual;
     }
+
+    // Acrescenta o ano ao payload só se o banco tiver a coluna
+    const comAno = (payload, ano) => suportaAno ? { ...payload, ano } : payload;
 
     function mostrarAlerta(msg, tipo = 'success') {
         const el = document.createElement('div');
@@ -618,14 +630,6 @@
             container.appendChild(div);
         });
         categoriaAtual = '';
-        container.addEventListener('click', e => {
-            const pill = e.target.closest('.category-pill');
-            if (!pill) return;
-            container.querySelectorAll('.category-pill').forEach(p => p.classList.remove('selected'));
-            pill.classList.add('selected');
-            categoriaAtual = pill.textContent;
-            document.getElementById('stepDados').classList.add('visible');
-        });
     }
 
     function abrirModalFixo(id = null) {
@@ -716,7 +720,7 @@
         const btn = document.getElementById('btnSalvarVariavel');
         btn.disabled = true;
         try {
-            const { error } = await db.from('variaveis').insert([{ tipo: tipoAtual, categoria: categoriaAtual, valor, descricao, mes: isNaN(mesEscolhido) ? mesAtual : mesEscolhido }]);
+            const { error } = await db.from('variaveis').insert([comAno({ tipo: tipoAtual, categoria: categoriaAtual, valor, descricao, mes: isNaN(mesEscolhido) ? mesAtual : mesEscolhido }, anoAtual)]);
             if (error) throw error;
             resetFormVariavel();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -748,7 +752,7 @@
                 const res = await db.from('fixos').update(payload).eq('id', fixoEditandoId);
                 supaError = res.error;
             } else {
-                const res = await db.from('fixos').insert([payload]);
+                const res = await db.from('fixos').insert([comAno(payload, anoAtual)]);
                 supaError = res.error;
             }
             if (supaError) { mostrarAlerta('❌ ' + (supaError.message || JSON.stringify(supaError)), 'error'); return; }
@@ -760,50 +764,30 @@
         } finally { if (btn) btn.disabled = false; }
     }
 
-    function abrirModalEditarVar(id, tipo, categoria, valor, descricao, mes) {
-        varEditandoId = id;
-        tipoEditarVar = tipo;
-        document.querySelectorAll('#tipoEditarVarSelect .category-pill').forEach(p => {
-            p.classList.toggle('selected', p.dataset.tipo === tipo);
-        });
-        const catContainer = document.getElementById('categoriaEditarVarSelect');
-        catContainer.innerHTML = '';
+    function renderCategoriasEditarVar(tipo, selecionada = '') {
+        const cc = document.getElementById('categoriaEditarVarSelect');
+        cc.innerHTML = '';
         CATEGORIAS[tipo].forEach(cat => {
             const div = document.createElement('div');
-            div.className = 'category-pill' + (cat === categoria ? ' selected' : '');
+            div.className = 'category-pill' + (cat === selecionada ? ' selected' : '');
             div.textContent = cat;
-            catContainer.appendChild(div);
+            cc.appendChild(div);
         });
-        catContainer.addEventListener('click', e => {
-            const p = e.target.closest('.category-pill');
-            if (!p) return;
-            catContainer.querySelectorAll('.category-pill').forEach(x => x.classList.remove('selected'));
-            p.classList.add('selected');
+    }
+
+    function abrirModalEditarVar(id) {
+        const v = cacheVariaveis.find(x => x.id === id);
+        if (!v) { mostrarAlerta('❌ Variável não encontrada', 'error'); return; }
+        varEditandoId = id;
+        tipoEditarVar = v.tipo || 'casal';
+        document.querySelectorAll('#tipoEditarVarSelect .category-pill').forEach(p => {
+            p.classList.toggle('selected', p.dataset.tipo === tipoEditarVar);
         });
-        document.querySelectorAll('#tipoEditarVarSelect .category-pill').forEach(pill => {
-            pill.addEventListener('click', () => {
-                tipoEditarVar = pill.dataset.tipo;
-                const cc = document.getElementById('categoriaEditarVarSelect');
-                cc.innerHTML = '';
-                CATEGORIAS[tipoEditarVar].forEach(cat => {
-                    const div = document.createElement('div');
-                    div.className = 'category-pill';
-                    div.textContent = cat;
-                    cc.appendChild(div);
-                });
-                cc.addEventListener('click', e2 => {
-                    const p2 = e2.target.closest('.category-pill');
-                    if (!p2) return;
-                    cc.querySelectorAll('.category-pill').forEach(x => x.classList.remove('selected'));
-                    p2.classList.add('selected');
-                });
-            });
-        });
-        document.getElementById('editarVarValor').value     = valor;
-        document.getElementById('editarVarDescricao').value = descricao;
+        renderCategoriasEditarVar(tipoEditarVar, v.categoria || 'Outros');
+        document.getElementById('editarVarValor').value     = v.valor;
+        document.getElementById('editarVarDescricao').value = v.descricao || '';
         preencherMeses('editarVarMes');
-        const mesNum = (mes === null || mes === undefined || mes === 'atual') ? mesAtual : Number(mes);
-        document.getElementById('editarVarMes').value = mesNum;
+        document.getElementById('editarVarMes').value = ehLegado(v.mes) ? mesAtual : Number(v.mes);
         document.getElementById('modalEditarVar').classList.add('active');
     }
 
@@ -853,7 +837,7 @@
                 if (error) throw error;
                 mostrarAlerta('✅ Receita atualizada!');
             } else {
-                const { error } = await db.from('receitas').insert([{ tipo, valor, mes: isNaN(mesEscolhido) ? mesAtual : mesEscolhido, casal: receitaCasal }]);
+                const { error } = await db.from('receitas').insert([comAno({ tipo, valor, mes: isNaN(mesEscolhido) ? mesAtual : mesEscolhido, casal: receitaCasal }, anoAtual)]);
                 if (error) throw error;
                 mostrarAlerta('✅ Receita salva!');
             }
@@ -905,8 +889,18 @@
             if (r1.error) console.error('fixos:', r1.error.message);
             if (r2.error) console.error('variaveis:', r2.error.message);
             if (r3.error) console.error('receitas:', r3.error.message);
+            cacheVariaveis = r2.data || [];
+            // Guarda seções abertas antes de redesenhar
+            const abertas = [...document.querySelectorAll('.collapsible-body[id]:not(.collapsed)')].map(el => el.id);
             calcularRepasse(r1.data || [], r2.data || [], r3.data || []);
             renderizar(r1.data || [], r2.data || [], r3.data || []);
+            abertas.forEach(id => {
+                const body = document.getElementById(id);
+                if (!body || !body.classList.contains('collapsed')) return;
+                body.classList.remove('collapsed');
+                const icon = document.getElementById(id.replace('Body', 'Icon'));
+                if (icon) icon.classList.remove('collapsed');
+            });
         } catch(e) { console.error('carregarDados:', e); }
     }
 
@@ -914,21 +908,21 @@
         let fixosCasal = 0, fixosDela = 0, fixosGle = 0;
         let varCasal = 0, varDela = 0, varGle = 0;
         fixos.forEach(f => {
-            if (mesCompativel(f.mes) && !f.pago) {
+            if (doPeriodo(f)) {
                 if      (f.tipo === 'casal') fixosCasal += Number(f.valor);
                 else if (f.tipo === 'dela')  fixosDela  += Number(f.valor);
                 else if (f.tipo === 'gle')   fixosGle   += Number(f.valor);
             }
         });
         variaveis.forEach(v => {
-            if (mesCompativel(v.mes)) {
+            if (doPeriodo(v)) {
                 if      (v.tipo === 'casal') varCasal += Number(v.valor);
                 else if (v.tipo === 'dela')  varDela  += Number(v.valor);
                 else if (v.tipo === 'gle')   varGle   += Number(v.valor);
             }
         });
         let entradasCasal = 0;
-        (receitas || []).forEach(r => { if (r.casal && mesCompativel(r.mes)) entradasCasal += Number(r.valor); });
+        (receitas || []).forEach(r => { if (r.casal && doPeriodo(r)) entradasCasal += Number(r.valor); });
 
         const repasse    = (fixosCasal/2) + fixosDela + (varCasal/2) + varDela - (entradasCasal/2);
         const totalGasto = fixosCasal + fixosDela + varCasal + varDela;
@@ -952,10 +946,10 @@
     }
 
     function renderizar(fixos, variaveis, receitas) {
-        renderizarVariaveisPorCategoria(variaveis.filter(v => mesCompativel(v.mes)));
+        renderizarVariaveisPorCategoria(variaveis.filter(v => doPeriodo(v)));
         renderizarGruposFixos(fixos);
 
-        const recMes = receitas.filter(r => mesCompativel(r.mes));
+        const recMes = receitas.filter(r => doPeriodo(r));
         const totalRec = recMes.reduce((s, r) => s + Number(r.valor), 0);
         document.getElementById('totalReceitasValue').textContent     = fmt(totalRec);
         document.getElementById('totalReceitasCollapsed').textContent = fmt(totalRec);
@@ -964,7 +958,7 @@
             ? recMes.map(r => `
                 <div class="list-item receita-item">
                     <div class="list-item-info">
-                        <strong>${r.tipo}${r.casal ? '<span class="badge-casal">casal</span>' : ''}</strong>
+                        <strong>${esc(r.tipo)}${r.casal ? '<span class="badge-casal">casal</span>' : ''}</strong>
                     </div>
                     <div class="list-item-actions">
                         <span class="list-item-value">${fmt(r.valor)}</span>
@@ -995,7 +989,7 @@
     }
 
     function renderizarGruposFixos(fixos) {
-        const filtroOk = f => (filtroFixosGrupo === 'geral' || f.tipo === filtroFixosGrupo) && mesCompativel(f.mes);
+        const filtroOk = f => (filtroFixosGrupo === 'geral' || f.tipo === filtroFixosGrupo) && doPeriodo(f);
         const itensTodos = fixos.filter(filtroOk);
 
         const catMap = {};
@@ -1038,8 +1032,8 @@
                                         return `
                                         <div class="list-item ${f.pago ? 'pago' : ''}" style="margin-top:8px;">
                                             <div class="list-item-info">
-                                                <strong>${f.nome}</strong>
-                                                ${f.obs ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:3px;"><span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;">${f.obs}</span></div>` : ''}
+                                                <strong>${esc(f.nome)}</strong>
+                                                ${f.obs ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:3px;"><span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;">${esc(f.obs)}</span></div>` : ''}
                                             </div>
                                             <div class="list-item-actions">
                                                 <span class="list-item-value">${fmt(f.valor)}</span>
@@ -1096,12 +1090,12 @@
                             ${itens.map(v => `
                                 <div class="list-item" style="margin-top:8px;">
                                     <div class="list-item-info">
-                                        <strong>${v.descricao}</strong>
+                                        <strong>${esc(v.descricao)}</strong>
                                         ${v.criado ? `<div class="text-small" style="margin-top:2px;">${formatarDataHora(v.criado)}</div>` : ''}
                                     </div>
                                     <div class="list-item-actions">
                                         <span class="list-item-value">${fmt(v.valor)}</span>
-                                        <button class="icon-btn edit-btn" onclick="abrirModalEditarVar(${v.id},'${v.tipo}','${v.categoria||'Outros'}',${v.valor},'${v.descricao.replace(/'/g,"\\'")}',${v.mes === null || v.mes === undefined ? 'null' : (v.mes === 'atual' ? "'atual'" : v.mes)})"><i data-lucide="pencil" style="width:15px;height:15px;"></i></button>
+                                        <button class="icon-btn edit-btn" onclick="abrirModalEditarVar(${v.id})"><i data-lucide="pencil" style="width:15px;height:15px;"></i></button>
                                         <button class="icon-btn" onclick="deletarVariavel(${v.id})"><i data-lucide="trash-2" style="width:15px;height:15px;"></i></button>
                                     </div>
                                 </div>`).join('')}
@@ -1151,14 +1145,13 @@
                 db.from('receitas').select('*')
             ]);
             const fixos = r1.data || [], variaveis = r2.data || [], receitas = r3.data || [];
-            const ehMesGrafico = (campo) => {
-                if (campo === null || campo === undefined) return mesGrafico === new Date().getMonth();
-                if (campo === 'atual') return mesGrafico === new Date().getMonth();
-                return Number(campo) === mesGrafico;
-            };
-            const fixosMes = fixos.filter(f => ehMesGrafico(f.mes) && !f.pago);
-            const varMes   = variaveis.filter(v => ehMesGrafico(v.mes));
-            const recMes   = receitas.filter(r => ehMesGrafico(r.mes));
+            const hoje = new Date();
+            const ehMesGrafico = item => ehLegado(item.mes)
+                ? (mesGrafico === hoje.getMonth() && anoGrafico === hoje.getFullYear())
+                : (Number(item.mes) === mesGrafico && anoDe(item) === anoGrafico);
+            const fixosMes = fixos.filter(ehMesGrafico);
+            const varMes   = variaveis.filter(ehMesGrafico);
+            const recMes   = receitas.filter(ehMesGrafico);
             const totalReceitas = recMes.reduce((s, r) => s + Number(r.valor), 0);
             const totalFixos    = fixosMes.reduce((s, f) => s + Number(f.valor), 0);
             const totalVar      = varMes.reduce((s, v) => s + Number(v.valor), 0);
@@ -1173,9 +1166,15 @@
             if (chartVarInstance)   { chartVarInstance.destroy();   chartVarInstance   = null; }
             if (chartFixosInstance) { chartFixosInstance.destroy(); chartFixosInstance = null; }
 
-            const paletteCat = { 'Mercado':'#3b82f6','Uber':'#8b5cf6','Saídas':'#ec4899','Extra':'#f59e0b','Pets':'#10b981','Pessoais Gle':'#06b6d4','Pessoais Lia':'#f97316','Outros':'#9ca3af' };
+            // Categoria repetida em grupos diferentes ganha o nome do grupo (ex: "Transporte · Meu")
+            const tiposPorCat = {};
+            varMes.forEach(v => { const c = v.categoria||'Outros'; (tiposPorCat[c] = tiposPorCat[c] || new Set()).add(v.tipo); });
             const cats = {};
-            varMes.forEach(v => { const c = v.categoria||'Outros'; cats[c]=(cats[c]||0)+Number(v.valor); });
+            varMes.forEach(v => {
+                const c = v.categoria||'Outros';
+                const label = tiposPorCat[c].size > 1 ? `${c} · ${TIPO_LABEL[v.tipo] || v.tipo}` : c;
+                cats[label] = (cats[label]||0) + Number(v.valor);
+            });
             const sortedVar = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
             const wrapVar = document.getElementById('wrapChartVar');
             if (!sortedVar.length) {
@@ -1186,7 +1185,7 @@
                 wrapVar.innerHTML = '<canvas id="canvasGraficoVar"></canvas>';
                 chartVarInstance = new Chart(document.getElementById('canvasGraficoVar').getContext('2d'), {
                     type: 'doughnut',
-                    data: { labels: sortedVar.map(([k])=>k), datasets: [{ data: sortedVar.map(([,v])=>v), backgroundColor: sortedVar.map(([k])=>paletteCat[k]||'#6b7280'), borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }] },
+                    data: { labels: sortedVar.map(([k])=>k), datasets: [{ data: sortedVar.map(([,v])=>v), backgroundColor: sortedVar.map((_, i) => CORES_GRAFICO[i % CORES_GRAFICO.length]), borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }] },
                     options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11 }, padding: 12, boxWidth: 14 } }, tooltip: { callbacks: { label: c => { const total = c.dataset.data.reduce((a,b)=>a+b,0); return ` R$ ${Number(c.raw).toFixed(2).replace('.',',')} (${((c.raw/total)*100).toFixed(1)}%)`; } } } } }
                 });
             }
@@ -1219,18 +1218,28 @@
 
     async function fecharMes() {
         const proximoMes  = (mesAtual + 1) % 12;
+        const proximoAno  = mesAtual === 11 ? anoAtual + 1 : anoAtual;
         const nomeProximo = MESES[proximoMes];
-        if (!confirm(`Fechar ${MESES[mesAtual]}? Isso vai criar os fixos para ${nomeProximo}.`)) return;
+        if (!confirm(`Fechar ${MESES[mesAtual]}? Isso vai criar os fixos para ${nomeProximo} ${proximoAno}.`)) return;
         try {
             const { data: fixosAtivos, error } = await db.from('fixos').select('*');
             if (error) throw error;
-            const doMes = fixosAtivos.filter(f => mesCompativel(f.mes));
+            const doMes = fixosAtivos.filter(f => doPeriodo(f));
             if (!doMes.length) { mostrarAlerta('⚠️ Nenhum fixo para copiar', 'error'); return; }
-            for (const f of doMes) {
-                const { error: errIns } = await db.from('fixos').insert([{ tipo: f.tipo, nome: f.nome, valor: f.valor, mes: proximoMes, pago: false, categoria: f.categoria, obs: f.obs }]);
-                if (errIns) throw errIns;
-            }
-            mostrarAlerta(`✅ ${doMes.length} fixo(s) criado(s) para ${nomeProximo}!`);
+
+            // Pula fixos que já existem no próximo mês (mesmo nome e tipo)
+            const noProximo = fixosAtivos.filter(f => ehLegado(f.mes) || (Number(f.mes) === proximoMes && anoDe(f) === proximoAno));
+            const chave = f => `${f.tipo}|${(f.nome || '').trim().toLowerCase()}`;
+            const existentes = new Set(noProximo.map(chave));
+            const novos = doMes.filter(f => !existentes.has(chave(f)));
+            if (!novos.length) { mostrarAlerta(`⚠️ ${nomeProximo} já tem todos os fixos`, 'error'); return; }
+
+            const { error: errIns } = await db.from('fixos').insert(novos.map(f =>
+                comAno({ tipo: f.tipo, nome: f.nome, valor: f.valor, mes: proximoMes, pago: false, categoria: f.categoria, obs: f.obs }, proximoAno)
+            ));
+            if (errIns) throw errIns;
+            const pulados = doMes.length - novos.length;
+            mostrarAlerta(`✅ ${novos.length} fixo(s) criado(s) para ${nomeProximo}!` + (pulados ? ` (${pulados} já existiam)` : ''));
             await carregarDados();
         } catch(e) { mostrarAlerta('❌ ' + (e.message || 'Erro ao fechar mês'), 'error'); }
     }
@@ -1240,6 +1249,9 @@
         while (!window.supabase && t++ < 50) await new Promise(r => setTimeout(r, 100));
         if (!window.supabase) { mostrarAlerta('❌ Falha ao carregar Supabase', 'error'); return; }
         db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const checks = await Promise.all(['fixos','variaveis','receitas'].map(t => db.from(t).select('ano').limit(1)));
+        suportaAno = checks.every(c => !c.error);
+        if (!suportaAno) console.warn('Coluna "ano" ausente — lançamentos novos sem ano.');
 
         const agora = new Date();
         atualizarMesAtualLabel();
@@ -1290,6 +1302,23 @@
             document.querySelectorAll('#tipoEditarVarSelect .category-pill').forEach(x => x.classList.remove('selected'));
             p.classList.add('selected');
             tipoEditarVar = p.dataset.tipo;
+            renderCategoriasEditarVar(tipoEditarVar);
+        });
+
+        document.getElementById('categoriaEditarVarSelect').addEventListener('click', e => {
+            const p = e.target.closest('.category-pill');
+            if (!p) return;
+            e.currentTarget.querySelectorAll('.category-pill').forEach(x => x.classList.remove('selected'));
+            p.classList.add('selected');
+        });
+
+        document.getElementById('categoriaSelect').addEventListener('click', e => {
+            const pill = e.target.closest('.category-pill');
+            if (!pill) return;
+            e.currentTarget.querySelectorAll('.category-pill').forEach(p => p.classList.remove('selected'));
+            pill.classList.add('selected');
+            categoriaAtual = pill.textContent;
+            document.getElementById('stepDados').classList.add('visible');
         });
 
         document.getElementById('tipoFixoSelect').addEventListener('click', e => {
