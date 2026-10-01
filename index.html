@@ -864,7 +864,7 @@
         const el = document.getElementById('atalhosVar');
         el.hidden = !atalhosVar.length;
         el.innerHTML = atalhosVar.map((h, i) =>
-            `<button type="button" class="atalho" data-i="${i}">${ICONE_REPETIR}${esc(h.d)} <small>· ${esc(h.c)}</small></button>`).join('');
+            `<button type="button" class="atalho" data-i="${i}">${ICONE_REPETIR}${esc(h.d)} <small>· ${esc(h.c)}</small><span class="tag-grupo ${h.t}" style="margin-left:2px">${TIPO_LABEL[h.t] || ''}</span></button>`).join('');
     }
 
     function mostrarSugestoesVar() {
