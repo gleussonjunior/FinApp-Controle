@@ -312,6 +312,7 @@
                 <button class="filtro-btn" data-grupo-var="casal">Casal</button>
                 <button class="filtro-btn" data-grupo-var="gle">Meu</button>
                 <button class="filtro-btn" data-grupo-var="dela">Dela</button>
+                <button class="filtro-btn" data-grupo-var="hoje">Hoje</button>
             </div>
             <div class="card">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -946,7 +947,7 @@
     }
 
     function renderizar(fixos, variaveis, receitas) {
-        renderizarVariaveisPorCategoria(variaveis.filter(v => doPeriodo(v)));
+        renderizarVariaveisPorCategoria(filtroVarGrupo === 'hoje' ? variaveis.filter(lancadoHoje) : variaveis.filter(v => doPeriodo(v)));
         renderizarGruposFixos(fixos);
 
         const recMes = receitas.filter(r => doPeriodo(r));
@@ -977,6 +978,14 @@
             `<option value="${c}" ${c === selecionada ? 'selected' : ''}>${c}</option>`
         ).join('');
     }
+
+    // Data local de lançamento (Supabase manda sem 'Z')
+    function dataLancamento(str) {
+        if (!str) return null;
+        const d = new Date((str.endsWith('Z') || str.includes('+')) ? str : str + 'Z');
+        return isNaN(d) ? null : d;
+    }
+    const lancadoHoje = v => { const d = dataLancamento(v.criado); return !!d && d.toDateString() === new Date().toDateString(); };
 
     function formatarDataHora(str) {
         if (!str) return '';
@@ -1054,7 +1063,7 @@
 
         function renderizarVariaveisPorCategoria(varMes) {
         const container = document.getElementById('variaveisList');
-        const varFiltrado = filtroVarGrupo === 'geral' ? varMes : varMes.filter(v => v.tipo === filtroVarGrupo);
+        const varFiltrado = (filtroVarGrupo === 'geral' || filtroVarGrupo === 'hoje') ? varMes : varMes.filter(v => v.tipo === filtroVarGrupo);
         if (!varFiltrado.length) {
             container.innerHTML = '<div class="empty-state">Nenhuma variável</div>';
             document.getElementById('varTotalGeral').textContent = fmt(0);
