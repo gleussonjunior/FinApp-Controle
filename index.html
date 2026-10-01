@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinApp</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="FinApp">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#e9eef9">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="manifest" href="/manifest.webmanifest">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -344,6 +352,12 @@
         .toast-acao { border: 0; border-radius: 999px; padding: 7px 12px; margin: -4px -8px -4px 2px; background: rgba(37,84,214,0.1); color: var(--secondary); font: 700 13px inherit; font-family: inherit; cursor: pointer; }
         .toast { max-width: calc(100vw - 32px); }
         .toast > span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+        /* Aberto pela tela de início (tela cheia): afasta a barra do indicador do iPhone */
+        @media (display-mode: standalone) {
+            .nav-bottom { bottom: max(26px, calc(12px + env(safe-area-inset-bottom, 0px))); }
+            .content { padding-bottom: calc(136px + env(safe-area-inset-bottom, 0px)); }
+        }
 
         button:focus-visible, .category-pill:focus-visible { outline: 2px solid var(--secondary); outline-offset: 2px; }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
