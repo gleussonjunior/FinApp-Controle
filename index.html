@@ -481,15 +481,15 @@
                 <div class="var-success-inline" id="varSuccessInline"></div>
             </form>
             <div class="filtro-fixos" id="filtroGrupoVarEl" style="margin-bottom:4px;">
-                <button class="filtro-btn active" data-grupo-var="geral">Geral</button>
+                <button class="filtro-btn active" data-grupo-var="hoje">Hoje</button>
+                <button class="filtro-btn" data-grupo-var="geral">Geral</button>
                 <button class="filtro-btn" data-grupo-var="casal">Casal</button>
                 <button class="filtro-btn" data-grupo-var="gle">Meu</button>
                 <button class="filtro-btn" data-grupo-var="dela">Dela</button>
-                <button class="filtro-btn" data-grupo-var="hoje">Hoje</button>
             </div>
             <div class="card">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                    <div style="font-size:16px;font-weight:700;letter-spacing:-0.02em;" id="listaVarTitulo">Variáveis do mês</div>
+                    <div style="font-size:16px;font-weight:700;letter-spacing:-0.02em;" id="listaVarTitulo">Gastos de hoje</div>
                     <span id="varTotalGeral" style="font-size:16px;font-weight:700;color:var(--secondary);">R$ 0,00</span>
                 </div>
                 <div id="variaveisList"></div>
@@ -712,7 +712,7 @@
     let mesGrafico = new Date().getMonth();
     let filtroFixos      = 'geral';
     let filtroFixosGrupo = 'geral';
-    let filtroVarGrupo   = 'geral';
+    let filtroVarGrupo   = 'hoje';
     let anoGrafico = new Date().getFullYear();
     let chartVarInstance = null;
     let chartFixosInstance = null;
