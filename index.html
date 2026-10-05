@@ -565,6 +565,12 @@
         </div>
         <div class="chart-container" style="margin-bottom:16px;">
             <div class="chart-title">Gastos Variáveis por Categoria</div>
+            <div class="filtro-fixos">
+                <button class="filtro-btn active" data-filtro-var="geral">Geral</button>
+                <button class="filtro-btn" data-filtro-var="casal">Casal</button>
+                <button class="filtro-btn" data-filtro-var="gle">Meu</button>
+                <button class="filtro-btn" data-filtro-var="dela">Dela</button>
+            </div>
             <div id="wrapChartVar" class="chart-wrap"><canvas id="canvasGraficoVar"></canvas></div>
         </div>
         <div class="chart-container">
@@ -711,6 +717,7 @@
     let tipoEditarVar = 'casal';
     let mesGrafico = new Date().getMonth();
     let filtroFixos      = 'geral';
+    let filtroVarGrafico = 'geral';
     let filtroFixosGrupo = 'geral';
     let filtroVarGrupo   = 'hoje';
     let anoGrafico = new Date().getFullYear();
@@ -1528,32 +1535,39 @@
             if (chartVarInstance)   { chartVarInstance.destroy();   chartVarInstance   = null; }
             if (chartFixosInstance) { chartFixosInstance.destroy(); chartFixosInstance = null; }
 
-            // Categoria repetida em grupos diferentes ganha o nome do grupo (ex: "Transporte · Meu")
-            const tiposPorCat = {};
-            varMes.forEach(v => { const c = v.categoria||'Outros'; (tiposPorCat[c] = tiposPorCat[c] || new Set()).add(v.tipo); });
-            const cats = {};
-            varMes.forEach(v => {
-                const c = v.categoria||'Outros';
-                const label = tiposPorCat[c].size > 1 ? `${c} · ${TIPO_LABEL[v.tipo] || v.tipo}` : c;
-                cats[label] = (cats[label]||0) + Number(v.valor);
-            });
-            const sortedVar = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
-            const wrapVar = document.getElementById('wrapChartVar');
-            if (!sortedVar.length) {
-                wrapVar.innerHTML = '<div class="empty-state" style="padding:40px 0">Sem variáveis neste mês</div>';
-                wrapVar.style.height = 'auto';
-            } else {
-                wrapVar.style.height = '300px';
-                wrapVar.innerHTML = '<canvas id="canvasGraficoVar"></canvas>';
-                chartVarInstance = new Chart(document.getElementById('canvasGraficoVar').getContext('2d'), {
-                    type: 'doughnut',
-                    data: { labels: sortedVar.map(([k])=>k), datasets: [{ data: sortedVar.map(([,v])=>v), backgroundColor: sortedVar.map((_, i) => CORES_GRAFICO[i % CORES_GRAFICO.length]), borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }] },
-                    options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11 }, padding: 12, boxWidth: 14 } }, tooltip: { callbacks: { label: c => { const total = c.dataset.data.reduce((a,b)=>a+b,0); return ` R$ ${Number(c.raw).toFixed(2).replace('.',',')} (${((c.raw/total)*100).toFixed(1)}%)`; } } } } }
-                });
-            }
+            window._varMesGrafico = varMes;
+            renderizarChartVar(varMes);
             window._fixosMesGrafico = fixosMes;
             renderizarChartFixos(fixosMes);
         } catch(e) { console.error('carregarDadosGrafico:', e); }
+    }
+
+    function renderizarChartVar(varMes) {
+        const filtrados = filtroVarGrafico === 'geral' ? varMes : varMes.filter(v => v.tipo === filtroVarGrafico);
+        if (chartVarInstance) { chartVarInstance.destroy(); chartVarInstance = null; }
+        // Categoria repetida em grupos diferentes ganha o nome do grupo (ex: "Transporte · Meu")
+        const tiposPorCat = {};
+        filtrados.forEach(v => { const c = v.categoria||'Outros'; (tiposPorCat[c] = tiposPorCat[c] || new Set()).add(v.tipo); });
+        const cats = {};
+        filtrados.forEach(v => {
+            const c = v.categoria||'Outros';
+            const label = filtroVarGrafico === 'geral' && tiposPorCat[c].size > 1 ? `${c} · ${TIPO_LABEL[v.tipo] || v.tipo}` : c;
+            cats[label] = (cats[label]||0) + Number(v.valor);
+        });
+        const sortedVar = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+        const wrapVar = document.getElementById('wrapChartVar');
+        if (!sortedVar.length) {
+            wrapVar.innerHTML = '<div class="empty-state" style="padding:40px 0">Sem variáveis neste filtro</div>';
+            wrapVar.style.height = 'auto';
+        } else {
+            wrapVar.style.height = '300px';
+            wrapVar.innerHTML = '<canvas id="canvasGraficoVar"></canvas>';
+            chartVarInstance = new Chart(document.getElementById('canvasGraficoVar').getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: sortedVar.map(([k])=>k), datasets: [{ data: sortedVar.map(([,v])=>v), backgroundColor: sortedVar.map((_, i) => CORES_GRAFICO[i % CORES_GRAFICO.length]), borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11 }, padding: 12, boxWidth: 14 } }, tooltip: { callbacks: { label: c => { const total = c.dataset.data.reduce((a,b)=>a+b,0); return ` R$ ${Number(c.raw).toFixed(2).replace('.',',')} (${((c.raw/total)*100).toFixed(1)}%)`; } } } } }
+            });
+        }
     }
 
     function renderizarChartFixos(fixosMes) {
@@ -1640,6 +1654,15 @@
         document.getElementById('btnFecharGraficos').addEventListener('click', fecharGraficos);
         document.getElementById('btnMesAnterior').addEventListener('click', () => navegarMesGrafico(-1));
         document.getElementById('btnMesProximo').addEventListener('click',  () => navegarMesGrafico(1));
+
+        document.querySelectorAll('.filtro-btn[data-filtro-var]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                filtroVarGrafico = btn.dataset.filtroVar;
+                document.querySelectorAll('.filtro-btn[data-filtro-var]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                if (window._varMesGrafico) renderizarChartVar(window._varMesGrafico);
+            });
+        });
 
         document.querySelectorAll('.filtro-btn[data-filtro]').forEach(btn => {
             btn.addEventListener('click', () => {
