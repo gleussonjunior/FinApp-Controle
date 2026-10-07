@@ -306,6 +306,24 @@
         .toast.success .toast-ic { background: var(--success); }
         .toast.error .toast-ic { background: var(--danger); }
         @keyframes toastEntra { from { opacity: 0; transform: translateY(-14px) scale(.96); } }
+        /* CONFIRMAÇÃO GRANDE (meio da tela) */
+        .confirma-area { position: fixed; inset: 0; z-index: 320; display: flex; align-items: center; justify-content: center; padding: 24px; pointer-events: none; }
+        .confirma {
+            width: 100%; max-width: 320px; padding: 26px 22px 22px; border-radius: 28px; text-align: center; pointer-events: auto;
+            background: rgba(255,255,255,0.94); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+            border: 1px solid var(--glass-edge); box-shadow: 0 24px 60px rgba(15,30,80,0.28), var(--spec);
+            animation: confirmaEntra .4s cubic-bezier(.2,1.3,.4,1);
+        }
+        .confirma.sai { animation: confirmaSai .22s ease forwards; }
+        .confirma-ic { width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; background: var(--success); box-shadow: 0 8px 24px rgba(22,163,74,0.35); }
+        .confirma.error .confirma-ic { background: var(--danger); box-shadow: 0 8px 24px rgba(220,38,38,0.35); }
+        .confirma-ic svg { width: 32px; height: 32px; }
+        .confirma-titulo { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
+        .confirma-det { margin-top: 6px; font-size: 15px; font-weight: 600; color: var(--text-faint); overflow-wrap: anywhere; }
+        .confirma-dica { margin-top: 12px; font-size: 12px; color: var(--text-faint); }
+        .confirma-acao { margin-top: 16px; border: 0; border-radius: 999px; padding: 10px 20px; background: rgba(37,84,214,0.1); color: var(--secondary); font: 700 14px inherit; font-family: inherit; cursor: pointer; }
+        @keyframes confirmaEntra { from { opacity: 0; transform: scale(.85); } }
+        @keyframes confirmaSai { to { opacity: 0; transform: scale(.94); } }
         @keyframes toastSai { to { opacity: 0; transform: translateY(-10px) scale(.97); } }
 
         /* PAINEL DE CONFIRMAÇÃO */
@@ -457,10 +475,6 @@
                 <div class="lancar-rotulo" id="atalhosRotulo">Repetir</div>
                 <div class="faixa" id="atalhosVar"></div>
 
-                <label class="valor-grande zero" id="valorBox" for="varValor">
-                    <span>R$</span><input id="varValor" inputmode="numeric" value="0,00" aria-label="Valor" enterkeyhint="done">
-                </label>
-
                 <div class="seg-tipo" id="tipoSelect" role="group" aria-label="Tipo">
                     <button type="button" data-tipo="casal">Casal</button>
                     <button type="button" data-tipo="dela">Dela</button>
@@ -468,6 +482,10 @@
                 </div>
 
                 <div class="faixa" id="categoriaSelect"></div>
+
+                <label class="valor-grande zero" id="valorBox" for="varValor">
+                    <span>R$</span><input id="varValor" inputmode="numeric" value="0,00" aria-label="Valor" enterkeyhint="done">
+                </label>
 
                 <div class="desc-wrap">
                     <input id="varDescricao" placeholder="Descrição (opcional)" enterkeyhint="done">
@@ -588,6 +606,7 @@
 
 <!-- AVISOS -->
 <div class="toast-area" id="toastArea" aria-live="polite"></div>
+<div class="confirma-area" id="confirmaArea" aria-live="assertive"></div>
 
 <!-- CONFIRMAÇÃO -->
 <div class="modal" id="modalConfirmar">
@@ -750,6 +769,7 @@
 
     // ===== FEEDBACK =====
     const ICONE_OK  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    const ICONE_X   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg>';
     const ICONE_ERR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 7v6M12 17h.01"/></svg>';
 
     function mostrarAlerta(msg, tipo = 'success', acao = null) {
@@ -771,6 +791,37 @@
         if (navigator.vibrate) { try { navigator.vibrate(tipo === 'error' ? [30, 40, 30] : 15); } catch {} }
         const tempo = acao ? 5000 : (tipo === 'error' ? 3800 : 2200);
         setTimeout(() => { el.classList.add('sai'); setTimeout(() => el.remove(), 260); }, tempo);
+    }
+
+    // Confirmação grande no meio da tela: sucesso some sozinho, erro fica até tocar
+    function mostrarConfirmacao(titulo, detalhe = '', tipo = 'success', acao = null) {
+        const area = document.getElementById('confirmaArea');
+        area.innerHTML = '';
+        const erro = tipo === 'error';
+        const el = document.createElement('div');
+        el.className = `confirma ${erro ? 'error' : 'success'}`;
+        el.setAttribute('role', erro ? 'alert' : 'status');
+        el.innerHTML = `<div class="confirma-ic">${erro ? ICONE_X : ICONE_OK}</div><div class="confirma-titulo"></div>`;
+        el.querySelector('.confirma-titulo').textContent = titulo;
+        if (detalhe) { const d = document.createElement('div'); d.className = 'confirma-det'; d.textContent = detalhe; el.appendChild(d); }
+        let fechado = false;
+        const fechar = () => {
+            if (fechado) return; fechado = true;
+            document.removeEventListener('pointerdown', foraFecha, true);
+            el.classList.add('sai'); setTimeout(() => el.remove(), 230);
+        };
+        const foraFecha = e => { if (!e.target.closest('.confirma-acao')) fechar(); };
+        if (acao) {
+            const b = document.createElement('button');
+            b.className = 'confirma-acao'; b.type = 'button'; b.textContent = acao.label;
+            b.onclick = () => { fechar(); acao.fn(); };
+            el.appendChild(b);
+        }
+        if (erro) { const d = document.createElement('div'); d.className = 'confirma-dica'; d.textContent = 'Toque para fechar'; el.appendChild(d); }
+        area.appendChild(el);
+        if (navigator.vibrate) { try { navigator.vibrate(erro ? [40, 60, 40] : 25); } catch {} }
+        setTimeout(() => document.addEventListener('pointerdown', foraFecha, true), 50);
+        if (!erro) setTimeout(fechar, acao ? 3000 : 2000);
     }
 
     // Botão em estado "Salvando…"
@@ -819,7 +870,7 @@
         document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
         const btn = document.querySelector(`.nav-item[data-tela="${telaId}"]`);
         if (btn) btn.classList.add('active');
-        if (telaId === 'screenVariaveis') { resetFormVariavel(); document.getElementById('varValor').focus({ preventScroll: true }); }
+        if (telaId === 'screenVariaveis') resetFormVariavel();
         window.scrollTo({ top: 0 });
         if (Date.now() - ultimaCarga > 15000) carregarDados();
     }
@@ -1043,8 +1094,8 @@
         const valor     = centavosVar / 100;
         const mesEl     = document.getElementById('varMes');
         const mesEscolhido = mesEl ? parseInt(mesEl.value) : mesAtual;
-        if (!valor)          { mostrarAlerta('Digite o valor', 'error'); document.getElementById('varValor').focus(); return; }
-        if (!categoriaAtual) { mostrarAlerta('Escolha a categoria', 'error'); return; }
+        if (!valor)          { mostrarConfirmacao('Digite o valor', '', 'error'); return; }
+        if (!categoriaAtual) { mostrarConfirmacao('Escolha a categoria', '', 'error'); return; }
         const descricao = document.getElementById('varDescricao').value.trim() || categoriaAtual;
 
         const linha = comAno({ tipo: tipoAtual, categoria: categoriaAtual, valor, descricao, mes: isNaN(mesEscolhido) ? mesAtual : mesEscolhido }, anoAtual);
@@ -1052,10 +1103,10 @@
         const temp = { ...linha, ano: anoAtual, id: -Date.now(), criado: new Date().toISOString() };
         if (dadosCache) { dadosCache.variaveis.push(temp); cacheVariaveis = dadosCache.variaveis; renderDoCache(); }
         resetFormVariavel();
-        document.getElementById('varValor').focus({ preventScroll: true });   // pronto para o próximo
+        document.activeElement?.blur();
         window.scrollTo({ top: 0, behavior: 'smooth' });
         let idReal = null, desfeito = false;
-        mostrarAlerta(`${descricao} · ${fmt(valor)}`, 'success', {
+        mostrarConfirmacao('Gasto salvo!', `${descricao} · ${fmt(valor)}`, 'success', {
             label: 'Desfazer',
             fn: async () => {
                 desfeito = true;
@@ -1072,7 +1123,7 @@
             await carregarDados();
         } catch(e) {
             if (dadosCache) { dadosCache.variaveis = dadosCache.variaveis.filter(v => v !== temp); cacheVariaveis = dadosCache.variaveis; renderDoCache(); }
-            mostrarAlerta(`Não salvou "${descricao}" (${fmt(valor)}). Tente de novo.`, 'error');
+            mostrarConfirmacao('Não salvou', `${descricao} · ${fmt(valor)} — tente de novo`, 'error');
         }
     }
 
@@ -1098,12 +1149,12 @@
                 const res = await db.from('fixos').insert([comAno(payload, anoAtual)]);
                 supaError = res.error;
             }
-            if (supaError) { mostrarAlerta('❌ ' + (supaError.message || JSON.stringify(supaError)), 'error'); return; }
-            mostrarAlerta(fixoEditandoId ? '✅ Fixo atualizado!' : '✅ Fixo salvo!');
+            if (supaError) { mostrarConfirmacao('Não salvou', supaError.message || JSON.stringify(supaError), 'error'); return; }
+            mostrarConfirmacao(fixoEditandoId ? 'Fixo atualizado!' : 'Fixo salvo!', `${nome} · ${fmt(valor)}`);
             fecharModalFixo();
             await carregarDados();
         } catch(e) {
-            mostrarAlerta('❌ ' + (e?.message || String(e)), 'error');
+            mostrarConfirmacao('Não salvou', e?.message || String(e), 'error');
         } finally { carregando(btn, false); }
     }
 
@@ -1155,11 +1206,11 @@
         try {
             const { error } = await db.from('variaveis').update({ tipo: tipoEditarVar, categoria, valor, descricao, mes: isNaN(mesEscolhido) ? mesAtual : mesEscolhido }).eq('id', varEditandoId);
             if (error) throw error;
-            mostrarAlerta('✅ Variável atualizada!');
+            mostrarConfirmacao('Gasto atualizado!', `${descricao} · ${fmt(valor)}`);
             fecharModalEditarVar();
             await carregarDados();
         } catch(e) {
-            mostrarAlerta('❌ ' + (e.message || 'Erro'), 'error');
+            mostrarConfirmacao('Não salvou', e.message || 'Erro', 'error');
         } finally { carregando(btn, false); }
     }
 
@@ -1179,16 +1230,16 @@
             if (receitaEditandoId) {
                 const { error } = await db.from('receitas').update({ tipo, valor, casal: receitaCasal, mes: isNaN(mesEscolhido) ? mesAtual : mesEscolhido }).eq('id', receitaEditandoId);
                 if (error) throw error;
-                mostrarAlerta('✅ Receita atualizada!');
+                mostrarConfirmacao('Receita atualizada!', fmt(valor));
             } else {
                 const { error } = await db.from('receitas').insert([comAno({ tipo, valor, mes: isNaN(mesEscolhido) ? mesAtual : mesEscolhido, casal: receitaCasal }, anoAtual)]);
                 if (error) throw error;
-                mostrarAlerta('✅ Receita salva!');
+                mostrarConfirmacao('Receita salva!', fmt(valor));
             }
             fecharModalReceita();
             await carregarDados();
         } catch(e) {
-            mostrarAlerta('❌ ' + (e.message || 'Erro'), 'error');
+            mostrarConfirmacao('Não salvou', e.message || 'Erro', 'error');
         } finally { carregando(btn, false); }
     }
 
