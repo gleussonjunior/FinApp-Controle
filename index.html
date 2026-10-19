@@ -409,6 +409,16 @@
         .meta-linha span:last-child { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
         .meta-nota { font-size: 12px; color: var(--text-faint); text-align: center; margin: 4px 8px 0; }
         .meta-edit-rs { font-size: 13px; color: var(--text-light); margin: -4px 0 16px; }
+        .meta-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+        .meta-card { background: var(--bg-solid); border: 1px solid var(--border); border-radius: 16px; padding: 11px 12px; cursor: pointer; min-width: 0; }
+        .meta-card:active { transform: scale(0.98); }
+        .meta-card-nome { font-size: 12px; font-weight: 600; color: var(--text-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .meta-card-status { white-space: nowrap; font-size: 15px; font-weight: 800; letter-spacing: -0.02em; margin: 2px 0 1px; font-variant-numeric: tabular-nums; }
+        .meta-card-det { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
+        .meta-card-tag { font-size: 10px; font-weight: 700; color: var(--secondary); margin-top: 3px; }
+        .st-ok { color: var(--success); } .st-alerta { color: #b07a00; } .st-estourou { color: var(--danger); }
+        .meta-grupo-status { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; margin-top: 6px; font-variant-numeric: tabular-nums; }
+        .meta-reserva { font-size: 11px; color: var(--text-light); margin-top: 3px; }
         .meta-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
         button:focus-visible, .category-pill:focus-visible { outline: 2px solid var(--secondary); outline-offset: 2px; }
@@ -768,6 +778,7 @@
                 <option value="Andre Netflix">Andre Netflix</option>
                 <option value="Porão Redes Sociais">Porão Redes Sociais</option>
                 <option value="Restituição IR">Restituição IR</option>
+                <option value="Reserva">Reserva</option>
                 <option value="Outro">Outro</option>
             </select>
         </div>
@@ -1154,7 +1165,7 @@
                 setReceitaCasal(!!data.casal);
                 const mesNum = (data.mes === null || data.mes === undefined || data.mes === 'atual') ? mesAtual : Number(data.mes);
                 document.getElementById('receitaMes').value = mesNum;
-                if (!['Salário','Lia','Débora','Diego Netflix','Andre Netflix','Porão Redes Sociais','Restituição IR'].includes(data.tipo)) {
+                if (!['Salário','Lia','Débora','Diego Netflix','Andre Netflix','Porão Redes Sociais','Restituição IR','Reserva'].includes(data.tipo)) {
                     document.getElementById('receitaTipo').value = 'Outro';
                     document.getElementById('receitaOutroDescricao').value = data.tipo;
                     document.getElementById('receitaOutroGroup').style.display = 'block';
@@ -1828,7 +1839,18 @@
         return soma;
     }
 
-    const rendaDoMes = () => dadosCache.receitas.filter(doPeriodoMetas).reduce((s, r) => s + Number(r.valor || 0), 0);
+    const ehReserva = r => (r.tipo || '').trim().toLowerCase() === 'reserva';
+    // Base das metas: receitas do mês, sem o que veio da reserva
+    const rendaDoMes = () => dadosCache.receitas.filter(r => doPeriodoMetas(r) && !ehReserva(r)).reduce((s, r) => s + Number(r.valor || 0), 0);
+    const reservaDoMes = () => dadosCache.receitas.filter(r => doPeriodoMetas(r) && ehReserva(r)).reduce((s, r) => s + Number(r.valor || 0), 0);
+    // Texto "Resta / Passou / No limite" de um valor e meta
+    const fmtC = n => `R$ ${Math.round(Number(n || 0)).toLocaleString('pt-BR')}`;
+    function statusMeta(gasto, meta) {
+        const r = meta - gasto;
+        if (r < -0.5) return { txt: `Passou ${fmtC(-r)}`, cl: 'estourou' };
+        if (r < 0.5)  return { txt: 'No limite', cl: 'alerta' };
+        return { txt: `Resta ${fmtC(r)}`, cl: meta && gasto / meta >= 0.8 ? 'alerta' : 'ok' };
+    }
 
     // Meta em R$ de uma categoria ajustada por você (reais fixos ou % da renda)
     function metaFixaRS(cat, renda) {
@@ -1931,13 +1953,14 @@
         const metas = calcularMetas(atual, renda);
         const somaG = gid => Object.values(atual[gid]).reduce((x, y) => x + y, 0);
         const totalGasto = somaG('essenciais') + somaG('estilo') + somaG('dividas');
-        const sobra = renda - totalGasto;
+        const reserva = reservaDoMes();
+        const sobra = renda + reserva - totalGasto;
 
         let html = `
             <div class="meta-resumo">
                 <div class="resumo-card"><div class="resumo-card-label">Renda</div><div class="resumo-card-value" style="color:var(--success)">${fmt(renda)}</div></div>
                 <div class="resumo-card"><div class="resumo-card-label">Teto de gastos</div><div class="resumo-card-value">${fmt(renda * 0.7)}</div></div>
-                <div class="resumo-card"><div class="resumo-card-label">Sobra</div><div class="resumo-card-value" style="color:${sobra >= 0 ? 'var(--success)' : 'var(--danger)'}">${fmt(sobra)}</div></div>
+                <div class="resumo-card"><div class="resumo-card-label">Sobra</div><div class="resumo-card-value" style="color:${sobra >= 0 ? 'var(--success)' : 'var(--danger)'}">${fmt(sobra)}</div>${reserva ? `<div class="meta-reserva">usou ${fmt(reserva)} da reserva</div>` : ''}</div>
             </div>`;
 
         GRUPOS_META.forEach(g => {
@@ -1971,23 +1994,22 @@
                 .filter(l => l.gasto > 0 || l.meta > 0 || l.custom)
                 .sort((a, b) => b.meta - a.meta || b.gasto - a.gasto);
 
+            const stG = statusMeta(gastoGrupo, metaGrupo);
             html += `
             <div class="card">
-                <div class="meta-grupo-head">
-                    <div><div class="meta-grupo-nome">${g.nome}</div><div class="meta-grupo-sub">${g.sub} · teto ${fmt(metaGrupo)}</div></div>
-                    <div class="meta-grupo-val">${fmt(gastoGrupo)}</div>
-                </div>
-                <div class="meta-bar ${nivel(gastoGrupo, metaGrupo)}"><i style="width:${largura(gastoGrupo, metaGrupo)}%"></i></div>
-                ${linhas.map(l => `
-                    <div class="meta-cat" data-cat="${esc(l.c)}" onclick="abrirModalMeta(this.dataset.cat)" style="cursor:pointer;">
-                        <div class="meta-cat-top">
-                            <span class="meta-cat-nome">${esc(l.c)}</span>
-                            <span class="meta-cat-val"><b>${fmt(l.gasto)}</b> / ${fmt(l.meta)}</span>
-                        </div>
-                        <div class="meta-bar ${nivel(l.gasto, l.meta)}"><i style="width:${largura(l.gasto, l.meta)}%"></i></div>
-                        <div class="meta-cat-pct"><span>${pctFmt(l.meta / renda * 100)} da renda</span>${
-                            l.custom ? `<span class="custom">${l.modo === 'rs' ? 'fixa em R$' : 'fixa em %'}</span>` : '<span>sugerida</span>'}</div>
-                    </div>`).join('') || '<div class="empty-state" style="padding:14px 0 0">Sem gastos nesse grupo</div>'}
+                <div class="meta-grupo-nome">${g.nome}</div>
+                <div class="meta-grupo-sub">${g.sub} · teto ${fmt(metaGrupo)}</div>
+                <div class="meta-grupo-status st-${stG.cl}">${stG.txt}</div>
+                <div class="meta-grupo-sub">Gastou ${fmt(gastoGrupo)}</div>
+                ${linhas.length ? `<div class="meta-grid">${linhas.map(l => {
+                    const st = statusMeta(l.gasto, l.meta);
+                    return `<div class="meta-card" data-cat="${esc(l.c)}" onclick="abrirModalMeta(this.dataset.cat)">
+                        <div class="meta-card-nome">${esc(l.c)}</div>
+                        <div class="meta-card-status st-${st.cl}">${st.txt}</div>
+                        <div class="meta-card-det">${fmtC(l.gasto)} de ${fmtC(l.meta)}</div>
+                        ${l.custom ? `<div class="meta-card-tag">${l.modo === 'rs' ? 'fixa em R$' : 'fixa em %'}</div>` : ''}
+                    </div>`;
+                }).join('')}</div>` : '<div class="empty-state" style="padding:14px 0 0">Sem gastos nesse grupo</div>'}
                 ${info.somaFixas > info.tetoRS + 0.5 ? `<div class="meta-aviso">Suas metas fixas somam ${fmt(info.somaFixas)}, acima do teto de ${fmt(info.tetoRS)}.</div>` : ''}
             </div>`;
         });
