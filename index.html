@@ -408,7 +408,8 @@
         .meta-linha { gap: 12px; }
         .meta-linha span:last-child { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
         .meta-nota { font-size: 12px; color: var(--text-faint); text-align: center; margin: 4px 8px 0; }
-        .meta-edit-rs { font-size: 13px; color: var(--text-light); margin: 6px 0 16px; }
+        .meta-edit-rs { font-size: 13px; color: var(--text-light); margin: -4px 0 16px; }
+        .meta-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
         button:focus-visible, .category-pill:focus-visible { outline: 2px solid var(--secondary); outline-offset: 2px; }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
@@ -645,9 +646,18 @@
 <!-- OVERLAY METAS -->
 <div class="graficos-overlay" id="metasOverlay">
     <div class="graficos-header">
-        <span class="graficos-header-title">Metas · <span id="metasMesLabel"></span></span>
+        <span class="graficos-header-title">Metas</span>
         <button class="header-btn" id="btnFecharMetas">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <div class="mes-nav">
+        <button class="mes-nav-btn" id="btnMetasMesAnterior">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span class="mes-nav-label" id="metasMesLabel"></span>
+        <button class="mes-nav-btn" id="btnMetasMesProximo">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
     </div>
     <div class="graficos-content" id="metasConteudo"></div>
@@ -660,11 +670,17 @@
             <span id="modalMetaTitulo">Meta</span>
             <button class="modal-close" id="btnFecharModalMeta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
         </div>
-        <div class="form-group">
-            <label>Porcentagem da renda (%)</label>
-            <input type="number" id="metaPercentual" step="0.1" min="0" max="100" inputmode="decimal">
-            <div class="meta-edit-rs" id="metaEquivalente"></div>
+        <div class="meta-campos">
+            <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="metaValor" step="0.01" min="0" inputmode="decimal">
+            </div>
+            <div class="form-group">
+                <label>% da renda</label>
+                <input type="number" id="metaPercentual" step="0.1" min="0" max="100" inputmode="decimal">
+            </div>
         </div>
+        <div class="meta-edit-rs" id="metaEquivalente"></div>
         <div class="confirm-acoes">
             <button class="btn" id="btnSalvarMeta">Salvar</button>
             <button class="btn btn-sec" id="btnResetMeta">Voltar à sugestão</button>
@@ -1753,9 +1769,18 @@
         { id: 'dividas', nome: 'Dívidas e reserva', teto: 30, sub: 'Pelo menos 30% da renda', minimo: true }
     ];
     const CAT_LIA = 'Emprestado à Lia';
-    let metasCustom = {};          // { categoria: percentual }
+    let metasCustom = {};          // { categoria: { valor, percentual } } — um dos dois preenchido
     let metasTabelaOk = true;
     let metaEditando = null;
+    let metaCampo = 'rs';          // último campo editado no painel: 'rs' ou 'pct'
+    let metasMes = mesAtual;
+    let metasAno = anoAtual;
+
+    // Item pertence ao mês exibido nas Metas (legados contam em todo mês, como no resto do app)
+    function doPeriodoMetas(item) {
+        if (ehLegado(item.mes)) return true;
+        return Number(item.mes) === metasMes && anoDe(item) === metasAno;
+    }
 
     // Em qual grupo cai um lançamento. Gastos dela vão para Dívidas e reserva.
     function grupoDe(item, ehFixo) {
@@ -1771,7 +1796,6 @@
         return Number(item.mes) === m && anoDe(item) === a;
     }
 
-    // Soma gastos por grupo/categoria para um filtro de período
     function somarGastos(filtro) {
         const out = { essenciais: {}, estilo: {}, dividas: {} };
         const add = (item, ehFixo) => {
@@ -1784,12 +1808,12 @@
         return out;
     }
 
-    // Média dos últimos 3 meses (só meses com algum gasto)
+    // Média dos 3 meses anteriores ao mês das Metas (só meses com algum gasto)
     function mediaUltimos3() {
         const soma = { essenciais: {}, estilo: {} };
         let mesesComDado = 0;
         for (let k = 1; k <= 3; k++) {
-            let m = mesAtual - k, a = anoAtual;
+            let m = metasMes - k, a = metasAno;
             if (m < 0) { m += 12; a--; }
             const g = somarGastos(it => noMes(it, m, a));
             const total = Object.values(g.essenciais).concat(Object.values(g.estilo)).reduce((x, y) => x + y, 0);
@@ -1804,29 +1828,51 @@
         return soma;
     }
 
-    // Sugestão: teto do grupo dividido pelo peso de cada categoria no histórico
-    function sugerirPercentuais(atual, renda) {
-        // peso = maior valor entre a média dos 3 meses e o mês atual (categoria nova não fica sem meta)
+    const rendaDoMes = () => dadosCache.receitas.filter(doPeriodoMetas).reduce((s, r) => s + Number(r.valor || 0), 0);
+
+    // Meta em R$ de uma categoria ajustada por você (reais fixos ou % da renda)
+    function metaFixaRS(cat, renda) {
+        const c = metasCustom[cat];
+        if (!c) return null;
+        if (c.valor !== null && c.valor !== undefined) return Number(c.valor);
+        return renda * Number(c.percentual || 0) / 100;
+    }
+
+    // Calcula as metas do mês, grupo a grupo.
+    // Peso de cada categoria = maior valor entre a média dos 3 meses e o mês atual.
+    // Ajustadas ficam no valor fixo; sugeridas dividem o espaço que sobra no teto
+    // (mantêm o padrão se couber, encolhem proporcionalmente se não couber).
+    function calcularMetas(atual, renda) {
         const hist = mediaUltimos3() || { essenciais: {}, estilo: {} };
-        const base = { essenciais: {}, estilo: {} };
-        ['essenciais','estilo'].forEach(gid => {
-            new Set([...Object.keys(hist[gid]), ...Object.keys(atual[gid])]).forEach(c =>
-                base[gid][c] = Math.max(hist[gid][c] || 0, atual[gid][c] || 0));
-        });
-        const sug = {};
+        const res = {};
         GRUPOS_META.filter(g => !g.minimo).forEach(g => {
-            const cats = [...new Set([...g.fixos, ...g.vars])];
-            Object.keys(base[g.id] || {}).forEach(c => { if (!cats.includes(c)) cats.push(c); });
-            const pesos = cats.map(c => (base[g.id] || {})[c] || 0);
-            const total = pesos.reduce((x, y) => x + y, 0);
-            // abaixo do teto: mantém o padrão atual (não sugere gastar mais); acima: reduz proporcionalmente
-            const pctTotal = renda ? total / renda * 100 : 0;
-            const fator = pctTotal > g.teto ? g.teto / pctTotal : 1;
-            cats.forEach((c, i) => {
-                sug[c] = renda ? pesos[i] / renda * 100 * fator : 0;
+            const tetoRS = renda * g.teto / 100;
+            const cats = [...new Set([...g.fixos, ...g.vars, ...Object.keys(hist[g.id]), ...Object.keys(atual[g.id])])];
+            const peso = c => Math.max(hist[g.id][c] || 0, atual[g.id][c] || 0);
+
+            // sugestão "pura" (sem considerar ajustes), mostrada no painel
+            const pesoTotal = cats.reduce((s, c) => s + peso(c), 0);
+            const fatorPuro = pesoTotal > tetoRS ? tetoRS / pesoTotal : 1;
+
+            const fixas = cats.filter(c => metasCustom[c]);
+            const somaFixas = fixas.reduce((s, c) => s + metaFixaRS(c, renda), 0);
+            const livre = Math.max(0, tetoRS - somaFixas);
+            const pesoSug = cats.filter(c => !metasCustom[c]).reduce((s, c) => s + peso(c), 0);
+            const fator = pesoSug > livre ? (pesoSug ? livre / pesoSug : 0) : 1;
+
+            cats.forEach(c => {
+                const custom = !!metasCustom[c];
+                res[c] = {
+                    grupo: g.id,
+                    meta: custom ? metaFixaRS(c, renda) : peso(c) * fator,
+                    sugestao: peso(c) * fatorPuro,
+                    custom,
+                    modo: custom ? (metasCustom[c].valor !== null && metasCustom[c].valor !== undefined ? 'rs' : 'pct') : null
+                };
             });
+            res['__' + g.id] = { tetoRS, somaFixas };
         });
-        return sug;
+        return res;
     }
 
     async function carregarMetas() {
@@ -1835,12 +1881,17 @@
         if (error) { metasTabelaOk = false; console.error('metas:', error.message); return; }
         metasTabelaOk = true;
         metasCustom = {};
-        (data || []).forEach(r => metasCustom[r.categoria] = Number(r.percentual));
+        (data || []).forEach(r => {
+            const valor = r.valor === undefined || r.valor === null ? null : Number(r.valor);
+            const percentual = r.percentual === undefined || r.percentual === null ? null : Number(r.percentual);
+            if (valor !== null || percentual !== null) metasCustom[r.categoria] = { valor, percentual };
+        });
     }
 
     async function abrirMetas() {
+        metasMes = mesAtual; metasAno = anoAtual;
         document.getElementById('metasOverlay').classList.add('active');
-        document.getElementById('metasMesLabel').textContent = `${MESES[mesAtual]} ${anoAtual}`;
+        document.getElementById('metasMesLabel').textContent = `${MESES[metasMes]} ${metasAno}`;
         document.getElementById('metasConteudo').innerHTML = '<div class="empty-state">Carregando…</div>';
         if (!dadosCache) await carregarDados();
         await carregarMetas();
@@ -1849,6 +1900,13 @@
 
     function fecharMetas() {
         document.getElementById('metasOverlay').classList.remove('active');
+    }
+
+    function navegarMesMetas(delta) {
+        metasMes += delta;
+        if (metasMes > 11) { metasMes = 0;  metasAno++; }
+        if (metasMes < 0)  { metasMes = 11; metasAno--; }
+        renderizarMetas();
     }
 
     const nivel = (gasto, meta) => {
@@ -1862,24 +1920,23 @@
     function renderizarMetas() {
         const el = document.getElementById('metasConteudo');
         if (!el || !dadosCache || !document.getElementById('metasOverlay').classList.contains('active')) return;
-        document.getElementById('metasMesLabel').textContent = `${MESES[mesAtual]} ${anoAtual}`;
+        document.getElementById('metasMesLabel').textContent = `${MESES[metasMes]} ${metasAno}`;
 
-        const renda = dadosCache.receitas.filter(doPeriodo).reduce((s, r) => s + Number(r.valor || 0), 0);
+        const renda = rendaDoMes();
         if (!renda) {
-            el.innerHTML = '<div class="empty-state">Lance as receitas do mês para ver as metas.</div>';
+            el.innerHTML = '<div class="empty-state">Nenhuma receita lançada neste mês.</div>';
             return;
         }
-        const atual = somarGastos(doPeriodo);
-        const sug = sugerirPercentuais(atual, renda);
+        const atual = somarGastos(doPeriodoMetas);
+        const metas = calcularMetas(atual, renda);
         const somaG = gid => Object.values(atual[gid]).reduce((x, y) => x + y, 0);
         const totalGasto = somaG('essenciais') + somaG('estilo') + somaG('dividas');
-        const tetoGastos = renda * 0.7;
         const sobra = renda - totalGasto;
 
         let html = `
             <div class="meta-resumo">
                 <div class="resumo-card"><div class="resumo-card-label">Renda</div><div class="resumo-card-value" style="color:var(--success)">${fmt(renda)}</div></div>
-                <div class="resumo-card"><div class="resumo-card-label">Teto de gastos</div><div class="resumo-card-value">${fmt(tetoGastos)}</div></div>
+                <div class="resumo-card"><div class="resumo-card-label">Teto de gastos</div><div class="resumo-card-value">${fmt(renda * 0.7)}</div></div>
                 <div class="resumo-card"><div class="resumo-card-label">Sobra</div><div class="resumo-card-value" style="color:${sobra >= 0 ? 'var(--success)' : 'var(--danger)'}">${fmt(sobra)}</div></div>
             </div>`;
 
@@ -1907,18 +1964,12 @@
                 return;
             }
             const gastoGrupo = somaG(g.id);
-            // categorias do grupo: as do mapa + as que aparecerem no mês
-            const lista = [...new Set([...g.fixos, ...g.vars, ...Object.keys(atual[g.id])])];
-            let somaPct = 0;
-            const linhas = lista.map(c => {
-                const custom = metasCustom[c] !== undefined;
-                const pct = custom ? metasCustom[c] : (sug[c] || 0);
-                somaPct += pct;
-                const meta = renda * pct / 100;
-                const gasto = atual[g.id][c] || 0;
-                return { c, pct, meta, gasto, custom };
-            }).filter(l => l.gasto > 0 || l.pct > 0)
-              .sort((a, b) => b.meta - a.meta || b.gasto - a.gasto);
+            const info = metas['__' + g.id];
+            const linhas = Object.entries(metas)
+                .filter(([c, m]) => !c.startsWith('__') && m.grupo === g.id)
+                .map(([c, m]) => ({ c, ...m, gasto: atual[g.id][c] || 0 }))
+                .filter(l => l.gasto > 0 || l.meta > 0 || l.custom)
+                .sort((a, b) => b.meta - a.meta || b.gasto - a.gasto);
 
             html += `
             <div class="card">
@@ -1934,33 +1985,37 @@
                             <span class="meta-cat-val"><b>${fmt(l.gasto)}</b> / ${fmt(l.meta)}</span>
                         </div>
                         <div class="meta-bar ${nivel(l.gasto, l.meta)}"><i style="width:${largura(l.gasto, l.meta)}%"></i></div>
-                        <div class="meta-cat-pct"><span>${pctFmt(l.pct)} da renda</span>${l.custom ? '<span class="custom">ajustada</span>' : '<span>sugerida</span>'}</div>
+                        <div class="meta-cat-pct"><span>${pctFmt(l.meta / renda * 100)} da renda</span>${
+                            l.custom ? `<span class="custom">${l.modo === 'rs' ? 'fixa em R$' : 'fixa em %'}</span>` : '<span>sugerida</span>'}</div>
                     </div>`).join('') || '<div class="empty-state" style="padding:14px 0 0">Sem gastos nesse grupo</div>'}
-                ${somaPct > g.teto + 0.05 ? `<div class="meta-aviso">Suas metas somam ${pctFmt(somaPct)}, acima do teto de ${g.teto}%.</div>` : ''}
+                ${info.somaFixas > info.tetoRS + 0.5 ? `<div class="meta-aviso">Suas metas fixas somam ${fmt(info.somaFixas)}, acima do teto de ${fmt(info.tetoRS)}.</div>` : ''}
             </div>`;
         });
 
-        html += `<p class="meta-nota">Sugestões baseadas na sua média dos últimos 3 meses, reduzidas quando o grupo passa do teto. Toque numa categoria para ajustar.</p>`;
+        html += `<p class="meta-nota">Categorias sugeridas usam sua média dos últimos 3 meses e dividem o espaço que as fixas deixam no teto. Toque numa categoria para ajustar.</p>`;
         if (!metasTabelaOk) html += `<p class="meta-nota" style="color:var(--danger)">Tabela "metas" não encontrada no Supabase: ajustes não serão salvos.</p>`;
         el.innerHTML = html;
     }
 
     function abrirModalMeta(cat) {
-        const renda = dadosCache.receitas.filter(doPeriodo).reduce((s, r) => s + Number(r.valor || 0), 0);
-        const sug = sugerirPercentuais(somarGastos(doPeriodo), renda);
-        const pct = metasCustom[cat] !== undefined ? metasCustom[cat] : (sug[cat] || 0);
+        const renda = rendaDoMes();
+        const m = calcularMetas(somarGastos(doPeriodoMetas), renda)[cat] || { meta: 0, sugestao: 0, modo: null };
         metaEditando = cat;
+        metaCampo = m.modo || 'rs';
         document.getElementById('modalMetaTitulo').textContent = cat;
-        const inp = document.getElementById('metaPercentual');
-        inp.value = Math.round(pct * 10) / 10;
-        const atualiza = () => {
-            const v = parseFloat(inp.value) || 0;
+        const inRS = document.getElementById('metaValor');
+        const inPct = document.getElementById('metaPercentual');
+        const arred = (n, d) => Math.round(n * 10 ** d) / 10 ** d;
+        inRS.value = arred(m.meta, 2);
+        inPct.value = renda ? arred(m.meta / renda * 100, 1) : 0;
+        const info = () => {
             document.getElementById('metaEquivalente').textContent =
-                `= ${fmt(renda * v / 100)} este mês · sugestão: ${pctFmt(sug[cat] || 0)}`;
+                `Sugestão: ${fmt(m.sugestao)} · fica fixo ${metaCampo === 'rs' ? 'em reais' : 'em % da renda'}`;
         };
-        inp.oninput = atualiza;
-        atualiza();
-        document.getElementById('btnResetMeta').style.display = metasCustom[cat] !== undefined ? '' : 'none';
+        inRS.oninput = () => { metaCampo = 'rs'; const v = parseFloat(inRS.value) || 0; inPct.value = renda ? arred(v / renda * 100, 1) : 0; info(); };
+        inPct.oninput = () => { metaCampo = 'pct'; const v = parseFloat(inPct.value) || 0; inRS.value = arred(renda * v / 100, 2); info(); };
+        info();
+        document.getElementById('btnResetMeta').style.display = metasCustom[cat] ? '' : 'none';
         document.getElementById('modalMeta').classList.add('active');
     }
 
@@ -1970,14 +2025,27 @@
     }
 
     async function salvarMeta() {
-        const v = parseFloat(document.getElementById('metaPercentual').value);
-        if (isNaN(v) || v < 0 || v > 100) { mostrarAlerta('Informe uma porcentagem entre 0 e 100', 'error'); return; }
+        const rs = parseFloat(document.getElementById('metaValor').value);
+        const pct = parseFloat(document.getElementById('metaPercentual').value);
+        let linha;
+        if (metaCampo === 'rs') {
+            if (isNaN(rs) || rs < 0) { mostrarAlerta('Informe um valor válido', 'error'); return; }
+            linha = { categoria: metaEditando, valor: rs, percentual: null };
+        } else {
+            if (isNaN(pct) || pct < 0 || pct > 100) { mostrarAlerta('Informe uma porcentagem entre 0 e 100', 'error'); return; }
+            linha = { categoria: metaEditando, valor: null, percentual: pct };
+        }
         const btn = document.getElementById('btnSalvarMeta');
         carregando(btn, true);
-        const { error } = await db.from('metas').upsert({ categoria: metaEditando, percentual: v }, { onConflict: 'categoria' });
+        const { error } = await db.from('metas').upsert(linha, { onConflict: 'categoria' });
         carregando(btn, false);
-        if (error) { mostrarAlerta('Não foi possível salvar a meta', 'error'); console.error(error); return; }
-        metasCustom[metaEditando] = v;
+        if (error) {
+            console.error(error);
+            const semColuna = /valor|percentual/i.test(error.message || '');
+            mostrarAlerta(semColuna ? 'Rode o SQL da coluna "valor" no Supabase' : 'Não foi possível salvar a meta', 'error');
+            return;
+        }
+        metasCustom[metaEditando] = { valor: linha.valor, percentual: linha.percentual };
         fecharModalMeta();
         mostrarAlerta('Meta salva');
         renderizarMetas();
@@ -2029,6 +2097,8 @@
         document.getElementById('btnFecharModalMeta').addEventListener('click', fecharModalMeta);
         document.getElementById('btnSalvarMeta').addEventListener('click', salvarMeta);
         document.getElementById('btnResetMeta').addEventListener('click', resetarMeta);
+        document.getElementById('btnMetasMesAnterior').addEventListener('click', () => navegarMesMetas(-1));
+        document.getElementById('btnMetasMesProximo').addEventListener('click',  () => navegarMesMetas(1));
         document.getElementById('btnFecharGraficos').addEventListener('click', fecharGraficos);
         document.getElementById('btnMesAnterior').addEventListener('click', () => navegarMesGrafico(-1));
         document.getElementById('btnMesProximo').addEventListener('click',  () => navegarMesGrafico(1));
