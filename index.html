@@ -421,6 +421,10 @@
         .st-ok { color: var(--success); } .st-alerta { color: #b07a00; } .st-estourou { color: var(--danger); }
         .meta-grupo-status { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; margin-top: 6px; font-variant-numeric: tabular-nums; }
         .meta-reserva { font-size: 11px; color: var(--text-light); margin-top: 3px; }
+        .dia-nav { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px; padding: 3px; border-radius: 999px; background: var(--bg); border: 1px solid var(--glass-edge); box-shadow: var(--shadow), var(--spec); }
+        .dia-nav[hidden] { display: none; }
+        .dia-nav-label { position: relative; flex: 1; text-align: center; font-size: 14px; font-weight: 700; color: var(--text); margin: 0; padding: 6px 0; cursor: pointer; }
+        .dia-nav-label input { position: absolute; inset: 0; opacity: 0; margin: 0; padding: 0; border: 0; width: 100%; height: 100%; cursor: pointer; }
         .grp-meta { font-size: 12px; font-weight: 600; margin-top: 1px; }
         .meta-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
@@ -556,6 +560,11 @@
                 <button class="filtro-btn" data-grupo-var="casal">Casal</button>
                 <button class="filtro-btn" data-grupo-var="gle">Meu</button>
                 <button class="filtro-btn" data-grupo-var="dela">Dela</button>
+            </div>
+            <div class="dia-nav" id="diaNavVar">
+                <button type="button" class="mes-switcher-btn" id="btnDiaAnterior" aria-label="Dia anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+                <label class="dia-nav-label"><span id="diaVarLabel"></span><input type="date" id="diaVarInput" aria-label="Escolher dia"></label>
+                <button type="button" class="mes-switcher-btn" id="btnDiaProximo" aria-label="Próximo dia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
             </div>
             <div class="card">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -968,7 +977,7 @@
         document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
         const btn = document.querySelector(`.nav-item[data-tela="${telaId}"]`);
         if (btn) btn.classList.add('active');
-        if (telaId === 'screenVariaveis') resetFormVariavel();
+        if (telaId === 'screenVariaveis') { resetFormVariavel(); diaVar = null; }
         window.scrollTo({ top: 0 });
         if (Date.now() - ultimaCarga > 15000) carregarDados();
     }
@@ -1455,7 +1464,8 @@
     function renderizar(fixos, variaveis, receitas) {
         desenharAtalhosVar();
         atualizarCategorias();
-        renderizarVariaveisPorCategoria(filtroVarGrupo === 'hoje' ? variaveis.filter(lancadoHoje) : variaveis.filter(v => doPeriodo(v)));
+        renderizarVariaveisPorCategoria(filtroVarGrupo === 'hoje' ? variaveis.filter(lancadoNoDia) : variaveis.filter(v => doPeriodo(v)));
+        atualizarDiaVar();
         renderizarGruposFixos(fixos);
 
         const recMes = receitas.filter(r => doPeriodo(r));
@@ -1492,6 +1502,25 @@
         if (!str) return null;
         const d = new Date((str.endsWith('Z') || str.includes('+')) ? str : str + 'Z');
         return isNaN(d) ? null : d;
+    }
+    let diaVar = null;   // null = hoje
+    const diaFiltroVar = () => diaVar ? new Date(diaVar) : new Date();
+    const lancadoNoDia = v => { const d = dataLancamento(v.criado); return !!d && d.toDateString() === diaFiltroVar().toDateString(); };
+    const ehHojeVar = () => diaFiltroVar().toDateString() === new Date().toDateString();
+    function atualizarDiaVar() {
+        const d = diaFiltroVar();
+        const nav = document.getElementById('diaNavVar');
+        nav.hidden = filtroVarGrupo !== 'hoje';
+        document.getElementById('diaVarLabel').textContent = ehHojeVar() ? `Hoje, ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`
+            : d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).replace('.', '');
+        document.getElementById('diaVarInput').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        const btnHoje = document.querySelector('[data-grupo-var="hoje"]');
+        if (btnHoje) btnHoje.textContent = ehHojeVar() ? 'Hoje' : 'Dia';
+    }
+    function mudarDiaVar(novo) {
+        if (!novo || isNaN(novo)) return;
+        diaVar = novo.toDateString() === new Date().toDateString() ? null : novo;
+        renderDoCache();
     }
     const lancadoHoje = v => { const d = dataLancamento(v.criado); return !!d && d.toDateString() === new Date().toDateString(); };
 
@@ -1568,7 +1597,8 @@
         function renderizarVariaveisPorCategoria(varMes) {
         const container = document.getElementById('variaveisList');
         const mostrarTag = filtroVarGrupo === 'geral' || filtroVarGrupo === 'hoje';
-        document.getElementById('listaVarTitulo').textContent = filtroVarGrupo === 'hoje' ? 'Gastos de hoje' : 'Variáveis do mês';
+        const dFiltro = diaFiltroVar();
+        document.getElementById('listaVarTitulo').textContent = filtroVarGrupo === 'hoje' ? (ehHojeVar() ? 'Gastos de hoje' : `Gastos de ${String(dFiltro.getDate()).padStart(2,'0')}/${String(dFiltro.getMonth()+1).padStart(2,'0')}`) : 'Variáveis do mês';
         const varFiltrado = mostrarTag ? varMes : varMes.filter(v => v.tipo === filtroVarGrupo);
         if (!varFiltrado.length) {
             container.innerHTML = '<div class="empty-state">Nenhuma variável</div>';
@@ -2221,12 +2251,19 @@
         document.querySelectorAll('[data-grupo-var]').forEach(btn => {
             btn.addEventListener('click', () => {
                 filtroVarGrupo = btn.dataset.grupoVar;
+                if (filtroVarGrupo === 'hoje') diaVar = null;
                 document.querySelectorAll('[data-grupo-var]').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 renderDoCache();
             });
         });
 
+        document.getElementById('btnDiaAnterior').addEventListener('click', () => { const d = diaFiltroVar(); d.setDate(d.getDate() - 1); mudarDiaVar(d); });
+        document.getElementById('btnDiaProximo').addEventListener('click',  () => { const d = diaFiltroVar(); d.setDate(d.getDate() + 1); mudarDiaVar(d); });
+        document.getElementById('diaVarInput').addEventListener('change', e => {
+            const [a, m, d] = (e.target.value || '').split('-').map(Number);
+            if (a) mudarDiaVar(new Date(a, m - 1, d));
+        });
         inicializarTipoSelect();
         preencherMeses('varMes');
         carregarDados().then(() => carregarMetas()).then(() => renderDoCache());
