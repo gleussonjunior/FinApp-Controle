@@ -377,6 +377,39 @@
             .content { padding-bottom: calc(136px + env(safe-area-inset-bottom, 0px)); }
         }
 
+
+        /* METAS */
+        .header-acoes { display: flex; gap: 8px; flex-shrink: 0; }
+        .header-spacer.duplo { width: 84px; }
+        .meta-resumo { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+        .meta-resumo .resumo-card { padding: 12px; border-radius: 18px; }
+        .meta-resumo .resumo-card-value { font-size: 15px; }
+        .meta-grupo-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+        .meta-grupo-nome { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
+        .meta-grupo-sub { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+        .meta-grupo-val { font-size: 14px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .meta-bar { height: 8px; border-radius: 999px; background: rgba(15,27,61,0.08); overflow: hidden; margin: 8px 0 4px; }
+        .meta-bar > i { display: block; height: 100%; border-radius: 999px; transition: width .4s ease; }
+        .meta-bar.ok > i { background: var(--success); }
+        .meta-bar.alerta > i { background: #e0a100; }
+        .meta-bar.estourou > i { background: var(--danger); }
+        .meta-cat { padding: 10px 0; border-top: 1px solid var(--border); }
+        .meta-cat:first-of-type { margin-top: 10px; }
+        .meta-cat-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 14px; }
+        .meta-cat-nome { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .meta-cat-val { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--text-light); }
+        .meta-cat-val b { color: var(--text); font-weight: 700; }
+        .meta-cat .meta-bar { height: 6px; margin: 6px 0 2px; }
+        .meta-cat-pct { font-size: 11px; color: var(--text-faint); display: flex; justify-content: space-between; }
+        .meta-cat-pct .custom { color: var(--secondary); font-weight: 600; }
+        .meta-aviso { font-size: 12px; color: #b07a00; background: rgba(224,161,0,0.1); border-radius: 10px; padding: 8px 10px; margin-top: 10px; }
+        .meta-linha { display: flex; justify-content: space-between; font-size: 14px; padding: 8px 0; border-top: 1px solid var(--border); }
+        .meta-linha span:first-child { color: var(--text-light); }
+        .meta-linha { gap: 12px; }
+        .meta-linha span:last-child { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .meta-nota { font-size: 12px; color: var(--text-faint); text-align: center; margin: 4px 8px 0; }
+        .meta-edit-rs { font-size: 13px; color: var(--text-light); margin: 6px 0 16px; }
+
         button:focus-visible, .category-pill:focus-visible { outline: 2px solid var(--secondary); outline-offset: 2px; }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
     </style>
@@ -385,13 +418,18 @@
 <div class="container">
 
     <div class="header">
-        <div class="header-spacer"></div>
+        <div class="header-spacer duplo"></div>
         <div class="header-title" id="btnHome" style="cursor:pointer;">Fin<span class="brand-accent">App</span></div>
+        <div class="header-acoes">
+        <button class="header-btn" id="btnAbrirMetas" title="Metas">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
+        </button>
         <button class="header-btn" id="btnAbrirGraficos" title="Gráficos">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="18" y="3" width="4" height="18" rx="1"/><rect x="10" y="8" width="4" height="13" rx="1"/><rect x="2" y="13" width="4" height="8" rx="1"/>
             </svg>
         </button>
+        </div>
     </div>
 
     <div class="mes-switcher">
@@ -600,6 +638,36 @@
                 <button class="filtro-btn" data-filtro="dela">Dela</button>
             </div>
             <div id="wrapChartFixos" style="position:relative;"><canvas id="canvasGraficoFixos"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<!-- OVERLAY METAS -->
+<div class="graficos-overlay" id="metasOverlay">
+    <div class="graficos-header">
+        <span class="graficos-header-title">Metas · <span id="metasMesLabel"></span></span>
+        <button class="header-btn" id="btnFecharMetas">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <div class="graficos-content" id="metasConteudo"></div>
+</div>
+
+<!-- MODAL EDITAR META -->
+<div class="modal" id="modalMeta">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span id="modalMetaTitulo">Meta</span>
+            <button class="modal-close" id="btnFecharModalMeta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="form-group">
+            <label>Porcentagem da renda (%)</label>
+            <input type="number" id="metaPercentual" step="0.1" min="0" max="100" inputmode="decimal">
+            <div class="meta-edit-rs" id="metaEquivalente"></div>
+        </div>
+        <div class="confirm-acoes">
+            <button class="btn" id="btnSalvarMeta">Salvar</button>
+            <button class="btn btn-sec" id="btnResetMeta">Voltar à sugestão</button>
         </div>
     </div>
 </div>
@@ -1298,6 +1366,7 @@
         const { fixos, variaveis, receitas } = dadosCache;
         calcularRepasse(fixos, variaveis, receitas);
         renderizar(fixos, variaveis, receitas);
+        renderizarMetas();
         abertas.forEach(id => {
             const body = document.getElementById(id);
             if (!body || !body.classList.contains('collapsed')) return;
@@ -1671,6 +1740,259 @@
         } catch(e) { mostrarAlerta('❌ ' + (e.message || 'Erro ao fechar mês'), 'error'); }
     }
 
+
+    // ===== METAS =====
+    // Divisão 50/20/30 (regra 50/30/20 no modo "saindo das dívidas")
+    const GRUPOS_META = [
+        { id: 'essenciais', nome: 'Essenciais', teto: 50, sub: 'Até 50% da renda',
+          fixos: ['Moradia','Telefonia','Saúde','Educação'],
+          vars:  ['Mercado','Transporte','Farmácia','Saúde','Educação','Pets','Marmita'] },
+        { id: 'estilo', nome: 'Estilo de vida', teto: 20, sub: 'Até 20% da renda',
+          fixos: ['Assinaturas','Storage','Outros'],
+          vars:  ['Saídas','Compras','Assinaturas','Outros'] },
+        { id: 'dividas', nome: 'Dívidas e reserva', teto: 30, sub: 'Pelo menos 30% da renda', minimo: true }
+    ];
+    const CAT_LIA = 'Emprestado à Lia';
+    let metasCustom = {};          // { categoria: percentual }
+    let metasTabelaOk = true;
+    let metaEditando = null;
+
+    // Em qual grupo cai um lançamento. Gastos dela vão para Dívidas e reserva.
+    function grupoDe(item, ehFixo) {
+        if (item.tipo === 'dela') return { grupo: 'dividas', cat: CAT_LIA };
+        const cat = item.categoria || 'Outros';
+        if (ehFixo && cat === 'Parcelas') return { grupo: 'dividas', cat: 'Parcelas' };
+        const g = GRUPOS_META.find(g => (ehFixo ? g.fixos : g.vars)?.includes(cat));
+        return { grupo: g ? g.id : 'estilo', cat };
+    }
+
+    function noMes(item, m, a) {
+        if (ehLegado(item.mes)) return false;
+        return Number(item.mes) === m && anoDe(item) === a;
+    }
+
+    // Soma gastos por grupo/categoria para um filtro de período
+    function somarGastos(filtro) {
+        const out = { essenciais: {}, estilo: {}, dividas: {} };
+        const add = (item, ehFixo) => {
+            if (!filtro(item)) return;
+            const { grupo, cat } = grupoDe(item, ehFixo);
+            out[grupo][cat] = (out[grupo][cat] || 0) + Number(item.valor || 0);
+        };
+        dadosCache.fixos.forEach(f => add(f, true));
+        dadosCache.variaveis.forEach(v => add(v, false));
+        return out;
+    }
+
+    // Média dos últimos 3 meses (só meses com algum gasto)
+    function mediaUltimos3() {
+        const soma = { essenciais: {}, estilo: {} };
+        let mesesComDado = 0;
+        for (let k = 1; k <= 3; k++) {
+            let m = mesAtual - k, a = anoAtual;
+            if (m < 0) { m += 12; a--; }
+            const g = somarGastos(it => noMes(it, m, a));
+            const total = Object.values(g.essenciais).concat(Object.values(g.estilo)).reduce((x, y) => x + y, 0);
+            if (!total) continue;
+            mesesComDado++;
+            ['essenciais','estilo'].forEach(gid => {
+                Object.entries(g[gid]).forEach(([c, v]) => soma[gid][c] = (soma[gid][c] || 0) + v);
+            });
+        }
+        if (!mesesComDado) return null;
+        ['essenciais','estilo'].forEach(gid => Object.keys(soma[gid]).forEach(c => soma[gid][c] /= mesesComDado));
+        return soma;
+    }
+
+    // Sugestão: teto do grupo dividido pelo peso de cada categoria no histórico
+    function sugerirPercentuais(atual, renda) {
+        // peso = maior valor entre a média dos 3 meses e o mês atual (categoria nova não fica sem meta)
+        const hist = mediaUltimos3() || { essenciais: {}, estilo: {} };
+        const base = { essenciais: {}, estilo: {} };
+        ['essenciais','estilo'].forEach(gid => {
+            new Set([...Object.keys(hist[gid]), ...Object.keys(atual[gid])]).forEach(c =>
+                base[gid][c] = Math.max(hist[gid][c] || 0, atual[gid][c] || 0));
+        });
+        const sug = {};
+        GRUPOS_META.filter(g => !g.minimo).forEach(g => {
+            const cats = [...new Set([...g.fixos, ...g.vars])];
+            Object.keys(base[g.id] || {}).forEach(c => { if (!cats.includes(c)) cats.push(c); });
+            const pesos = cats.map(c => (base[g.id] || {})[c] || 0);
+            const total = pesos.reduce((x, y) => x + y, 0);
+            // abaixo do teto: mantém o padrão atual (não sugere gastar mais); acima: reduz proporcionalmente
+            const pctTotal = renda ? total / renda * 100 : 0;
+            const fator = pctTotal > g.teto ? g.teto / pctTotal : 1;
+            cats.forEach((c, i) => {
+                sug[c] = renda ? pesos[i] / renda * 100 * fator : 0;
+            });
+        });
+        return sug;
+    }
+
+    async function carregarMetas() {
+        if (!db) return;
+        const { data, error } = await db.from('metas').select('*');
+        if (error) { metasTabelaOk = false; console.error('metas:', error.message); return; }
+        metasTabelaOk = true;
+        metasCustom = {};
+        (data || []).forEach(r => metasCustom[r.categoria] = Number(r.percentual));
+    }
+
+    async function abrirMetas() {
+        document.getElementById('metasOverlay').classList.add('active');
+        document.getElementById('metasMesLabel').textContent = `${MESES[mesAtual]} ${anoAtual}`;
+        document.getElementById('metasConteudo').innerHTML = '<div class="empty-state">Carregando…</div>';
+        if (!dadosCache) await carregarDados();
+        await carregarMetas();
+        renderizarMetas();
+    }
+
+    function fecharMetas() {
+        document.getElementById('metasOverlay').classList.remove('active');
+    }
+
+    const nivel = (gasto, meta) => {
+        if (!meta) return gasto > 0 ? 'estourou' : 'ok';
+        const r = gasto / meta;
+        return r > 1.005 ? 'estourou' : r >= 0.8 ? 'alerta' : 'ok';
+    };
+    const largura = (v, meta) => meta ? Math.min(100, v / meta * 100) : (v > 0 ? 100 : 0);
+    const pctFmt = n => `${(Math.round(n * 10) / 10).toString().replace('.', ',')}%`;
+
+    function renderizarMetas() {
+        const el = document.getElementById('metasConteudo');
+        if (!el || !dadosCache || !document.getElementById('metasOverlay').classList.contains('active')) return;
+        document.getElementById('metasMesLabel').textContent = `${MESES[mesAtual]} ${anoAtual}`;
+
+        const renda = dadosCache.receitas.filter(doPeriodo).reduce((s, r) => s + Number(r.valor || 0), 0);
+        if (!renda) {
+            el.innerHTML = '<div class="empty-state">Lance as receitas do mês para ver as metas.</div>';
+            return;
+        }
+        const atual = somarGastos(doPeriodo);
+        const sug = sugerirPercentuais(atual, renda);
+        const somaG = gid => Object.values(atual[gid]).reduce((x, y) => x + y, 0);
+        const totalGasto = somaG('essenciais') + somaG('estilo') + somaG('dividas');
+        const tetoGastos = renda * 0.7;
+        const sobra = renda - totalGasto;
+
+        let html = `
+            <div class="meta-resumo">
+                <div class="resumo-card"><div class="resumo-card-label">Renda</div><div class="resumo-card-value" style="color:var(--success)">${fmt(renda)}</div></div>
+                <div class="resumo-card"><div class="resumo-card-label">Teto de gastos</div><div class="resumo-card-value">${fmt(tetoGastos)}</div></div>
+                <div class="resumo-card"><div class="resumo-card-label">Sobra</div><div class="resumo-card-value" style="color:${sobra >= 0 ? 'var(--success)' : 'var(--danger)'}">${fmt(sobra)}</div></div>
+            </div>`;
+
+        GRUPOS_META.forEach(g => {
+            const metaGrupo = renda * g.teto / 100;
+            if (g.minimo) {
+                const parcelas = atual.dividas['Parcelas'] || 0;
+                const lia = atual.dividas[CAT_LIA] || 0;
+                const disponivel = renda - somaG('essenciais') - somaG('estilo');
+                const livre = disponivel - parcelas - lia;
+                const nv = disponivel >= metaGrupo ? 'ok' : disponivel >= metaGrupo * 0.5 ? 'alerta' : 'estourou';
+                html += `
+                <div class="card">
+                    <div class="meta-grupo-head">
+                        <div><div class="meta-grupo-nome">${g.nome}</div><div class="meta-grupo-sub">${g.sub} · meta ${fmt(metaGrupo)}</div></div>
+                        <div class="meta-grupo-val">${fmt(disponivel)}</div>
+                    </div>
+                    <div class="meta-bar ${nv}"><i style="width:${largura(Math.max(disponivel, 0), metaGrupo)}%"></i></div>
+                    <div style="margin-top:8px;">
+                        <div class="meta-linha"><span>Parcelas</span><span>${fmt(parcelas)}</span></div>
+                        <div class="meta-linha"><span>${CAT_LIA}</span><span>${fmt(lia)}</span></div>
+                        <div class="meta-linha"><span>Livre para adiantar dívidas ou guardar</span><span style="color:${livre >= 0 ? 'var(--success)' : 'var(--danger)'}">${fmt(livre)}</span></div>
+                    </div>
+                </div>`;
+                return;
+            }
+            const gastoGrupo = somaG(g.id);
+            // categorias do grupo: as do mapa + as que aparecerem no mês
+            const lista = [...new Set([...g.fixos, ...g.vars, ...Object.keys(atual[g.id])])];
+            let somaPct = 0;
+            const linhas = lista.map(c => {
+                const custom = metasCustom[c] !== undefined;
+                const pct = custom ? metasCustom[c] : (sug[c] || 0);
+                somaPct += pct;
+                const meta = renda * pct / 100;
+                const gasto = atual[g.id][c] || 0;
+                return { c, pct, meta, gasto, custom };
+            }).filter(l => l.gasto > 0 || l.pct > 0)
+              .sort((a, b) => b.meta - a.meta || b.gasto - a.gasto);
+
+            html += `
+            <div class="card">
+                <div class="meta-grupo-head">
+                    <div><div class="meta-grupo-nome">${g.nome}</div><div class="meta-grupo-sub">${g.sub} · teto ${fmt(metaGrupo)}</div></div>
+                    <div class="meta-grupo-val">${fmt(gastoGrupo)}</div>
+                </div>
+                <div class="meta-bar ${nivel(gastoGrupo, metaGrupo)}"><i style="width:${largura(gastoGrupo, metaGrupo)}%"></i></div>
+                ${linhas.map(l => `
+                    <div class="meta-cat" data-cat="${esc(l.c)}" onclick="abrirModalMeta(this.dataset.cat)" style="cursor:pointer;">
+                        <div class="meta-cat-top">
+                            <span class="meta-cat-nome">${esc(l.c)}</span>
+                            <span class="meta-cat-val"><b>${fmt(l.gasto)}</b> / ${fmt(l.meta)}</span>
+                        </div>
+                        <div class="meta-bar ${nivel(l.gasto, l.meta)}"><i style="width:${largura(l.gasto, l.meta)}%"></i></div>
+                        <div class="meta-cat-pct"><span>${pctFmt(l.pct)} da renda</span>${l.custom ? '<span class="custom">ajustada</span>' : '<span>sugerida</span>'}</div>
+                    </div>`).join('') || '<div class="empty-state" style="padding:14px 0 0">Sem gastos nesse grupo</div>'}
+                ${somaPct > g.teto + 0.05 ? `<div class="meta-aviso">Suas metas somam ${pctFmt(somaPct)}, acima do teto de ${g.teto}%.</div>` : ''}
+            </div>`;
+        });
+
+        html += `<p class="meta-nota">Sugestões baseadas na sua média dos últimos 3 meses, reduzidas quando o grupo passa do teto. Toque numa categoria para ajustar.</p>`;
+        if (!metasTabelaOk) html += `<p class="meta-nota" style="color:var(--danger)">Tabela "metas" não encontrada no Supabase: ajustes não serão salvos.</p>`;
+        el.innerHTML = html;
+    }
+
+    function abrirModalMeta(cat) {
+        const renda = dadosCache.receitas.filter(doPeriodo).reduce((s, r) => s + Number(r.valor || 0), 0);
+        const sug = sugerirPercentuais(somarGastos(doPeriodo), renda);
+        const pct = metasCustom[cat] !== undefined ? metasCustom[cat] : (sug[cat] || 0);
+        metaEditando = cat;
+        document.getElementById('modalMetaTitulo').textContent = cat;
+        const inp = document.getElementById('metaPercentual');
+        inp.value = Math.round(pct * 10) / 10;
+        const atualiza = () => {
+            const v = parseFloat(inp.value) || 0;
+            document.getElementById('metaEquivalente').textContent =
+                `= ${fmt(renda * v / 100)} este mês · sugestão: ${pctFmt(sug[cat] || 0)}`;
+        };
+        inp.oninput = atualiza;
+        atualiza();
+        document.getElementById('btnResetMeta').style.display = metasCustom[cat] !== undefined ? '' : 'none';
+        document.getElementById('modalMeta').classList.add('active');
+    }
+
+    function fecharModalMeta() {
+        document.getElementById('modalMeta').classList.remove('active');
+        metaEditando = null;
+    }
+
+    async function salvarMeta() {
+        const v = parseFloat(document.getElementById('metaPercentual').value);
+        if (isNaN(v) || v < 0 || v > 100) { mostrarAlerta('Informe uma porcentagem entre 0 e 100', 'error'); return; }
+        const btn = document.getElementById('btnSalvarMeta');
+        carregando(btn, true);
+        const { error } = await db.from('metas').upsert({ categoria: metaEditando, percentual: v }, { onConflict: 'categoria' });
+        carregando(btn, false);
+        if (error) { mostrarAlerta('Não foi possível salvar a meta', 'error'); console.error(error); return; }
+        metasCustom[metaEditando] = v;
+        fecharModalMeta();
+        mostrarAlerta('Meta salva');
+        renderizarMetas();
+    }
+
+    async function resetarMeta() {
+        const cat = metaEditando;
+        const { error } = await db.from('metas').delete().eq('categoria', cat);
+        if (error) { mostrarAlerta('Não foi possível voltar à sugestão', 'error'); return; }
+        delete metasCustom[cat];
+        fecharModalMeta();
+        mostrarAlerta('Meta voltou à sugestão');
+        renderizarMetas();
+    }
+
     async function init() {
         let t = 0;
         while (!window.supabase && t++ < 50) await new Promise(r => setTimeout(r, 100));
@@ -1702,6 +2024,11 @@
         document.getElementById('receitaCasalNao').addEventListener('click', () => setReceitaCasal(false));
 
         document.getElementById('btnAbrirGraficos').addEventListener('click', abrirGraficos);
+        document.getElementById('btnAbrirMetas').addEventListener('click', abrirMetas);
+        document.getElementById('btnFecharMetas').addEventListener('click', fecharMetas);
+        document.getElementById('btnFecharModalMeta').addEventListener('click', fecharModalMeta);
+        document.getElementById('btnSalvarMeta').addEventListener('click', salvarMeta);
+        document.getElementById('btnResetMeta').addEventListener('click', resetarMeta);
         document.getElementById('btnFecharGraficos').addEventListener('click', fecharGraficos);
         document.getElementById('btnMesAnterior').addEventListener('click', () => navegarMesGrafico(-1));
         document.getElementById('btnMesProximo').addEventListener('click',  () => navegarMesGrafico(1));
