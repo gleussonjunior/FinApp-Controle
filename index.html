@@ -344,7 +344,8 @@
         }
         .atalho:active { transform: scale(0.96); }
         .atalho svg { width: 14px; height: 14px; color: var(--secondary); }
-        .atalho small { font-weight: 500; color: var(--text-light); font-size: 13px; }
+        .atalho small { font-weight: 500; color: var(--text-light); font-size: 11px; }
+        .atalho-emoji { font-size: 14px; line-height: 1; }
         .valor-grande { display: flex; align-items: baseline; justify-content: center; gap: 6px; padding: 4px 0 14px; margin: 0; cursor: text; }
         .valor-grande span { font-size: 22px; font-weight: 600; color: var(--text-faint); }
         #varValor {
@@ -522,8 +523,6 @@
         <!-- VARIÁVEIS -->
         <div class="screen active" id="screenVariaveis">
             <form class="card card-lancar" id="formVar" autocomplete="off" novalidate>
-                <div class="lancar-rotulo" id="atalhosRotulo">Repetir</div>
-                <div class="faixa" id="atalhosVar"></div>
 
                 <div class="seg-tipo" id="tipoSelect" role="group" aria-label="Tipo">
                     <button type="button" data-tipo="casal">Casal</button>
@@ -546,6 +545,8 @@
                     <div class="mes-mini"><select id="varMes" aria-label="Mês"></select></div>
                     <button class="btn" id="btnSalvarVariavel" type="submit">Salvar</button>
                 </div>
+                <div class="lancar-rotulo" id="atalhosRotulo" style="margin-top:14px;">Repetir</div>
+                <div class="faixa" id="atalhosVar" style="margin-bottom:0;"></div>
                 <div class="var-success-inline" id="varSuccessInline"></div>
             </form>
             <div class="filtro-fixos" id="filtroGrupoVarEl" style="margin-bottom:4px;">
@@ -1031,8 +1032,10 @@
         document.getElementById('atalhosRotulo').hidden = !atalhosVar.length;
         const el = document.getElementById('atalhosVar');
         el.hidden = !atalhosVar.length;
+        const EMOJI_TIPO = { casal: '👥', gle: '👨', dela: '👩' };
+        const nomeRepetido = d => atalhosVar.filter(x => x.d === d).length > 1;
         el.innerHTML = atalhosVar.map((h, i) =>
-            `<button type="button" class="atalho" data-i="${i}">${ICONE_REPETIR}${esc(h.d)} <small>· ${esc(h.c)}</small><span class="tag-grupo ${h.t}" style="margin-left:2px">${TIPO_LABEL[h.t] || ''}</span></button>`).join('');
+            `<button type="button" class="atalho" data-i="${i}" aria-label="${esc(h.d)} · ${esc(h.c)} · ${TIPO_LABEL[h.t] || ''}"><span class="atalho-emoji">${EMOJI_TIPO[h.t] || ''}</span>${esc(h.d)}${nomeRepetido(h.d) ? ` <small>${esc(h.c)}</small>` : ''}</button>`).join('');
     }
 
     function mostrarSugestoesVar() {
