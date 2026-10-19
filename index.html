@@ -419,6 +419,7 @@
         .st-ok { color: var(--success); } .st-alerta { color: #b07a00; } .st-estourou { color: var(--danger); }
         .meta-grupo-status { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; margin-top: 6px; font-variant-numeric: tabular-nums; }
         .meta-reserva { font-size: 11px; color: var(--text-light); margin-top: 3px; }
+        .grp-meta { font-size: 12px; font-weight: 600; margin-top: 1px; }
         .meta-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
         button:focus-visible, .category-pill:focus-visible { outline: 2px solid var(--secondary); outline-offset: 2px; }
@@ -1576,6 +1577,7 @@
         const gruposGerais = Object.entries(grupos);
         const totalGeral = gruposGerais.reduce((s, [, itens]) => s + itens.reduce((ss, v) => ss + Number(v.valor), 0), 0);
         document.getElementById('varTotalGeral').textContent = fmt(totalGeral);
+        const stMetas = filtroVarGrupo === 'dela' ? {} : statusMetasDoMesApp();
 
         function renderGrupo(cat, itens) {
             const subtotal = itens.reduce((s, v) => s + Number(v.valor), 0);
@@ -1585,7 +1587,7 @@
             return `
                 <div class="grp">
                     <div class="card-header-toggle grp-head" onclick="toggleSection('${bodyId}','${iconId}')">
-                        <span class="grp-name">${esc(cat)}</span>
+                        <span class="grp-name" style="flex-direction:column;align-items:flex-start;gap:0;">${esc(cat)}${stMetas[cat] ? `<span class="grp-meta st-${stMetas[cat].cl}">${stMetas[cat].txt} da meta</span>` : ''}</span>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <span class="grp-total">${fmt(subtotal)}</span>
                             <i data-lucide="chevron-down" class="toggle-icon collapsed" id="${iconId}" style="width:16px;height:16px;"></i>
@@ -1897,6 +1899,26 @@
         return res;
     }
 
+    // Status "Resta/Passou" de cada categoria no mês selecionado no app (para a lista de variáveis)
+    function statusMetasDoMesApp() {
+        if (!dadosCache) return {};
+        const salvo = [metasMes, metasAno];
+        metasMes = mesAtual; metasAno = anoAtual;
+        try {
+            const renda = rendaDoMes();
+            if (!renda) return {};
+            const atual = somarGastos(doPeriodoMetas);
+            const metas = calcularMetas(atual, renda);
+            const out = {};
+            Object.entries(metas).forEach(([c, m]) => {
+                if (c.startsWith('__')) return;
+                const gasto = atual[m.grupo][c] || 0;
+                if (gasto > 0 || m.meta > 0) out[c] = statusMeta(gasto, m.meta);
+            });
+            return out;
+        } finally { [metasMes, metasAno] = salvo; }
+    }
+
     async function carregarMetas() {
         if (!db) return;
         const { data, error } = await db.from('metas').select('*');
@@ -2070,7 +2092,7 @@
         metasCustom[metaEditando] = { valor: linha.valor, percentual: linha.percentual };
         fecharModalMeta();
         mostrarAlerta('Meta salva');
-        renderizarMetas();
+        renderDoCache();
     }
 
     async function resetarMeta() {
@@ -2080,7 +2102,7 @@
         delete metasCustom[cat];
         fecharModalMeta();
         mostrarAlerta('Meta voltou à sugestão');
-        renderizarMetas();
+        renderDoCache();
     }
 
     async function init() {
@@ -2200,7 +2222,7 @@
 
         inicializarTipoSelect();
         preencherMeses('varMes');
-        carregarDados();
+        carregarDados().then(() => carregarMetas()).then(() => renderDoCache());
         setInterval(() => { if (!document.hidden) carregarDados(); }, 30000);
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden && Date.now() - ultimaCarga > 5000) carregarDados();
